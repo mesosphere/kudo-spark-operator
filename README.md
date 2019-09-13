@@ -1,1 +1,1 @@
-# KUDO Spark Service
+# KUDO Spark Operator
