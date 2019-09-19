@@ -1,3 +1,12 @@
 .idea/
 *.iml
+*.pem
+*.pub
+*cluster.yaml
 
+runs/
+state/
+
+admin.conf
+cluster.*.yaml
+inventory.yaml
