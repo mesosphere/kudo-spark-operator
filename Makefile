@@ -9,14 +9,19 @@ SPARK_OPERATOR_DIR := $(ROOT_DIR)/shared/spark-on-k8s-operator
 KONVOY_VERSION ?= v1.1.5
 export KONVOY_VERSION
 
-cluster-create-konvoy:
-	$(KUDO_TOOLS_DIR)/cluster.sh konvoy up
+CLUSTER_TYPE ?= konvoy
 
-cluster-destroy-konvoy:
-	$(KUDO_TOOLS_DIR)/cluster.sh konvoy down
+cluster-create:
+	$(KUDO_TOOLS_DIR)/cluster.sh $(CLUSTER_TYPE) up
+	echo > $(CLUSTER_TYPE)-created
 
-.PHONY: cluster-destroy-all
-destroy-all: cluster-destroy-konvoy
+cluster-destroy:
+	if [[ -f konvoy-created ]]; then
+		$(KUDO_TOOLS_DIR)/cluster.sh konvoy down
+	fi
+	if [[ -f mke-created ]]; then
+		$(KUDO_TOOLS_DIR)/cluster.sh mke down
+	fi
 
 .PHONY: clean-all
 clean-all:
