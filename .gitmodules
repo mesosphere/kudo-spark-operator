@@ -1,8 +1,6 @@
-[submodule "shared/data-services-kudo"]
-	path = shared/data-services-kudo
-	url = https://github.com/mesosphere/data-services-kudo.git
-	branch = master
-[submodule "shared/spark-on-k8s-operator"]
-	path = shared/spark-on-k8s-operator
-	url = https://github.com/mesosphere/spark-on-k8s-operator.git
-	branch = master
+[submodule "spark-on-k8s-operator"]
+	path = spark-on-k8s-operator
+	url = git@github.com:mesosphere/spark-on-k8s-operator.git
+[submodule "shared"]
+	path = shared
+	url = git@github.com:mesosphere/data-services-kudo.git
