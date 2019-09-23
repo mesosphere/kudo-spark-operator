@@ -35,3 +35,43 @@ make cluster-create
 make test
 make cluster-destroy
 ```
+
+# Installing and using Spark Operator
+
+### Prerequisites
+
+* Kubernetes cluster up and running
+* `kubectl` configured to work with provisioned cluster
+* `helm` client
+
+### Installation
+
+To install Spark Operator from Helm Chart, run:
+```bash
+make install
+```
+
+This make target runs [install_operator.sh](scripts/install_operator.sh) script which will install Spark Operator and 
+create Spark Driver roles defined in [specs/spark-driver-rbac.yaml](specs/spark-driver-rbac.yaml). By default, Operator 
+and Driver roles will be created and configured to run in namespace `spark-operator`. To change the namespace, 
+provide `NAMESPACE` parameter to make:
+```bash
+make install NAMESPACE=test-namespace
+```
+
+### Submitting Spark Application
+
+To submit Spark Application and check its status run:
+```bash
+#switch to operator namespace, e.g.
+kubens spark-operator
+
+# create Spark application
+kubectl create -f specs/spark-application.yaml
+
+# list applications
+kubectl get sparkapplication
+
+# check application status
+kubectl describe sparkapplication mock-task-runner
+```
