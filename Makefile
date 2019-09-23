@@ -3,8 +3,8 @@ SHELL := /bin/bash
 .SHELLFLAGS = -ec
 
 ROOT_DIR := $(CURDIR)
-KUDO_TOOLS_DIR := $(ROOT_DIR)/shared/data-services-kudo
-SPARK_OPERATOR_DIR := $(ROOT_DIR)/shared/spark-on-k8s-operator
+KUDO_TOOLS_DIR := $(ROOT_DIR)/shared
+SPARK_OPERATOR_DIR := $(ROOT_DIR)/spark-on-k8s-operator
 
 KONVOY_VERSION ?= v1.1.5
 export KONVOY_VERSION
