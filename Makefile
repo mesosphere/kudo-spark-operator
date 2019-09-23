@@ -11,18 +11,27 @@ export KONVOY_VERSION
 
 CLUSTER_TYPE ?= konvoy
 
+.PHONY: cluster-create
 cluster-create:
-	$(KUDO_TOOLS_DIR)/cluster.sh $(CLUSTER_TYPE) up
-	echo > $(CLUSTER_TYPE)-created
+	if [[ ! -f  $(CLUSTER_TYPE)-created ]]; then
+		$(KUDO_TOOLS_DIR)/cluster.sh $(CLUSTER_TYPE) up
+		echo > $(CLUSTER_TYPE)-created
+	fi
 
+.PHONY: cluster-destroy
 cluster-destroy:
-	if [[ -f konvoy-created ]]; then
+	if [[ $(CLUSTER_TYPE) == konvoy ]]; then
 		$(KUDO_TOOLS_DIR)/cluster.sh konvoy down
-	fi
-	if [[ -f mke-created ]]; then
+		rm -f konvoy-created
+	else
 		$(KUDO_TOOLS_DIR)/cluster.sh mke down
+		rm -f mke-created
 	fi
+
+test:
+	$(ROOT_DIR)/run-tests.sh
 
 .PHONY: clean-all
 clean-all:
-	rm -f *.pem *.pub cluster.yaml cluster.tmp.yaml
+	rm -f *.pem *.pub cluster.yaml cluster.tmp.yaml *-created
+	rm -rf state runs
