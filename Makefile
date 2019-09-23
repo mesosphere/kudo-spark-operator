@@ -11,11 +11,9 @@ export KONVOY_VERSION
 
 CLUSTER_TYPE ?= konvoy
 
-SPARK_ON_K8S_OPERATOR_REPO_NAME ?= mesosphere
-SPARK_ON_K8S_OPERATOR_IMAGE_NAME ?= spark-on-k8s-operator
-SPARK_ON_K8S_OPERATOR_FULL_IMAGE_NAME ?= $(SPARK_ON_K8S_OPERATOR_REPO_NAME)/$(SPARK_ON_K8S_OPERATOR_IMAGE_NAME)
-SPARK_ON_K8S_DOCKER_FILE_PATH ?= shared/spark-on-k8s-operator
-SPARK_DOCKER_IMAGE_NAME ?= "gcr.io/spark-operator/spark:v2.4.0"
+SPARK_IMAGE_NAME ?= mesosphere/spark-2.4.4-bin-hadoop2.7-k8s
+SPARK_ON_K8S_OPERATOR_IMAGE_NAME ?= mesosphere/spark-on-k8s-operator
+SPARK_ON_K8S_DOCKER_FILE_PATH ?= images/operator/Dockerfile
 
 .PHONY: cluster-create
 cluster-create:
@@ -34,15 +32,17 @@ cluster-destroy:
 		rm -f mke-created
 	fi
 
-.PHONY: operator-docker-build
-operator-docker-build:
-	docker build \
-		--build-arg SPARK_IMAGE=${SPARK_DOCKER_IMAGE_NAME} \
-		-t ${SPARK_ON_K8S_OPERATOR_FULL_IMAGE_NAME} \
-		${SPARK_ON_K8S_DOCKER_FILE_PATH}
+.PHONY: spark-build
+spark-build:
+	docker build -t ${SPARK_IMAGE_NAME} images/spark
 
-.PHONY: operator-docker-push
-operator-docker-push:
+.PHONY: docker-build
+docker-build:
+	docker build -t ${SPARK_ON_K8S_OPERATOR_IMAGE_NAME} \
+	-f ${SPARK_ON_K8S_DOCKER_FILE_PATH} shared/spark-on-k8s-operator
+
+.PHONY: docker-push
+docker-push:
 	docker push ${SPARK_ON_K8S_OPERATOR_FULL_IMAGE_NAME}
 
 test:
@@ -52,4 +52,3 @@ test:
 clean-all:
 	rm -f *.pem *.pub cluster.yaml cluster.tmp.yaml *-created
 	rm -rf state runs
-
