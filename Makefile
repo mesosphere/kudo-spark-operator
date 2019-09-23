@@ -52,3 +52,4 @@ test:
 clean-all:
 	rm -f *.pem *.pub cluster.yaml cluster.tmp.yaml *-created
 	rm -rf state runs
+
