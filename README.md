@@ -27,15 +27,18 @@ GNU Make is used as the main build tool and includes the following main targets:
 * `make docker-build` builds all the images: Spark Base image and Spark Operator image 
 * `make spark-build` builds Spark base image based on Apache Spark 2.4.4
 * `make docker-push` publishes Spark Operator image to DockerHub
+* `make docker-builder` builds image with required tools to run tests
+* `make test` runs tests suite
 
 A typical workflow looks as following:
 ```
 make clean-all
 make cluster-create
+make docker-build
+make docker-push 
 make test
 make cluster-destroy
 ```
-
 # Installing and using Spark Operator
 
 ### Prerequisites
