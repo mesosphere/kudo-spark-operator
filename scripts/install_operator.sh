@@ -21,3 +21,5 @@ else
     helm install incubator/sparkoperator --namespace "${NAMESPACE}" --name "${OPERATOR_NAME}" \
     --set enableWebhook=true,sparkJobNamespace="${NAMESPACE}",enableMetrics=true,operatorImageName="${OPERATOR_IMAGE_NAME}",operatorVersion="${OPERATOR_VERSION}"
 fi
+
+kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-driver-rbac.yaml
