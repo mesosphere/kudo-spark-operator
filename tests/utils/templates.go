@@ -7,13 +7,13 @@ import (
 	"text/template"
 )
 
-const sparkRbacTemplateName string = "spark-rbac.yaml.template"
+const sparkRbacTemplateName string = "spark-rbac.yaml"
 
 var templates *template.Template
 
 func init() {
 	var err error
-	templates, err = template.ParseGlob(path.Join(TestDir, "templates/*.template"))
+	templates, err = template.ParseGlob(path.Join(TestDir, "templates/*.yaml"))
 
 	if err != nil {
 		log.Fatal("Can't parse templates")
