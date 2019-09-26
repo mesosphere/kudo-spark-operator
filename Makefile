@@ -14,13 +14,24 @@ NAMESPACE ?= spark-operator
 
 CLUSTER_TYPE ?= konvoy
 
-SPARK_IMAGE_NAME ?= mesosphere/spark-2.4.4-bin-hadoop2.7-k8s
+DOCKER_REPO_NAME ?= mesosphere
+
+SPARK_IMAGE_NAME ?= spark-2.4.4-bin-hadoop2.7-k8s
 SPARK_IMAGE_DOCKERFILE_PATH ?= $(ROOT_DIR)/images/spark
-SPARK_IMAGE_TAG ?= $(shell cat $(SPARK_IMAGE_DOCKERFILE_PATH)/Dockerfile | sha1sum  | cut -d ' ' -f1)
-SPARK_IMAGE_NAME_WITH_TAG ?= $(SPARK_IMAGE_NAME):$(SPARK_IMAGE_TAG)
-OPERATOR_IMAGE_NAME ?= mesosphere/kudo-spark-operator
-OPERATOR_VERSION ?= latest
-SPARK_ON_K8S_OPERATOR_DOCKERFILE_PATH ?= $(ROOT_DIR)/images/operator/Dockerfile
+SPARK_IMAGE_TAG ?= $(call get_sha1sum,$(SPARK_IMAGE_DOCKERFILE_PATH)/Dockerfile)
+SPARK_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(SPARK_IMAGE_NAME):$(SPARK_IMAGE_TAG)
+
+OPERATOR_IMAGE_NAME ?= kudo-spark-operator
+OPERATOR_DOCKERFILE_PATH ?= $(ROOT_DIR)/images/operator
+OPERATOR_VERSION ?= $(call get_sha1sum,$(OPERATOR_DOCKERFILE_PATH)/Dockerfile)
+OPERATOR_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(OPERATOR_IMAGE_NAME):$(OPERATOR_VERSION)
+
+DOCKER_BUILDER_IMAGE_NAME ?= spark-operator-docker-builder
+DOCKER_BUILDER_DOCKERFILE_PATH ?= $(ROOT_DIR)/images/builder
+DOCKER_BUILDER_IMAGE_TAG ?= $(call get_sha1sum,$(DOCKER_BUILDER_DOCKERFILE_PATH)/Dockerfile)
+DOCKER_BUILDER_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(DOCKER_BUILDER_IMAGE_NAME):$(DOCKER_BUILDER_IMAGE_TAG)
+
+get_sha1sum = $(shell cat $1 | sha1sum | cut -d ' ' -f1)
 
 .PHONY: cluster-create
 cluster-create:
@@ -39,35 +50,60 @@ cluster-destroy:
 		rm -f mke-created
 	fi
 
-.PHONY: spark-build
 spark-build:
-	if [[ -z  "$(shell docker images -q $(SPARK_IMAGE_NAME_WITH_TAG))" ]]; then
-		docker build -t $(SPARK_IMAGE_NAME_WITH_TAG) $(SPARK_IMAGE_DOCKERFILE_PATH)
-	fi
-	echo "$(SPARK_IMAGE_NAME_WITH_TAG)" > $@
+	docker build \
+		-t ${SPARK_IMAGE_FULL_NAME} \
+		-f ${SPARK_IMAGE_DOCKERFILE_PATH}/Dockerfile \
+		${SPARK_IMAGE_DOCKERFILE_PATH}
+	echo "${SPARK_IMAGE_FULL_NAME}" > $@
 
-.PHONY: docker-build
-docker-build: spark-build
-docker-build:
+operator-build: spark-build
 	docker build \
 		--build-arg SPARK_IMAGE=$(shell cat spark-build) \
-		-t $(OPERATOR_IMAGE_NAME):$(OPERATOR_VERSION) \
-		-f $(SPARK_ON_K8S_OPERATOR_DOCKERFILE_PATH) $(SPARK_OPERATOR_DIR)
+		-t ${OPERATOR_IMAGE_FULL_NAME} \
+		-f ${OPERATOR_DOCKERFILE_PATH}/Dockerfile \
+		${SPARK_OPERATOR_DIR} && docker image prune -f --filter label=stage=spark-operator-builder
+
+	echo "${OPERATOR_IMAGE_FULL_NAME}" > $@
 
 .PHONY: docker-push
-docker-push: docker-build
 docker-push:
-	docker push $(OPERATOR_IMAGE_NAME)
+	docker push $(OPERATOR_IMAGE_FULL_NAME)
 
 .PHONY: install
 install:
 	$(SCRIPTS_DIR)/install_operator.sh
 
+docker-builder:
+	docker build \
+		-t $(DOCKER_BUILDER_IMAGE_FULL_NAME) \
+		-f ${DOCKER_BUILDER_DOCKERFILE_PATH}/Dockerfile \
+		${DOCKER_BUILDER_DOCKERFILE_PATH}
+	echo $(DOCKER_BUILDER_IMAGE_FULL_NAME) > $@
+
+.PHONY: test
+test: docker-builder
 test:
-	$(ROOT_DIR)/run-tests.sh
+	docker run -i --rm \
+		-v $(ROOT_DIR)/tests:/tests \
+		-v $(ROOT_DIR)/run-tests.sh:/run-tests.sh \
+		-v $(ROOT_DIR)/admin.conf:/root/.kube/config \
+		-e SPARK_IMAGE=$(SPARK_IMAGE_FULL_NAME) \
+		-e SPARK_OPERATOR_IMAGE=$(SPARK_ON_K8S_OPERATOR_IMAGE_FULL_NAME) \
+		$(shell cat docker-builder) \
+		/bin/bash -c \
+		"kubectl config use-context kubernetes-admin@kudo-spark-operator && \
+		kubectl cluster-info && \
+		echo \$$SPARK_IMAGE && \
+		echo \$$SPARK_OPERATOR_IMAGE && \
+		/run-tests.sh"
 
 .PHONY: clean-all
 clean-all:
-	rm -f *.pem *.pub cluster.yaml cluster.tmp.yaml *-created spark-build
+	rm -f *.pem *.pub cluster.yaml cluster.tmp.yaml *-created
 	rm -rf state runs
+
+.PHONY: clean-docker
+clean-docker:
+	rm -f *-build docker-builder
 
