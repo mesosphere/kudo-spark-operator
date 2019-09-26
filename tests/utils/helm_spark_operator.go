@@ -60,7 +60,8 @@ func installSparkOperatorWithHelm(namespace string) error {
 	}
 
 	log.Info("Installing the chart")
-	installOperatorCmd := exec.Command("helm", "install", "incubator/sparkoperator", "--namespace", namespace, "--name", OperatorName)
+	installOperatorCmd := exec.Command("helm", "install", "incubator/sparkoperator", "--namespace", namespace,
+		"--name", OperatorName, "--set", "enableWebhook=true,sparkJobNamespace="+namespace+",enableMetrics=true")
 	_, err = installOperatorCmd.Output()
 	return err
 }

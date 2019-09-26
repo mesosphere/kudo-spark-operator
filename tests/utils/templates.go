@@ -7,7 +7,7 @@ import (
 	"text/template"
 )
 
-const sparkRbacTemplateName string = "spark-rbac.yaml"
+const sparkRbacTemplateName string = "spark-driver-rbac.yaml"
 
 var templates *template.Template
 
@@ -35,5 +35,21 @@ func createSparkOperatorNamespace(namespace string) string {
 		log.Fatal(err)
 		panic(err)
 	}
+	return file.Name()
+}
+
+func createSparkJob(job SparkJob) string {
+	file, err := ioutil.TempFile("/tmp", "job-")
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+
+	err = templates.ExecuteTemplate(file, job.Template, job)
+	if err != nil {
+		log.Fatal(err)
+		panic(err)
+	}
+
 	return file.Name()
 }
