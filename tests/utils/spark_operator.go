@@ -2,9 +2,12 @@ package utils
 
 import (
 	log "github.com/sirupsen/logrus"
+	coreV1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"os"
 	"os/exec"
+	"strings"
 )
 
 type SparkOperatorInstallation struct {
@@ -32,13 +35,35 @@ func InstallSparkOperatorWithNamespace(namespace string) *SparkOperatorInstallat
 	spark := SparkOperatorInstallation{
 		Namespace: namespace,
 		Clients:   clientSet,
-		// TODO: add client-go/dynamic API client as well
 	}
 	return &spark
 }
 
 func (spark *SparkOperatorInstallation) CleanUp() {
 	uninstallSparkOperatorWithHelm(spark.Namespace)
+}
+
+func (spark *SparkOperatorInstallation) OperatorPod() (coreV1.Pod, error) {
+	pods, err := spark.Clients.CoreV1().Pods(spark.Namespace).List(v1.ListOptions{LabelSelector: "app.kubernetes.io/name=sparkoperator"})
+
+	if err != nil {
+		return pods.Items[0], nil
+	} else if len(pods.Items) != 1 {
+		return pods.Items[0], nil
+	} else if !strings.HasPrefix(pods.Items[0].Name, OperatorName) {
+		return pods.Items[0], nil
+	}
+
+	return pods.Items[0], nil
+}
+
+func (spark *SparkOperatorInstallation) WaitUntilRunning() error {
+	pod, err := spark.OperatorPod()
+	if err != nil {
+		return err
+	}
+
+	return waitForPodStatus(spark.Clients, pod.Name, spark.Namespace, "Running")
 }
 
 func installSparkOperatorWithHelm(namespace string) error {
@@ -61,7 +86,7 @@ func installSparkOperatorWithHelm(namespace string) error {
 
 	log.Info("Installing the chart")
 	installOperatorCmd := exec.Command("helm", "install", "incubator/sparkoperator", "--namespace", namespace,
-		"--name", OperatorName, "--set", "enableWebhook=true,sparkJobNamespace="+namespace+",enableMetrics=true")
+		"--name", OperatorName, "--set", "enableWebhook=true,sparkJobNamespace="+namespace+",enableMetrics=true,operatorImageName="+OperatorImage)
 	_, err = installOperatorCmd.Output()
 	return err
 }

@@ -1,13 +1,16 @@
 package utils
 
 import (
+	"errors"
 	log "github.com/sirupsen/logrus"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"os/exec"
+	"time"
 )
 
-// client-go util methods
+/* client-go util methods */
 
 func GetK8sClientSet() (*kubernetes.Clientset, error) {
 	config, err := clientcmd.BuildConfigFromFlags("", KubeConfig)
@@ -18,7 +21,18 @@ func GetK8sClientSet() (*kubernetes.Clientset, error) {
 	return kubernetes.NewForConfig(config)
 }
 
-// kubectl helpers
+func waitForPodStatus(clientSet *kubernetes.Clientset, podName string, namespace string, status string) error {
+	log.Infof("Waiting for pod %s to enter phase %s", podName, status)
+	return retry(10*time.Minute, 1*time.Second, func() error {
+		pod, err := clientSet.CoreV1().Pods(namespace).Get(podName, v1.GetOptions{})
+		if err == nil && string(pod.Status.Phase) != status {
+			err = errors.New("Expected pod status to be " + status + ", but it's " + string(pod.Status.Phase))
+		}
+		return err
+	})
+}
+
+/* kubectl helpers */
 
 func KubectlApply(namespace string, filename string) ([]byte, error) {
 	log.Infof("Applying file %s with kubectl", filename)

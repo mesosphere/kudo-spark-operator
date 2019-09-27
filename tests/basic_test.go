@@ -3,9 +3,7 @@ package tests
 import (
 	"github.com/mesosphere/kudo-spark-operator/tests/utils"
 	log "github.com/sirupsen/logrus"
-	coreV1 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"strings"
 	"testing"
 )
 
@@ -18,15 +16,10 @@ func TestSparkOperatorInstallation(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	log.Infof("Spark operator is installed in namespace %s", k8sNamespace.Name)
-
-	var pods *coreV1.PodList
-	pods, err = spark.Clients.CoreV1().Pods(k8sNamespace.Name).List(v1.ListOptions{})
-
-	if len(pods.Items) != 1 {
-		t.Error("More than one pod is found in spark operator namespace")
-	} else if !strings.HasPrefix(pods.Items[0].Name, utils.OperatorName) {
-		t.Errorf("Found unexpected spark operator pod name: %s", pods.Items[0].Name)
+	log.Infof("Spark operator is installed in namespace %s, waiting for Running status", k8sNamespace.Name)
+	err = spark.WaitUntilRunning()
+	if err != nil {
+		t.Error(err.Error())
 	}
 }
 
@@ -43,5 +36,28 @@ func TestSparkOperatorInstallationWithCustomNamespace(t *testing.T) {
 
 	if k8sNamespace.Name != customNamespace {
 		t.Errorf("Actual namespace is %s, while %s was expected", k8sNamespace.Name, customNamespace)
+	}
+}
+
+func TestJobSubmission(t *testing.T) {
+	spark := utils.InstallSparkOperator()
+	defer spark.CleanUp()
+
+	job := utils.SparkJob{
+		Name:         "linear-regression",
+		Namespace:    spark.Namespace,
+		Image:        utils.SparkImage,
+		SparkVersion: utils.SparkVersion,
+		Template:     "spark-linear-regression-job.yaml",
+	}
+
+	err := spark.SubmitJob(job)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	err = spark.WaitUntilSucceeded(job)
+	if err != nil {
+		t.Error(err.Error())
 	}
 }
