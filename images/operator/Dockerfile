@@ -1,6 +1,7 @@
 ARG SPARK_IMAGE=mesosphere/spark-2.4.4-bin-hadoop2.7-k8s
 
 FROM golang:1.12.5-alpine as builder
+LABEL stage=spark-operator-builder
 ARG DEP_VERSION="0.5.3"
 RUN apk add --no-cache bash git
 ADD https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 /usr/bin/dep
