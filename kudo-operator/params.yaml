@@ -1,0 +1,121 @@
+# Service Accounts and RBAC
+operatorServiceAccountName:
+  description: "Service Account for Spark Operator"
+  default: "spark-operator-service-account"
+  displayName: "Operator Service Account"
+
+createOperatorServiceAccount:
+  description: "Automatically create Service Account for Spark Operator"
+  default: true
+  displayName: "Auto Create Operator Service Account"
+
+sparkServiceAccountName:
+  description: "Use Service Account for Spark Drivers"
+  default: "spark-service-account"
+  displayName: "Spark Drivers Service Account"
+
+createSparkServiceAccount:
+  description: "Automatically generate Service Account for Spark Drivers"
+  default: true
+  displayName: "Auto Create Service Account for Spark Drivers"
+
+createRBAC:
+  description: "Automatically create RBAC for Spark Operator and Drivers"
+  default: true
+  displayName: "Auto Create RBAC for Spark Operator and Drivers"
+
+# Docker image
+operatorImageName:
+  description: "Operator Docker image name"
+  default: mesosphere/kudo-spark-operator
+  displayName: "Operator Docker image name"
+
+operatorVersion:
+  description: "Operator Docker image version (tag)"
+  default: latest
+  displayName: "Operator Docker image version (tag)"
+
+imagePullPolicy:
+  description: "Image pull policy"
+  default: Always
+  displayName: "Image pull policy"
+
+## Metrics
+enableMetrics:
+  description: "Enable Metrics"
+  default: false
+  displayName: "Enable Metrics"
+
+metricsPort:
+  description: "Metrics Port"
+  default: 10254
+  displayName: "Metrics Port"
+
+metricsEndpoint:
+  description: "Metrics Endpoint"
+  default: "/metrics"
+  displayName: "Metrics Endpoint"
+
+metricsPrefix:
+  description: "Metrics Prefix"
+  default: ""
+  displayName: "Metrics Prefix"
+
+resyncInterval:
+  description: "Resync interval"
+  default: 30
+  displayName: "Resync interval"
+
+## Miscellaneous
+sparkJobNamespace:
+  description: "Namespace for Spark Applications. Defaults to Operator namespace"
+  default: ""
+  displayName: "Namespace for Spark Applications"
+
+enableWebhook:
+  description: "Enable Webhook"
+  default: true
+  displayName: "Enable Webhook"
+
+webhookPort:
+  description: "Webhook port"
+  default: 8080
+  displayName: "Webhook port"
+
+controllerThreads:
+  description: "Controller threads"
+  default: 10
+  displayName: "Controller threads"
+
+ingressUrlFormat:
+  description: "Ingress URL format"
+  default: ""
+  displayName: "Ingress URL format"
+
+## Node labels for pod assignment
+## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+## TODO: should be a map
+nodeSelector:
+  default: ""
+
+## Resources for the sparkoperator deployment
+## Ref: https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/
+## TODO: should be a map
+resources:
+  default: ""
+
+## TODO: should be a map
+podAnnotations:
+  default: ""
+
+logLevel:
+  description: "Log Level"
+  default: 2
+  displayName: "Log Level"
+
+## Whether to enable batch scheduler for pod scheduling,
+## if enabled, end user can specify batch scheduler name in spark application.
+enableBatchScheduler:
+  description: "Enable Batch Scheduler"
+  default: false
+  displayName: "Enable Batch Scheduler"

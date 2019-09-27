@@ -3,23 +3,22 @@
 set -ex
 SCRIPT_DIR=$(dirname "$0")
 SPECS_DIR="$(dirname ${SCRIPT_DIR})/specs"
+OPERATOR_DIR="$(dirname ${SCRIPT_DIR})/kudo-operator"
 
-NAMESPACE=${NAMESPACE:-spark-operator}
-
-OPERATOR_NAME=${OPERATOR_NAME:-spark-operator}
+NAMESPACE=${NAMESPACE:-spark}
 OPERATOR_IMAGE_NAME=${OPERATOR_IMAGE_NAME:-mesosphere/kudo-spark-operator}
 OPERATOR_VERSION=${OPERATOR_VERSION:-latest}
 
 echo "Using namespace '${NAMESPACE}' for installation"
 
-helm repo add incubator http://storage.googleapis.com/kubernetes-charts-incubator
+kubectl kudo init || true
 
-if [[ $(helm ls | grep "${OPERATOR_NAME}") ]]; then
-    echo "Spark Operator with name '${OPERATOR_NAME}' already installed"
-    echo "if you want to remove it run: helm delete --purge ${OPERATOR_NAME}"
+if [[ $(kubectl kudo get instances | grep spark) ]]; then
+    echo "Spark Operator with name already installed"
+    echo "if you want to remove it run: remove_operator.py"
 else
-    helm install incubator/sparkoperator --namespace "${NAMESPACE}" --name "${OPERATOR_NAME}" \
-    --set enableWebhook=true,sparkJobNamespace="${NAMESPACE}",enableMetrics=true,operatorImageName="${OPERATOR_IMAGE_NAME}",operatorVersion="${OPERATOR_VERSION}"
+    kubectl apply -f ${SPECS_DIR}/spark-namespace.yaml
+    kubectl kudo --namespace "${NAMESPACE}" install ${OPERATOR_DIR} -p operatorImageName="${OPERATOR_IMAGE_NAME}" -p operatorVersion="${OPERATOR_VERSION}"
 fi
 
 kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-driver-rbac.yaml

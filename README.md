@@ -46,7 +46,7 @@ make cluster-destroy
 
 ### Installation
 
-To install Spark Operator from Helm Chart, run:
+To install KUDO Spark Operator, run:
 ```bash
 make install
 ```
