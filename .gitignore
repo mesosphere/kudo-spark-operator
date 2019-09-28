@@ -10,3 +10,6 @@ state/
 admin.conf
 cluster.*.yaml
 inventory.yaml
+license.txt
+
+spark-build

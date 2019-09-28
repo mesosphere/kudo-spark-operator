@@ -3,11 +3,14 @@ SHELL := /bin/bash
 .SHELLFLAGS = -ec
 
 ROOT_DIR := $(CURDIR)
+SCRIPTS_DIR := $(ROOT_DIR)/scripts
 KUDO_TOOLS_DIR := $(ROOT_DIR)/shared
 SPARK_OPERATOR_DIR := $(ROOT_DIR)/spark-on-k8s-operator
 
 KONVOY_VERSION ?= v1.1.5
 export KONVOY_VERSION
+
+NAMESPACE ?= spark-operator
 
 CLUSTER_TYPE ?= konvoy
 
@@ -15,7 +18,8 @@ SPARK_IMAGE_NAME ?= mesosphere/spark-2.4.4-bin-hadoop2.7-k8s
 SPARK_IMAGE_DOCKERFILE_PATH ?= $(ROOT_DIR)/images/spark
 SPARK_IMAGE_TAG ?= $(shell cat $(SPARK_IMAGE_DOCKERFILE_PATH)/Dockerfile | sha1sum  | cut -d ' ' -f1)
 SPARK_IMAGE_NAME_WITH_TAG ?= $(SPARK_IMAGE_NAME):$(SPARK_IMAGE_TAG)
-SPARK_ON_K8S_OPERATOR_IMAGE_NAME ?= mesosphere/spark-on-k8s-operator
+OPERATOR_IMAGE_NAME ?= mesosphere/kudo-spark-operator
+OPERATOR_VERSION ?= latest
 SPARK_ON_K8S_OPERATOR_DOCKERFILE_PATH ?= $(ROOT_DIR)/images/operator/Dockerfile
 
 .PHONY: cluster-create
@@ -38,21 +42,26 @@ cluster-destroy:
 .PHONY: spark-build
 spark-build:
 	if [[ -z  "$(shell docker images -q $(SPARK_IMAGE_NAME_WITH_TAG))" ]]; then
-		docker build -t ${SPARK_IMAGE_NAME_WITH_TAG} ${SPARK_IMAGE_DOCKERFILE_PATH}
+		docker build -t $(SPARK_IMAGE_NAME_WITH_TAG) $(SPARK_IMAGE_DOCKERFILE_PATH)
 	fi
-	echo "${SPARK_IMAGE_NAME_WITH_TAG}" > $@
+	echo "$(SPARK_IMAGE_NAME_WITH_TAG)" > $@
 
 .PHONY: docker-build
 docker-build: spark-build
 docker-build:
 	docker build \
 		--build-arg SPARK_IMAGE=$(shell cat spark-build) \
-		-t ${SPARK_ON_K8S_OPERATOR_IMAGE_NAME} \
-		-f ${SPARK_ON_K8S_OPERATOR_DOCKERFILE_PATH} ${SPARK_OPERATOR_DIR}
+		-t $(OPERATOR_IMAGE_NAME):$(OPERATOR_VERSION) \
+		-f $(SPARK_ON_K8S_OPERATOR_DOCKERFILE_PATH) $(SPARK_OPERATOR_DIR)
 
 .PHONY: docker-push
+docker-push: docker-build
 docker-push:
-	docker push ${SPARK_ON_K8S_OPERATOR_IMAGE_NAME}
+	docker push $(OPERATOR_IMAGE_NAME)
+
+.PHONY: install
+install:
+	$(SCRIPTS_DIR)/install_operator.sh
 
 test:
 	$(ROOT_DIR)/run-tests.sh
