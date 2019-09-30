@@ -86,8 +86,6 @@ docker-builder:
 test: docker-builder
 test: operator-build
 test:
-	KUBECONFIG=$(ROOT_DIR)/admin.conf
-	if [[ ! -f "$(ROOT_DIR)/admin.conf" ]]:
 	docker run -i --rm \
 		-v $(ROOT_DIR)/tests:/tests \
 		-v $(KUBECONFIG):/root/.kube/config \
