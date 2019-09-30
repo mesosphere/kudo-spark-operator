@@ -83,19 +83,19 @@ docker-builder:
 
 .PHONY: test
 test: docker-builder
+test: operator-build
 test:
 	docker run -i --rm \
 		-v $(ROOT_DIR)/tests:/tests \
-		-v $(ROOT_DIR)/run-tests.sh:/run-tests.sh \
 		-v $(ROOT_DIR)/admin.conf:/root/.kube/config \
-		-e SPARK_IMAGE=$(shell cat spark-build) \
-		-e SPARK_OPERATOR_IMAGE=$(shell cat operator-build) \
-		$(shell cat docker-builder) \
+		-e SPARK_IMAGE="$(shell cat $(ROOT_DIR)/spark-build)" \
+		-e SPARK_OPERATOR_IMAGE="$(shell cat $(ROOT_DIR)/operator-build)" \
+		$(shell cat $(ROOT_DIR)/docker-builder) \
 		/bin/bash -c \
 		"kubectl config use-context kubernetes-admin@kudo-spark-operator && \
-		kubectl cluster-info && \
-		echo \$$SPARK_IMAGE && \
-		echo \$$SPARK_OPERATOR_IMAGE"
+        kubectl cluster-info && \
+		echo \$$SPARK_IMAGE && echo \$$SPARK_OPERATOR_IMAGE"
+		# tests entrypoint
 
 .PHONY: clean-all
 clean-all:
