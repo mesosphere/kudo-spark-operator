@@ -1,5 +1,5 @@
 #!/bin/bash
 
 echo "Running tests"
-# placeholder for actual tests
+make test
 echo "Tests finished"

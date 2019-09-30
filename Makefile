@@ -88,15 +88,14 @@ test:
 		-v $(ROOT_DIR)/tests:/tests \
 		-v $(ROOT_DIR)/run-tests.sh:/run-tests.sh \
 		-v $(ROOT_DIR)/admin.conf:/root/.kube/config \
-		-e SPARK_IMAGE=$(SPARK_IMAGE_FULL_NAME) \
-		-e SPARK_OPERATOR_IMAGE=$(SPARK_ON_K8S_OPERATOR_IMAGE_FULL_NAME) \
+		-e SPARK_IMAGE=$(shell cat spark-build) \
+		-e SPARK_OPERATOR_IMAGE=$(shell cat operator-build) \
 		$(shell cat docker-builder) \
 		/bin/bash -c \
 		"kubectl config use-context kubernetes-admin@kudo-spark-operator && \
 		kubectl cluster-info && \
 		echo \$$SPARK_IMAGE && \
-		echo \$$SPARK_OPERATOR_IMAGE && \
-		/run-tests.sh"
+		echo \$$SPARK_OPERATOR_IMAGE"
 
 .PHONY: clean-all
 clean-all:
