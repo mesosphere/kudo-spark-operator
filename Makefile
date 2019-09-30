@@ -13,6 +13,7 @@ export KONVOY_VERSION
 NAMESPACE ?= spark-operator
 
 CLUSTER_TYPE ?= konvoy
+KUBECONFIG ?= $(ROOT_DIR)/admin.conf
 
 DOCKER_REPO_NAME ?= mesosphere
 
@@ -85,9 +86,11 @@ docker-builder:
 test: docker-builder
 test: operator-build
 test:
+	KUBECONFIG=$(ROOT_DIR)/admin.conf
+	if [[ ! -f "$(ROOT_DIR)/admin.conf" ]]:
 	docker run -i --rm \
 		-v $(ROOT_DIR)/tests:/tests \
-		-v $(ROOT_DIR)/admin.conf:/root/.kube/config \
+		-v $(KUBECONFIG):/root/.kube/config \
 		-e SPARK_IMAGE="$(shell cat $(ROOT_DIR)/spark-build)" \
 		-e SPARK_OPERATOR_IMAGE="$(shell cat $(ROOT_DIR)/operator-build)" \
 		$(shell cat $(ROOT_DIR)/docker-builder) \
