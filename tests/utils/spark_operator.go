@@ -63,7 +63,7 @@ func (spark *SparkOperatorInstallation) WaitUntilRunning() error {
 		return err
 	}
 
-	return waitForPodStatus(spark.Clients, pod.Name, spark.Namespace, "Running")
+	return waitForPodStatusPhase(spark.Clients, pod.Name, spark.Namespace, "Running")
 }
 
 func installSparkOperatorWithHelm(namespace string) error {

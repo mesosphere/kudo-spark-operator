@@ -21,7 +21,7 @@ func GetK8sClientSet() (*kubernetes.Clientset, error) {
 	return kubernetes.NewForConfig(config)
 }
 
-func waitForPodStatus(clientSet *kubernetes.Clientset, podName string, namespace string, status string) error {
+func waitForPodStatusPhase(clientSet *kubernetes.Clientset, podName string, namespace string, status string) error {
 	log.Infof("Waiting for pod %s to enter phase %s", podName, status)
 	return retry(10*time.Minute, 1*time.Second, func() error {
 		pod, err := clientSet.CoreV1().Pods(namespace).Get(podName, v1.GetOptions{})

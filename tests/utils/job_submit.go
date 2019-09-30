@@ -28,5 +28,5 @@ func (spark *SparkOperatorInstallation) SubmitJob(job SparkJob) error {
 
 func (spark *SparkOperatorInstallation) WaitUntilSucceeded(job SparkJob) error {
 	driverPodName := job.Name + "-driver"
-	return waitForPodStatus(spark.Clients, driverPodName, job.Namespace, "Succeeded")
+	return waitForPodStatusPhase(spark.Clients, driverPodName, job.Namespace, "Succeeded")
 }
