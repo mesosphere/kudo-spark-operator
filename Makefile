@@ -10,6 +10,8 @@ SPARK_OPERATOR_DIR := $(ROOT_DIR)/spark-on-k8s-operator
 KONVOY_VERSION ?= v1.1.5
 export KONVOY_VERSION
 
+MKE_CLUSTER_NAME=kubernetes-cluster1
+
 NAMESPACE ?= spark-operator
 
 CLUSTER_TYPE ?= konvoy
@@ -49,6 +51,9 @@ cluster-destroy:
 	else
 		$(KUDO_TOOLS_DIR)/cluster.sh mke down
 		rm -f mke-created
+		kubectl config unset users.$(MKE_CLUSTER_NAME)
+		kubectl config delete-context $(MKE_CLUSTER_NAME)
+		kubectl config delete-cluster $(MKE_CLUSTER_NAME)
 	fi
 
 spark-build:
