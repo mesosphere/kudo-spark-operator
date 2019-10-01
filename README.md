@@ -20,9 +20,8 @@ and export environment variable with token contents: `export GITHUB_TOKEN=<your 
 ### Build steps
 
 GNU Make is used as the main build tool and includes the following main targets:
-* `make cluster-create-[konvoy|mke]` creates a Konvoy or MKE cluster
-* `make cluster-destroy-[konvoy|mke]` creates a Konvoy or MKE cluster
-* `make cluster-destroy-all` destroys all clusters created by `make cluster-create-[konvoy|mke]`
+* `make cluster-create` creates a Konvoy or MKE cluster
+* `make cluster-destroy` creates a Konvoy or MKE cluster
 * `make clean-all` removes all artifacts produced by targets from local filesystem
 * `make operator-build` builds all the images: Spark Base image and Spark Operator image 
 * `make spark-build` builds Spark base image based on Apache Spark 2.4.4
@@ -77,3 +76,22 @@ kubectl get sparkapplication
 # check application status
 kubectl describe sparkapplication mock-task-runner
 ```
+
+###  MKE cluster provisioning
+
+If you want to create a cluster with MKE Kubernetes distribution, the following environment variables must be set before executing 
+`make cluster-create` :
+
+- DCOS_LICENSE - should be populated from a `licence.txt` file
+- CLUSTER_TYPE - type of a cluster, in our case is `mke`
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- AWS_SESSION_TOKEN
+
+You can use a helping script from `./scripts` directory to set up the environment:
+```
+# refresh AWS credentials
+$ maws li Team\ 10
+$ source $PWD/set_env_for_mke.sh && make cluster-create
+```
+
