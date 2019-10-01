@@ -1,5 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env bash
+
+set -e
+
+SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
+pushd "${SCRIPTPATH}"/
 
 echo "Running tests"
-# placeholder for actual tests
+make test
 echo "Tests finished"
+
+popd
