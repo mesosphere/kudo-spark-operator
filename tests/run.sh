@@ -8,5 +8,6 @@ set -e
 # - SPARK_IMAGE
 # - SPARK_VERSION
 # Default values can be looked up in tests/utils/common.go
-TEST_DIR=$(pwd) \
+pushd $TEST_DIR
 go test -v -count=1 -timeout 30m .
+popd
