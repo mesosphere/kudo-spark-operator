@@ -7,7 +7,7 @@ OPERATOR_DIR="$(dirname ${SCRIPT_DIR})/kudo-operator"
 
 NAMESPACE=${NAMESPACE:-spark}
 OPERATOR_IMAGE_NAME=${OPERATOR_IMAGE_NAME:-mesosphere/kudo-spark-operator}
-OPERATOR_VERSION=${OPERATOR_VERSION:-latest}
+OPERATOR_VERSION=${OPERATOR_VERSION:-$(<"${SCRIPT_DIR}"/VERSION)}
 
 echo "Using namespace '${NAMESPACE}' for installation"
 
