@@ -5,8 +5,9 @@ import json
 import logging
 import os
 
-
+logging.basicConfig(level=logging.INFO)
 log = logging.getLogger(__name__)
+
 NAMESPACE = os.getenv("NAMESPACE", "spark")
 cmd = "kubectl --namespace {} get instances.kudo.dev -o json".format(NAMESPACE)
 

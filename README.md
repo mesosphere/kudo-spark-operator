@@ -43,6 +43,7 @@ make cluster-destroy
 * Kubernetes cluster up and running
 * `kubectl` configured to work with provisioned cluster
 * `helm` client
+* [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli)
 
 ### Installation
 
