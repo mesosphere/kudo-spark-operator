@@ -42,29 +42,29 @@ imagePullPolicy:
 
 ## Metrics
 enableMetrics:
-  description: "Enable Metrics"
+  description: "Enable metrics"
   default: false
-  displayName: "Enable Metrics"
+  displayName: "Enable metrics"
 
 metricsPort:
-  description: "Metrics Port"
+  description: "Metrics port"
   default: 10254
-  displayName: "Metrics Port"
+  displayName: "Metrics port"
 
 metricsEndpoint:
-  description: "Metrics Endpoint"
+  description: "Metrics endpoint"
   default: "/metrics"
-  displayName: "Metrics Endpoint"
+  displayName: "Metrics endpoint"
 
 metricsPrefix:
-  description: "Metrics Prefix"
+  description: "Metrics prefix"
   default: ""
-  displayName: "Metrics Prefix"
+  displayName: "Metrics prefix"
 
-resyncInterval:
-  description: "Resync interval"
+resyncIntervalSeconds:
+  description: "Informer resync interval in seconds"
   default: 30
-  displayName: "Resync interval"
+  displayName: "Informer resync interval in seconds"
 
 ## Miscellaneous
 sparkJobNamespace:
@@ -73,9 +73,9 @@ sparkJobNamespace:
   displayName: "Namespace for Spark Applications"
 
 enableWebhook:
-  description: "Enable Webhook"
+  description: "Enable webhook"
   default: true
-  displayName: "Enable Webhook"
+  displayName: "Enable webhook"
 
 webhookPort:
   description: "Webhook port"
@@ -108,6 +108,9 @@ resources:
 podAnnotations:
   default: ""
 
+
+## Output verbosity and debugging level
+## Ref: https://kubernetes.io/docs/reference/kubectl/cheatsheet/#kubectl-output-verbosity-and-debugging
 logLevel:
   description: "Log Level"
   default: 2

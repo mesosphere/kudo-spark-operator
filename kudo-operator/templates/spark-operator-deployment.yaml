@@ -26,11 +26,9 @@ spec:
     metadata:
     {{- if .Params.enableMetrics }}
       annotations:
-      {{- if .Params.enableMetrics }}
         prometheus.io/scrape: "true"
         prometheus.io/port: "{{ .Params.metricsPort }}"
         prometheus.io/path: {{ .Params.metricsEndpoint }}
-      {{- end }}
     {{- end }}
       labels:
         app.kubernetes.io/name: {{ .OperatorName }}
@@ -72,7 +70,7 @@ spec:
         {{- end }}
         - -ingress-url-format={{ .Params.ingressUrlFormat }}
         - -controller-threads={{ .Params.controllerThreads }}
-        - -resync-interval={{ .Params.resyncInterval }}
+        - -resync-interval={{ .Params.resyncIntervalSeconds }}
         - -logtostderr
         {{- if .Params.enableMetrics }}
         - -enable-metrics=true
