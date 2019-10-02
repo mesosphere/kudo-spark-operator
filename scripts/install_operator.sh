@@ -6,8 +6,16 @@ SPECS_DIR="$(dirname ${SCRIPT_DIR})/specs"
 OPERATOR_DIR="$(dirname ${SCRIPT_DIR})/kudo-operator"
 
 NAMESPACE=${NAMESPACE:-spark}
+NAMESPACE=${NAMESPACE:-spark-operator}
+
+if [ -f "${SCRIPT_DIR}"/../operator-build ]; then
+  echo "operator-build file is found. Parse OPERATOR_IMAGE_NAME and OPERATOR_VERSION from there."
+  OPERATOR_IMAGE_NAME=$(awk -F':' '{printf $1}' <"${SCRIPT_DIR}"/../operator-build)
+  OPERATOR_VERSION=$(awk -F':' '{printf $2}' <"${SCRIPT_DIR}"/../operator-build)
+fi
+
 OPERATOR_IMAGE_NAME=${OPERATOR_IMAGE_NAME:-mesosphere/kudo-spark-operator}
-OPERATOR_VERSION=${OPERATOR_VERSION:-$(<"${SCRIPT_DIR}"/../VERSION)}
+OPERATOR_VERSION=${OPERATOR_VERSION:-latest}
 
 echo "Using namespace '${NAMESPACE}' for installation"
 
