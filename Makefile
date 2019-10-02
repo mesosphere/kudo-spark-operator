@@ -68,7 +68,7 @@ operator-build: spark-build
 	echo "${OPERATOR_IMAGE_FULL_NAME}" > $@
 
 .PHONY: docker-push
-docker-push:
+docker-push: docker-builder operator-build
 	docker push $(SPARK_IMAGE_FULL_NAME)
 	docker push $(OPERATOR_IMAGE_FULL_NAME)
 
@@ -84,8 +84,7 @@ docker-builder:
 	echo $(DOCKER_BUILDER_IMAGE_FULL_NAME) > $@
 
 .PHONY: test
-test: docker-builder
-test: operator-build
+test: docker-push
 test:
 	docker run -i --rm \
 		-v $(ROOT_DIR)/tests:/tests \

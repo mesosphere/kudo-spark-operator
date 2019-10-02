@@ -77,17 +77,29 @@ func installSparkOperatorWithHelm(namespace string) error {
 		return err
 	}
 
+	log.Info("Initializing helm")
+	initCmd := exec.Command("helm", "init")
+	out, err := initCmd.CombinedOutput()
+	log.Infof("Helm output: \n%s", out)
+	if err != nil {
+		return err
+	}
+
 	log.Info("Adding the repository")
 	addRepoCmd := exec.Command("helm", "repo", "add", "incubator", "http://storage.googleapis.com/kubernetes-charts-incubator")
-	_, err = addRepoCmd.Output()
+	out, err = addRepoCmd.CombinedOutput()
+	log.Infof("Helm output: \n%s", out)
 	if err != nil {
 		return err
 	}
 
 	log.Info("Installing the chart")
+	operatorImage := strings.Split(OperatorImage, ":")
 	installOperatorCmd := exec.Command("helm", "install", "incubator/sparkoperator", "--namespace", namespace,
-		"--name", OperatorName, "--set", "enableWebhook=true,sparkJobNamespace="+namespace+",enableMetrics=true,operatorImageName="+OperatorImage)
-	_, err = installOperatorCmd.Output()
+		"--name", OperatorName, "--set", "sparkJobNamespace="+namespace+
+			",enableMetrics=true,operatorImageName="+operatorImage[0]+",operatorVersion="+operatorImage[1])
+	out, err = installOperatorCmd.CombinedOutput()
+	log.Infof("Helm output: \n%s", out)
 	return err
 }
 
@@ -95,14 +107,16 @@ func uninstallSparkOperatorWithHelm(namespace string) error {
 	log.Info("Uninstalling Spark Operator")
 	log.Info("Purging Spark operator")
 	installOperatorCmd := exec.Command("helm", "del", "--purge", OperatorName)
-	_, err := installOperatorCmd.Output()
+	out, err := installOperatorCmd.CombinedOutput()
+	log.Infof("Helm output: \n%s", out)
 	if err != nil {
 		return err
 	}
 
 	log.Info("Removing the repository")
 	addRepoCmd := exec.Command("helm", "repo", "remove", "incubator")
-	_, err = addRepoCmd.Output()
+	out, err = addRepoCmd.CombinedOutput()
+	log.Infof("Helm output: \n%s", out)
 	if err != nil {
 		return err
 	}
