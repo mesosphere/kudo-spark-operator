@@ -84,15 +84,14 @@ docker-builder:
 	echo $(DOCKER_BUILDER_IMAGE_FULL_NAME) > $@
 
 .PHONY: test
-test: docker-push
 test:
 	docker run -i --rm \
 		-v $(ROOT_DIR)/tests:/tests \
 		-v $(KUBECONFIG):/root/.kube/config \
 		-e TEST_DIR=/tests \
 		-e KUBECONFIG=/root/.kube/config \
-		-e SPARK_IMAGE="$(shell cat $(ROOT_DIR)/spark-build)" \
-		-e OPERATOR_IMAGE="$(shell cat $(ROOT_DIR)/operator-build)" \
+		-e SPARK_IMAGE=$(SPARK_IMAGE_FULL_NAME) \
+		-e OPERATOR_IMAGE=$(OPERATOR_IMAGE_FULL_NAME) \
 		$(shell cat $(ROOT_DIR)/docker-builder) \
 		/tests/run.sh
 

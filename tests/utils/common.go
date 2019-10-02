@@ -23,6 +23,12 @@ func init() {
 		ForceColors:   true,
 		FullTimestamp: true,
 	})
+	log.Info("  -- Test run parameters --")
+	log.Infof("Operator image:\t\t%s", OperatorImage)
+	log.Infof("Spark image:\t\t\t%s", SparkImage)
+	log.Infof("Spark version:\t\t%s", SparkVersion)
+	log.Infof("Test directory:\t\t%s", TestDir)
+	log.Infof("k8s config path:\t\t%s", KubeConfig)
 }
 
 func getenvOr(key string, defaultValue string) string {
