@@ -7,7 +7,7 @@ OPERATOR_DIR="$(dirname ${SCRIPT_DIR})/kudo-operator"
 
 NAMESPACE=${NAMESPACE:-spark}
 OPERATOR_IMAGE_NAME=${OPERATOR_IMAGE_NAME:-mesosphere/kudo-spark-operator}
-OPERATOR_VERSION=${OPERATOR_VERSION:-$(<"${SCRIPT_DIR}"/VERSION)}
+OPERATOR_VERSION=${OPERATOR_VERSION:-$(<"${SCRIPT_DIR}"/../VERSION)}
 
 echo "Using namespace '${NAMESPACE}' for installation"
 
@@ -22,3 +22,7 @@ else
 fi
 
 kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-driver-rbac.yaml
+# Expose Spark Operator metrics service
+kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-operator-service.yaml
+# Create ServiceMonitor (see prometheus-operator docs) for Spark
+kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-service-monitor.yaml
