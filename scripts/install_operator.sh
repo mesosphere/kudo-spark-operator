@@ -9,9 +9,15 @@ NAMESPACE=${NAMESPACE:-spark}
 NAMESPACE=${NAMESPACE:-spark-operator}
 
 if [ -f "${SCRIPT_DIR}"/../operator-build ]; then
-  echo "operator-build file is found. Parse OPERATOR_IMAGE_NAME and OPERATOR_VERSION from there."
-  OPERATOR_IMAGE_NAME=$(awk -F':' '{printf $1}' <"${SCRIPT_DIR}"/../operator-build)
-  OPERATOR_VERSION=$(awk -F':' '{printf $2}' <"${SCRIPT_DIR}"/../operator-build)
+  echo "operator-build file is found."
+  if [ -z "${OPERATOR_IMAGE_NAME}" ]; then
+    echo "Parse OPERATOR_IMAGE_NAME from operator-build file."
+    OPERATOR_IMAGE_NAME=$(awk -F':' '{printf $1}' <"${SCRIPT_DIR}"/../operator-build)
+  fi
+  if [ -z "${OPERATOR_VERSION}" ]; then
+     echo "Parse OPERATOR_VERSION from operator-build file."
+     OPERATOR_VERSION=$(awk -F':' '{printf $2}' <"${SCRIPT_DIR}"/../operator-build)
+  fi
 fi
 
 OPERATOR_IMAGE_NAME=${OPERATOR_IMAGE_NAME:-mesosphere/kudo-spark-operator}
