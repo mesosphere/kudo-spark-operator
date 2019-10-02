@@ -88,10 +88,13 @@ If you want to create a cluster with MKE Kubernetes distribution, the following 
 - AWS_SECRET_ACCESS_KEY
 - AWS_SESSION_TOKEN
 
-You can use a helping script from `./scripts` directory to set up the environment:
+AWS credentials are exported automatically by `make`, so there is no need to handle them manually, but `CLUSTER_TYPE` 
+and `DCOS_LICENSE` need to be set manually.
 ```
-# refresh AWS credentials
-$ maws li Team\ 10
-$ source $PWD/set_env_for_mke.sh && make cluster-create
+
+$ maws li Team\ 10 #refresh AWS credentials
+$ export CLUSTER_TYPE=mke
+$ export DCOS_LICENSE=$(cat /path/to/the/license.txt)
+$ make cluster-create
 ```
 

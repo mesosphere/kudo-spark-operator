@@ -36,19 +36,27 @@ DOCKER_BUILDER_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(DOCKER_BUILDER_IMAGE_NAM
 
 get_sha1sum = $(shell cat $1 | sha1sum | cut -d ' ' -f1)
 
+.PHONY: aws_credentials
+aws_credentials:
+	cat ~/.aws/credentials | awk -F ' = ' 'NF && NR>1 {printf("export %s=%s\n", toupper($$1), $$2)}' > $@
+
 .PHONY: cluster-create
+cluster-create: aws_credentials
 cluster-create:
 	if [[ ! -f  $(CLUSTER_TYPE)-created ]]; then
+		eval $$(cat aws_credentials)
 		$(KUDO_TOOLS_DIR)/cluster.sh $(CLUSTER_TYPE) up
 		echo > $(CLUSTER_TYPE)-created
 	fi
 
 .PHONY: cluster-destroy
+cluster-destroy: aws_credentials
 cluster-destroy:
 	if [[ $(CLUSTER_TYPE) == konvoy ]]; then
 		$(KUDO_TOOLS_DIR)/cluster.sh konvoy down
 		rm -f konvoy-created
 	else
+		eval $$(cat aws_credentials)
 		$(KUDO_TOOLS_DIR)/cluster.sh mke down
 		rm -f mke-created
 		kubectl config unset users.$(MKE_CLUSTER_NAME)
@@ -105,7 +113,7 @@ test:
 
 .PHONY: clean-all
 clean-all:
-	rm -f *.pem *.pub cluster.yaml cluster.tmp.yaml *-created
+	rm -f *.pem *.pub cluster.yaml cluster.tmp.yaml *-created aws_credentials
 	rm -rf state runs
 
 .PHONY: clean-docker
