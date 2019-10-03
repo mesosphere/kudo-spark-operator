@@ -69,12 +69,6 @@ To submit Spark Application and check its status run:
 #switch to operator namespace, e.g.
 kubens spark-operator
 
-# Expose Spark Operator metrics service 
-kubectl create -f specs/spark-operator-service.yaml
-
-# Create ServiceMonitor (see prometheus-operator docs) for Spark 
-kubectl create -f specs/spark-service-monitor.yaml
-
 # create Spark application
 kubectl create -f specs/spark-application.yaml
 
