@@ -46,9 +46,8 @@ func KubectlDelete(namespace string, filename string) ([]byte, error) {
 
 func kubectlRunFile(method string, namespace string, filename string) ([]byte, error) {
 	kubectl := exec.Command("kubectl", method, "--namespace", namespace, "-f", filename)
-	out, err := kubectl.Output()
-	log.Info("kubectl output:")
-	log.Info(string(out))
+	out, err := kubectl.CombinedOutput()
+	log.Infof("kubectl output:\n%s", out)
 	if err != nil {
 		if exitError, ok := err.(*exec.ExitError); ok {
 			return exitError.Stderr, err
