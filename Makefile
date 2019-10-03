@@ -74,7 +74,7 @@ docker-push:
 
 .PHONY: install
 install:
-	$(SCRIPTS_DIR)/install_operator.sh
+	OPERATOR_IMAGE_NAME=$(DOCKER_REPO_NAME)/$(OPERATOR_IMAGE_NAME) OPERATOR_VERSION=$(OPERATOR_VERSION) $(SCRIPTS_DIR)/install_operator.sh
 
 docker-builder:
 	docker build \
