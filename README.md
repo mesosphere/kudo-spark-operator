@@ -20,9 +20,8 @@ and export environment variable with token contents: `export GITHUB_TOKEN=<your 
 ### Build steps
 
 GNU Make is used as the main build tool and includes the following main targets:
-* `make cluster-create-[konvoy|mke]` creates a Konvoy or MKE cluster
-* `make cluster-destroy-[konvoy|mke]` creates a Konvoy or MKE cluster
-* `make cluster-destroy-all` destroys all clusters created by `make cluster-create-[konvoy|mke]`
+* `make cluster-create` creates a Konvoy or MKE cluster
+* `make cluster-destroy` creates a Konvoy or MKE cluster
 * `make clean-all` removes all artifacts produced by targets from local filesystem
 * `make operator-build` builds all the images: Spark Base image and Spark Operator image 
 * `make spark-build` builds Spark base image based on Apache Spark 2.4.4
@@ -69,12 +68,6 @@ To submit Spark Application and check its status run:
 #switch to operator namespace, e.g.
 kubens spark-operator
 
-# Expose Spark Operator metrics service 
-kubectl create -f specs/spark-operator-service.yaml
-
-# Create ServiceMonitor (see prometheus-operator docs) for Spark 
-kubectl create -f specs/spark-service-monitor.yaml
-
 # create Spark application
 kubectl create -f specs/spark-application.yaml
 
@@ -84,3 +77,25 @@ kubectl get sparkapplication
 # check application status
 kubectl describe sparkapplication mock-task-runner
 ```
+
+###  MKE cluster provisioning
+
+If you want to create a cluster with MKE Kubernetes distribution, the following environment variables must be set before executing 
+`make cluster-create` :
+
+- DCOS_LICENSE - should be populated from a `licence.txt` file
+- CLUSTER_TYPE - type of a cluster, in our case is `mke`
+- AWS_ACCESS_KEY_ID
+- AWS_SECRET_ACCESS_KEY
+- AWS_SESSION_TOKEN
+
+AWS credentials are exported automatically by `make`, so there is no need to handle them manually, but `CLUSTER_TYPE` 
+and `DCOS_LICENSE` need to be set manually.
+```
+
+$ maws li Team\ 10 #refresh AWS credentials
+$ export CLUSTER_TYPE=mke
+$ export DCOS_LICENSE=$(cat /path/to/the/license.txt)
+$ make cluster-create
+```
+
