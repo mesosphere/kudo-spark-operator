@@ -34,17 +34,26 @@ DOCKER_BUILDER_DOCKERFILE_PATH ?= $(ROOT_DIR)/images/builder
 DOCKER_BUILDER_IMAGE_TAG ?= $(call get_sha1sum,$(DOCKER_BUILDER_DOCKERFILE_PATH)/Dockerfile)
 DOCKER_BUILDER_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(DOCKER_BUILDER_IMAGE_NAME):$(DOCKER_BUILDER_IMAGE_TAG)
 
+# define export variables so they're available in shell
+export AWS_PROFILE ?=
+export AWS_ACCESS_KEY_ID ?=
+export AWS_SECRET_ACCESS_KEY ?=
+export AWS_SESSION_TOKEN ?=
+
 get_sha1sum = $(shell cat $1 | sha1sum | cut -d ' ' -f1)
+get_aws_credential = $(shell grep $(AWS_PROFILE) -A 3 ~/.aws/credentials | tail -n3 | grep $1 | xargs | cut -d' ' -f3)
 
 .PHONY: aws_credentials
 aws_credentials:
-	cat ~/.aws/credentials | awk -F ' = ' 'NF && NR>1 {printf("export %s=%s\n", toupper($$1), $$2)}' > $@
+	# if the variable is not set, set the value from credentials file
+	$(eval AWS_ACCESS_KEY_ID := $(if $(AWS_ACCESS_KEY_ID),$(AWS_ACCESS_KEY_ID),$(call get_aws_credential,aws_access_key_id)))
+	$(eval AWS_SECRET_ACCESS_KEY := $(if $(AWS_SECRET_ACCESS_KEY),$(AWS_SECRET_ACCESS_KEY),$(call get_aws_credential,aws_secret_access_key)))
+	$(eval AWS_SESSION_TOKEN := $(if $(AWS_SESSION_TOKEN),$(AWS_SESSION_TOKEN),$(call get_aws_credential,aws_session_token)))
 
 .PHONY: cluster-create
 cluster-create: aws_credentials
 cluster-create:
 	if [[ ! -f  $(CLUSTER_TYPE)-created ]]; then
-		eval $$(cat aws_credentials)
 		$(KUDO_TOOLS_DIR)/cluster.sh $(CLUSTER_TYPE) up
 		echo > $(CLUSTER_TYPE)-created
 	fi
@@ -56,7 +65,6 @@ cluster-destroy:
 		$(KUDO_TOOLS_DIR)/cluster.sh konvoy down
 		rm -f konvoy-created
 	else
-		eval $$(cat aws_credentials)
 		$(KUDO_TOOLS_DIR)/cluster.sh mke down
 		rm -f mke-created
 		kubectl config unset users.$(MKE_CLUSTER_NAME)
