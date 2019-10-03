@@ -1,0 +1,24 @@
+{{ if .Params.enableWebhook }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .OperatorName }}-init
+  namespace: {{ .Namespace }}
+  labels:
+    app.kubernetes.io/name: {{ .OperatorName }}
+    app.kubernetes.io/instance: {{ .Name }}
+spec:
+  template:
+    spec:
+      {{- if .Params.createOperatorServiceAccount }}
+      serviceAccountName: {{ .Name }}-{{ .Params.operatorServiceAccountName }}
+      {{- else }}
+      serviceAccountName: {{ .Params.operatorServiceAccountName }}
+      {{- end }}
+      restartPolicy: OnFailure
+      containers:
+      - name: main
+        image: {{ .Params.operatorImageName }}:{{ .Params.operatorVersion }}
+        imagePullPolicy: {{ .Params.imagePullPolicy }}
+        command: ["/usr/bin/gencerts.sh", "-n", "{{ .Namespace }}", "-s", "{{ .OperatorName }}-webhook", "-p"]
+{{ end }}
