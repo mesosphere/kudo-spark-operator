@@ -10,9 +10,8 @@ SPARK_OPERATOR_DIR := $(ROOT_DIR)/spark-on-k8s-operator
 KONVOY_VERSION ?= v1.1.5
 export KONVOY_VERSION
 
+NAMESPACE ?= spark
 MKE_CLUSTER_NAME=kubernetes-cluster1
-
-NAMESPACE ?= spark-operator
 
 CLUSTER_TYPE ?= konvoy
 KUBECONFIG ?= $(ROOT_DIR)/admin.conf
