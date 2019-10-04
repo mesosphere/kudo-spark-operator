@@ -30,7 +30,7 @@ fi
 
 kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-driver-rbac.yaml
 kubeclt apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-events-pvc.yaml
-kubeclt apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-history-server.yaml
+kubeclt apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-historyserver.yaml
 kubeclt apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-historyserver-service.yaml
 # Expose Spark Operator metrics service
 kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-operator-service.yaml
