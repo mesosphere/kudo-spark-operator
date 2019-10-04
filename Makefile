@@ -88,7 +88,7 @@ operator-build: spark-build
 	echo "${OPERATOR_IMAGE_FULL_NAME}" > $@
 
 .PHONY: docker-push
-docker-push:
+docker-push: docker-builder operator-build
 	docker push $(SPARK_IMAGE_FULL_NAME)
 	docker push $(OPERATOR_IMAGE_FULL_NAME)
 
@@ -104,20 +104,16 @@ docker-builder:
 	echo $(DOCKER_BUILDER_IMAGE_FULL_NAME) > $@
 
 .PHONY: test
-test: docker-builder
-test: operator-build
 test:
 	docker run -i --rm \
 		-v $(ROOT_DIR)/tests:/tests \
 		-v $(KUBECONFIG):/root/.kube/config \
+		-e TEST_DIR=/tests \
 		-e KUBECONFIG=/root/.kube/config \
-		-e SPARK_IMAGE="$(shell cat $(ROOT_DIR)/spark-build)" \
-		-e SPARK_OPERATOR_IMAGE="$(shell cat $(ROOT_DIR)/operator-build)" \
+		-e SPARK_IMAGE=$(SPARK_IMAGE_FULL_NAME) \
+		-e OPERATOR_IMAGE=$(OPERATOR_IMAGE_FULL_NAME) \
 		$(shell cat $(ROOT_DIR)/docker-builder) \
-		/bin/bash -c \
-		"kubectl cluster-info && \
-		echo \$$SPARK_IMAGE && echo \$$SPARK_OPERATOR_IMAGE"
-		# tests entrypoint
+		/tests/run.sh
 
 .PHONY: clean-all
 clean-all:
