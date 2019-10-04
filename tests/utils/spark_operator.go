@@ -94,10 +94,16 @@ func installSparkOperatorWithHelm(namespace string) error {
 	}
 
 	log.Info("Installing the chart")
-	operatorImage := strings.Split(OperatorImage, ":")
+	var operatorImageParam string
+	if strings.Contains(OperatorImage, ":") {
+		operatorImage := strings.Split(OperatorImage, ":")
+		operatorImageParam = ",operatorImageName=" + operatorImage[0] + ",operatorVersion=" + operatorImage[1]
+	} else {
+		operatorImageParam = ",operationImageName=" + OperatorImage
+	}
+
 	installOperatorCmd := exec.Command("helm", "install", "incubator/sparkoperator", "--namespace", namespace,
-		"--name", OperatorName, "--set", "sparkJobNamespace="+namespace+
-			",enableMetrics=true,operatorImageName="+operatorImage[0]+",operatorVersion="+operatorImage[1])
+		"--name", OperatorName, "--set", "sparkJobNamespace="+namespace+",enableMetrics=true"+operatorImageParam)
 	out, err = installOperatorCmd.CombinedOutput()
 	log.Infof("Helm output: \n%s", out)
 	return err

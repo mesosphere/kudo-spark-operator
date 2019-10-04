@@ -34,10 +34,20 @@ GNU Make is used as the main build tool and includes the following main targets:
 A typical workflow looks as following:
 ```
 make clean-all
-make cluster-create 
+make cluster-create
+make docker-push 
 make test
 make cluster-destroy
 ```
+
+To run tests on a pre-existing cluster with specified operator and spark images, set KUBECONFIG, SPARK_IMAGE_FULL_NAME and OPERATOR_IMAGE_FULL_NAME variables
+
+```
+make test KUBECONFIG=$HOME/.kube/config \
+SPARK_IMAGE_FULL_NAME=gcr.io/spark-operator/spark:v2.4.4-gcs-prometheus \
+OPERATOR_IMAGE_FULL_NAME=gcr.io/spark-operator/spark-operator
+```
+
 # Installing and using Spark Operator
 
 ### Prerequisites
