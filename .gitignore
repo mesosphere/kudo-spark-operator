@@ -6,6 +6,8 @@
 
 runs/
 state/
+.konvoy-*
+license.*
 
 admin.conf
 cluster.*.yaml
