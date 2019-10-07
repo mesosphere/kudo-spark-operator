@@ -32,3 +32,5 @@ for version in versions:
     delete_resource("operatorversion.kudo.dev", version)
 
 delete_resource("operator.kudo.dev", "spark")
+delete_resource("crd", "sparkapplications.sparkoperator.k8s.io")
+delete_resource("crd", "scheduledsparkapplications.sparkoperator.k8s.io")
