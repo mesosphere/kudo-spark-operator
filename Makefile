@@ -18,29 +18,26 @@ KUBECONFIG ?= $(ROOT_DIR)/admin.conf
 
 DOCKER_REPO_NAME ?= mesosphere
 
-SPARK_IMAGE_NAME ?= spark-2.4.4-bin-hadoop2.7-k8s
-SPARK_IMAGE_DOCKERFILE_PATH ?= $(ROOT_DIR)/images/spark
-SPARK_IMAGE_TAG ?= $(call get_sha1sum,$(SPARK_IMAGE_DOCKERFILE_PATH)/Dockerfile)
+SPARK_IMAGE_NAME ?= spark
+SPARK_IMAGE_DIR ?= $(ROOT_DIR)/images/spark
+SPARK_IMAGE_TAG ?= $(call files_checksum,$(SPARK_IMAGE_DIR))
 SPARK_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(SPARK_IMAGE_NAME):$(SPARK_IMAGE_TAG)
 
 OPERATOR_IMAGE_NAME ?= kudo-spark-operator
-OPERATOR_DOCKERFILE_PATH ?= $(ROOT_DIR)/images/operator
-OPERATOR_VERSION ?= $(call get_sha1sum,$(OPERATOR_DOCKERFILE_PATH)/Dockerfile)
+OPERATOR_IMAGE_DIR ?= $(ROOT_DIR)/images/operator
+OPERATOR_VERSION ?= $(call files_checksum,$(SPARK_IMAGE_DIR) $(OPERATOR_IMAGE_DIR) $(SPARK_OPERATOR_DIR))
 OPERATOR_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(OPERATOR_IMAGE_NAME):$(OPERATOR_VERSION)
 
 DOCKER_BUILDER_IMAGE_NAME ?= spark-operator-docker-builder
-DOCKER_BUILDER_DOCKERFILE_PATH ?= $(ROOT_DIR)/images/builder
-DOCKER_BUILDER_IMAGE_TAG ?= $(call get_sha1sum,$(DOCKER_BUILDER_DOCKERFILE_PATH)/Dockerfile)
+DOCKER_BUILDER_IMAGE_DIR ?= $(ROOT_DIR)/images/builder
+DOCKER_BUILDER_IMAGE_TAG ?= $(call files_checksum,$(DOCKER_BUILDER_IMAGE_DIR))
 DOCKER_BUILDER_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(DOCKER_BUILDER_IMAGE_NAME):$(DOCKER_BUILDER_IMAGE_TAG)
 
-# define export variables so they're available in shell
+# Cluster provisioining and teardown
 export AWS_PROFILE ?=
 export AWS_ACCESS_KEY_ID ?=
 export AWS_SECRET_ACCESS_KEY ?=
 export AWS_SESSION_TOKEN ?=
-
-get_sha1sum = $(shell cat $1 | sha1sum | cut -d ' ' -f1)
-get_aws_credential = $(shell grep $(AWS_PROFILE) -A 3 ~/.aws/credentials | tail -n3 | grep $1 | xargs | cut -d' ' -f3)
 
 .PHONY: aws_credentials
 aws_credentials:
@@ -71,39 +68,50 @@ cluster-destroy:
 		kubectl config delete-cluster $(MKE_CLUSTER_NAME)
 	fi
 
-spark-build:
-	docker build \
-		-t ${SPARK_IMAGE_FULL_NAME} \
-		-f ${SPARK_IMAGE_DOCKERFILE_PATH}/Dockerfile \
-		${SPARK_IMAGE_DOCKERFILE_PATH}
-	echo "${SPARK_IMAGE_FULL_NAME}" > $@
-
-operator-build: spark-build
-	docker build \
-		--build-arg SPARK_IMAGE=$(shell cat spark-build) \
-		-t ${OPERATOR_IMAGE_FULL_NAME} \
-		-f ${OPERATOR_DOCKERFILE_PATH}/Dockerfile \
-		${SPARK_OPERATOR_DIR} && docker image prune -f --filter label=stage=spark-operator-builder
-
-	echo "${OPERATOR_IMAGE_FULL_NAME}" > $@
-
-.PHONY: docker-push
-docker-push: docker-builder operator-build
-	docker push $(SPARK_IMAGE_FULL_NAME)
-	docker push $(OPERATOR_IMAGE_FULL_NAME)
-
-.PHONY: install
-install:
-	OPERATOR_IMAGE_NAME=$(DOCKER_REPO_NAME)/$(OPERATOR_IMAGE_NAME) OPERATOR_VERSION=$(OPERATOR_VERSION) $(SCRIPTS_DIR)/install_operator.sh
-
+# Docker
 docker-builder:
-	docker build \
-		-t $(DOCKER_BUILDER_IMAGE_FULL_NAME) \
-		-f ${DOCKER_BUILDER_DOCKERFILE_PATH}/Dockerfile \
-		${DOCKER_BUILDER_DOCKERFILE_PATH}
+	if [[ -z "$(call local_image_exists,$(DOCKER_BUILDER_IMAGE_FULL_NAME))" ]]; then
+		docker build \
+			-t $(DOCKER_BUILDER_IMAGE_FULL_NAME) \
+			-f ${DOCKER_BUILDER_IMAGE_DIR}/Dockerfile \
+			${DOCKER_BUILDER_IMAGE_DIR}
+	fi
 	echo $(DOCKER_BUILDER_IMAGE_FULL_NAME) > $@
 
+docker-spark:
+	if [[ -z "$(call remote_image_exists,$(SPARK_IMAGE_NAME),$(SPARK_IMAGE_TAG))" ]]; then
+		docker build \
+			-t ${SPARK_IMAGE_FULL_NAME} \
+			-f ${SPARK_IMAGE_DIR}/Dockerfile \
+			${SPARK_IMAGE_DIR}
+	fi
+	echo "${SPARK_IMAGE_FULL_NAME}" > $@
+
+docker-operator: docker-spark
+docker-operator:
+	if [[ -z "$(call remote_image_exists,$(OPERATOR_IMAGE_NAME),$(OPERATOR_VERSION))" ]]; then
+		docker build \
+			--build-arg SPARK_IMAGE=$(shell cat docker-spark) \
+			-t ${OPERATOR_IMAGE_FULL_NAME} \
+			-f ${OPERATOR_IMAGE_DIR}/Dockerfile \
+			${SPARK_OPERATOR_DIR} && docker image prune -f --filter label=stage=spark-operator-builder
+	fi
+	echo "${OPERATOR_IMAGE_FULL_NAME}" > $@
+
+docker-push: docker-spark
+docker-push: docker-operator
+docker-push:
+	if [[ -z "$(call remote_image_exists,$(SPARK_IMAGE_NAME),$(SPARK_IMAGE_TAG))" ]]; then
+		docker push $(SPARK_IMAGE_FULL_NAME)
+	fi
+	if [[ -z "$(call remote_image_exists,$(OPERATOR_IMAGE_NAME),$(OPERATOR_VERSION))" ]]; then
+		docker push $(OPERATOR_IMAGE_FULL_NAME)
+	fi
+
+# Testing
 .PHONY: test
+test: docker-builder
+test: docker-push
 test:
 	docker run -i --rm \
 		-v $(ROOT_DIR)/tests:/tests \
@@ -115,12 +123,42 @@ test:
 		$(shell cat $(ROOT_DIR)/docker-builder) \
 		/tests/run.sh
 
-.PHONY: clean-all
-clean-all:
-	rm -f *.pem *.pub cluster.yaml cluster.tmp.yaml *-created aws_credentials
-	rm -rf state runs
+.PHONY: install
+install:
+	OPERATOR_IMAGE_NAME=$(DOCKER_REPO_NAME)/$(OPERATOR_IMAGE_NAME) OPERATOR_VERSION=$(OPERATOR_VERSION) $(SCRIPTS_DIR)/install_operator.sh
 
 .PHONY: clean-docker
 clean-docker:
-	rm -f *-build docker-builder
+	rm -f docker-*
 
+.PHONY: clean-all
+clean-all: clean-docker
+clean-all:
+	rm -f *.pem *.pub *-created aws_credentials
+	rm -rf state runs .konvoy-* *checksum cluster.yaml cluster.tmp.yaml inventory.yaml admin.conf
+
+# function for extracting the value of an AWS property passed as an argument
+define get_aws_credential
+$(shell grep $(AWS_PROFILE) -A 3 ~/.aws/credentials | tail -n3 | grep $1 | xargs | cut -d' ' -f3)
+endef
+
+# function for calculating global checksum of directories and files passed as arguments.
+# to avoid inconsistencies with files ordering in Linux/Unix systems the final checksum is
+# calculated based on sorted checksums of independent files stored in a temporary file
+#
+# arguments:
+# $1 - space-separated list of directories and/or files
+define files_checksum
+$(shell find $1 -type f | xargs sha1sum | cut -d ' ' -f1 > tmp.checksum && sort tmp.checksum | sha1sum | cut -d' ' -f1)
+endef
+
+# arguments:
+# $1 - image name without repo e.g. spark
+# $2 - image tag e.g. latest
+define remote_image_exists
+$(shell curl --silent --fail --list-only --location https://index.docker.io/v1/repositories/$(DOCKER_REPO_NAME)/$1/tags/$2 2>/dev/null)
+endef
+
+define local_image_exists
+$(shell docker images -q $1 2> /dev/null)
+endef

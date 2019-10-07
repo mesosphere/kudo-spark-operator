@@ -7,6 +7,7 @@
 runs/
 state/
 .konvoy-*
+konvoy-*
 license.*
 
 admin.conf
@@ -14,4 +15,5 @@ cluster.*.yaml
 inventory.yaml
 license.txt
 
-spark-build
+docker-*
+*.checksum
