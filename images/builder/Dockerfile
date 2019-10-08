@@ -7,5 +7,6 @@ RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.16.0/b
     sha256sum helm-v2.14.3-linux-amd64.tar.gz | awk '{print $1}' | diff - helm-v2.14.3-linux-amd64.tar.gz.sha256 && \
     tar -zxf helm-v2.14.3-linux-amd64.tar.gz && \
     mv linux-amd64/helm /usr/local/bin/helm && \
-    rm helm-v2.14.3-linux-amd64.tar.gz*
-
+    rm helm-v2.14.3-linux-amd64.tar.gz* && \
+    curl -L https://github.com/kudobuilder/kudo/releases/download/v0.7.3/kubectl-kudo_0.7.3_linux_x86_64 -o /go/bin/kubectl-kudo && \
+    chmod +x /go/bin/kubectl-kudo

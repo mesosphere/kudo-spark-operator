@@ -22,20 +22,14 @@ func TestClientGo(t *testing.T) {
 }
 
 func TestTemplating(t *testing.T) {
-	tmpFilePath := createSparkOperatorNamespace("testtesttest")
+	tmpFilePath := createSparkJob(SparkJob{
+		Name:         "test",
+		Namespace:    "foo",
+		Image:        "bar",
+		SparkVersion: "baz",
+		Template:     "spark-linear-regression-job.yaml",
+	})
 	defer os.Remove(tmpFilePath)
 
 	log.Infof("Created a temp file at %s", tmpFilePath)
-}
-
-func TestHelmInstallation(t *testing.T) {
-	err := installSparkOperatorWithHelm(DefaultNamespace)
-	if err != nil {
-		t.Error(err.Error())
-	}
-
-	err = uninstallSparkOperatorWithHelm(DefaultNamespace)
-	if err != nil {
-		t.Error(err.Error())
-	}
 }

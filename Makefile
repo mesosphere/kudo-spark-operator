@@ -114,14 +114,14 @@ test: docker-builder
 test: docker-push
 test:
 	docker run -i --rm \
-		-v $(ROOT_DIR)/tests:/tests \
+		-v $(ROOT_DIR):/kudo-spark-operator \
 		-v $(KUBECONFIG):/root/.kube/config \
-		-e TEST_DIR=/tests \
+		-e TEST_DIR=/kudo-spark-operator/tests \
 		-e KUBECONFIG=/root/.kube/config \
 		-e SPARK_IMAGE=$(SPARK_IMAGE_FULL_NAME) \
 		-e OPERATOR_IMAGE=$(OPERATOR_IMAGE_FULL_NAME) \
 		$(shell cat $(ROOT_DIR)/docker-builder) \
-		/tests/run.sh
+		/kudo-spark-operator/tests/run.sh
 
 .PHONY: install
 install:

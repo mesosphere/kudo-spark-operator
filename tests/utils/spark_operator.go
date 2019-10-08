@@ -1,32 +1,36 @@
 package utils
 
 import (
+	"errors"
+	"fmt"
 	log "github.com/sirupsen/logrus"
-	coreV1 "k8s.io/api/core/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"os"
 	"os/exec"
+	"path"
+	"regexp"
 	"strings"
+	"time"
 )
 
 type SparkOperatorInstallation struct {
-	Namespace string
-	Clients   *kubernetes.Clientset
+	Namespace    string
+	InstanceName string
+	Clients      *kubernetes.Clientset
 }
 
-func InstallSparkOperator() *SparkOperatorInstallation {
+type SparkInstance struct {
+	Name      string
+	Namespace string
+	Status    string
+}
+
+func InstallSparkOperator() (*SparkOperatorInstallation, error) {
 	return InstallSparkOperatorWithNamespace(DefaultNamespace)
 }
 
-func InstallSparkOperatorWithNamespace(namespace string) *SparkOperatorInstallation {
+func InstallSparkOperatorWithNamespace(namespace string) (*SparkOperatorInstallation, error) {
 	clientSet, err := GetK8sClientSet()
-	if err != nil {
-		log.Fatal(err)
-		panic(err)
-	}
-
-	err = installSparkOperatorWithHelm(namespace)
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
@@ -36,100 +40,118 @@ func InstallSparkOperatorWithNamespace(namespace string) *SparkOperatorInstallat
 		Namespace: namespace,
 		Clients:   clientSet,
 	}
-	return &spark
+
+	installScript := exec.Command("bash", path.Join(TestDir, "../scripts/install_operator.sh"))
+	if strings.Contains(OperatorImage, ":") {
+		operatorImage := strings.Split(OperatorImage, ":")
+		installScript.Env = append(os.Environ(),
+			"NAMESPACE="+namespace,
+			"OPERATOR_IMAGE_NAME="+operatorImage[0],
+			"OPERATOR_VERSION="+operatorImage[1])
+	} else {
+		installScript.Env = append(os.Environ(),
+			"NAMESPACE="+namespace,
+			"OPERATOR_IMAGE_NAME="+OperatorImage)
+	}
+	out, err := installScript.CombinedOutput()
+	log.Infof("KUDO Spark operation installation script output:\n%s", out)
+	if err != nil {
+		return nil, err
+	}
+
+	instanceNameRE, _ := regexp.Compile(`instance\.kudo\.dev/v1alpha1/(spark-\w{6}) created`)
+	parsedInstanceName := instanceNameRE.FindStringSubmatch(string(out))
+	spark.InstanceName = parsedInstanceName[1]
+
+	spark.waitForInstanceStatus("COMPLETE")
+
+	return &spark, nil
 }
 
 func (spark *SparkOperatorInstallation) CleanUp() {
-	uninstallSparkOperatorWithHelm(spark.Namespace)
+	// So far multiple Spark operator instances in one namespace is not a supported configuration, so whole namespace will be cleaned
+	log.Infof("Uninstalling _all_ kudo spark operator instances and versions from %s", spark.Namespace)
+	instances, _ := getInstanceNames(spark.Namespace)
+	versions, _ := getOperatorVersions(spark.Namespace)
+
+	if instances != nil {
+		for _, instance := range instances {
+			DeleteResource(spark.Namespace, "instance.kudo.dev", instance)
+		}
+	}
+
+	if versions != nil {
+		for _, version := range versions {
+			DeleteResource(spark.Namespace, "operatorversion.kudo.dev", version)
+		}
+	}
+
+	DeleteResource(spark.Namespace, "operator.kudo.dev", "spark")
+	//DropNamespace(spark.Clients, spark.Namespace)
 }
 
-func (spark *SparkOperatorInstallation) OperatorPod() (coreV1.Pod, error) {
-	pods, err := spark.Clients.CoreV1().Pods(spark.Namespace).List(v1.ListOptions{LabelSelector: "app.kubernetes.io/name=sparkoperator"})
-
-	if err != nil {
-		return pods.Items[0], nil
-	} else if len(pods.Items) != 1 {
-		return pods.Items[0], nil
-	} else if !strings.HasPrefix(pods.Items[0].Name, OperatorName) {
-		return pods.Items[0], nil
-	}
-
-	return pods.Items[0], nil
+func (spark *SparkOperatorInstallation) waitForInstanceStatus(targetStatus string) error {
+	log.Infof("Waiting for %s/%s to reach status %s", spark.Namespace, spark.InstanceName, targetStatus)
+	return retry(3*time.Minute, 1*time.Second, func() error {
+		instance, err := spark.getInstance()
+		if err == nil && instance.Status != targetStatus {
+			err = errors.New(fmt.Sprintf("%s status is %s, but waiting for %s", instance.Name, instance.Status, targetStatus))
+		}
+		return err
+	})
 }
 
-func (spark *SparkOperatorInstallation) WaitUntilRunning() error {
-	pod, err := spark.OperatorPod()
+func (spark *SparkOperatorInstallation) getInstance() (SparkInstance, error) {
+	status, err := Kubectl("get", "instances.kudo.dev", spark.InstanceName, "--namespace", spark.Namespace, `-o=jsonpath={.status.aggregatedStatus.status}`)
+	status = strings.Trim(status, `'`)
+
 	if err != nil {
-		return err
+		return SparkInstance{}, err
 	}
 
-	return waitForPodStatusPhase(spark.Clients, pod.Name, spark.Namespace, "Running")
+	return SparkInstance{
+		Name:      spark.InstanceName,
+		Namespace: spark.Namespace,
+		Status:    status,
+	}, nil
 }
 
-func installSparkOperatorWithHelm(namespace string) error {
-	log.Info("Installing Spark Operator with helm")
-	log.Info("Configuring RBAC")
-	rbac := createSparkOperatorNamespace(namespace)
-	defer os.Remove(rbac)
+func getInstanceNames(namespace string) ([]string, error) {
+	jsonpathExpr := `-o=jsonpath={range .items[?(@.metadata.labels.kudo\.dev/operator=="spark")]}{.metadata.name}{"\n"}`
+	out, err := Kubectl("get", "instances.kudo.dev", "--namespace", namespace, jsonpathExpr)
 
-	_, err := KubectlApply(namespace, rbac)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	log.Info("Initializing helm")
-	initCmd := exec.Command("helm", "init")
-	out, err := initCmd.CombinedOutput()
-	log.Infof("Helm output: \n%s", out)
-	if err != nil {
-		return err
-	}
-
-	log.Info("Adding the repository")
-	addRepoCmd := exec.Command("helm", "repo", "add", "incubator", "http://storage.googleapis.com/kubernetes-charts-incubator")
-	out, err = addRepoCmd.CombinedOutput()
-	log.Infof("Helm output: \n%s", out)
-	if err != nil {
-		return err
-	}
-
-	log.Info("Installing the chart")
-	var operatorImageParam string
-	if strings.Contains(OperatorImage, ":") {
-		operatorImage := strings.Split(OperatorImage, ":")
-		operatorImageParam = ",operatorImageName=" + operatorImage[0] + ",operatorVersion=" + operatorImage[1]
+	if len(out) > 0 {
+		names := strings.Split(out, "\n")
+		return names, nil
 	} else {
-		operatorImageParam = ",operationImageName=" + OperatorImage
+		return nil, nil
 	}
-
-	installOperatorCmd := exec.Command("helm", "install", "incubator/sparkoperator", "--namespace", namespace,
-		"--name", OperatorName, "--set", "sparkJobNamespace="+namespace+",enableMetrics=true"+operatorImageParam)
-	out, err = installOperatorCmd.CombinedOutput()
-	log.Infof("Helm output: \n%s", out)
-	return err
 }
 
-func uninstallSparkOperatorWithHelm(namespace string) error {
-	log.Info("Uninstalling Spark Operator")
-	log.Info("Purging Spark operator")
-	installOperatorCmd := exec.Command("helm", "del", "--purge", OperatorName)
-	out, err := installOperatorCmd.CombinedOutput()
-	log.Infof("Helm output: \n%s", out)
+func getOperatorVersions(namespace string) ([]string, error) {
+	jsonpathExpr := `-o=jsonpath={range .items[?(@.metadata.labels.kudo\.dev/operator=="spark")]}{.spec.operatorVersion.name}{"\n"}`
+	out, err := Kubectl("get", "instances.kudo.dev", "--namespace", namespace, jsonpathExpr)
+
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	log.Info("Removing the repository")
-	addRepoCmd := exec.Command("helm", "repo", "remove", "incubator")
-	out, err = addRepoCmd.CombinedOutput()
-	log.Infof("Helm output: \n%s", out)
-	if err != nil {
-		return err
+	if len(out) > 0 {
+		versions := make([]string, 1)
+		for _, version := range strings.Split(out, "\n") {
+			for _, contained := range versions {
+				if contained == version {
+					continue
+				}
+			}
+			versions = append(versions, version)
+		}
+		return versions, nil
+	} else {
+		return nil, nil
 	}
-
-	log.Info("Cleaning up RBAC")
-	rbac := createSparkOperatorNamespace(namespace)
-	defer os.Remove(rbac)
-	_, err = KubectlDelete(namespace, rbac)
-	return err
 }

@@ -8,26 +8,30 @@ import (
 )
 
 func TestSparkOperatorInstallation(t *testing.T) {
-	spark := utils.InstallSparkOperator()
+	spark, err := utils.InstallSparkOperator()
 	defer spark.CleanUp()
+
+	if err != nil {
+		t.Error(err.Error())
+	}
 
 	k8sNamespace, err := spark.Clients.CoreV1().Namespaces().Get(spark.Namespace, v1.GetOptions{})
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	log.Infof("Spark operator is installed in namespace %s, waiting for Running status", k8sNamespace.Name)
-	err = spark.WaitUntilRunning()
-	if err != nil {
-		t.Error(err.Error())
-	}
+	log.Infof("Spark operator is installed in namespace %s", k8sNamespace.Name)
 }
 
 func TestSparkOperatorInstallationWithCustomNamespace(t *testing.T) {
 	customNamespace := "custom-test-namespace"
 
-	spark := utils.InstallSparkOperatorWithNamespace(customNamespace)
+	spark, err := utils.InstallSparkOperatorWithNamespace(customNamespace)
 	defer spark.CleanUp()
+
+	if err != nil {
+		t.Error(err.Error())
+	}
 
 	k8sNamespace, err := spark.Clients.CoreV1().Namespaces().Get(spark.Namespace, v1.GetOptions{})
 	if err != nil {
@@ -40,8 +44,12 @@ func TestSparkOperatorInstallationWithCustomNamespace(t *testing.T) {
 }
 
 func TestJobSubmission(t *testing.T) {
-	spark := utils.InstallSparkOperator()
+	spark, err := utils.InstallSparkOperator()
 	defer spark.CleanUp()
+
+	if err != nil {
+		t.Error(err)
+	}
 
 	job := utils.SparkJob{
 		Name:         "linear-regression",
@@ -51,7 +59,7 @@ func TestJobSubmission(t *testing.T) {
 		Template:     "spark-linear-regression-job.yaml",
 	}
 
-	err := spark.SubmitJob(job)
+	err = spark.SubmitJob(job)
 	if err != nil {
 		t.Error(err.Error())
 	}

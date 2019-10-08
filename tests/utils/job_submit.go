@@ -13,15 +13,9 @@ type SparkJob struct {
 }
 
 func (spark *SparkOperatorInstallation) SubmitJob(job SparkJob) error {
-	log.Info("Making sure spark operator is running")
-	err := spark.WaitUntilRunning()
-	if err != nil {
-		return err
-	}
-
 	yamlFile := createSparkJob(job)
 	log.Infof("Submitting the job")
-	_, err = KubectlApply(job.Namespace, yamlFile)
+	_, err := KubectlApply(job.Namespace, yamlFile)
 
 	return err
 }
