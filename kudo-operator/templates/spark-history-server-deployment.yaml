@@ -1,0 +1,51 @@
+{{ if .Params.enableHistoryServer }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: history-server
+  namespace: {{ .Namespace }}
+  labels:
+    app.kubernetes.io/name: history-server
+    app.kubernetes.io/instance: {{ .Name }}
+    app.kubernetes.io/version: {{ .Params.operatorVersion }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: history-server
+      app.kubernetes.io/instance: {{ .Name }}
+      app.kubernetes.io/version: {{ .Params.operatorVersion }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: history-server
+        app.kubernetes.io/instance: {{ .Name }}
+        app.kubernetes.io/version: {{ .Params.operatorVersion }}
+    spec:
+      {{- if .Params.createOperatorServiceAccount }}
+      serviceAccountName: {{ .Name }}-{{ .Params.operatorServiceAccountName }}
+      {{- else }}
+      serviceAccountName: {{ .Params.operatorServiceAccountName }}
+      {{- end }}
+      containers:
+      - name: history-server
+        image: {{ .Params.operatorImageName }}:{{ .Params.operatorVersion }}
+        imagePullPolicy: {{ .Params.imagePullPolicy }}
+        command: ["/opt/spark/sbin/start-history-server.sh"]
+        args: ["{{ .Params.historyServerFsLogDirectory }}"]
+        env:
+        - name: SPARK_NO_DAEMONIZE
+          value: "true"
+        ports:
+        - containerPort: 18080
+          name: "history-server"
+        volumeMounts:
+        - mountPath: "{{ .Params.historyServerFsLogDirectory }}"
+          name: history-server-storage
+      volumes:
+      - name: history-server-storage
+        persistentVolumeClaim:
+          claimName: spark-events-pvc
+{{ end }}

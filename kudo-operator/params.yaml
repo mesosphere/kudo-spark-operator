@@ -92,6 +92,21 @@ ingressUrlFormat:
   default: ""
   displayName: "Ingress URL format"
 
+enableHistoryServer:
+  description: "Start Spark History Server"
+  default: true
+  displayName: "Enable Spark History Server"
+
+historyServerFsLogDirectory:
+  description: "Spark EventLog Directory from which to load events for prior Spark job runs (e.g., hdfs://hdfs/ or s3a://path/to/bucket). Note: You'd typically want to set this to point to distributed/HA storage"
+  default: "/opt/spark/work-dir"
+  displayName: "Spark History Server Event Log Directory"
+
+storageClassName:
+  description: "Storage class for provisioning a persistent volume used for Spark Event Logging."
+  default: "awsebscsiprovisioner"
+  displayName: "Storage Class Name"
+
 ## Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
 ## TODO: should be a map

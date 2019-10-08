@@ -1,0 +1,14 @@
+{{ if .Params.enableHistoryServer }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: spark-events-pvc
+  namespace: {{ .Namespace }}
+spec:
+  storageClassName: {{ .Params.storageClassName }}
+  accessModes:
+   - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+{{ end }}
