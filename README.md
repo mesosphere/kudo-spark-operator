@@ -75,6 +75,8 @@ make install NAMESPACE=test-namespace
 
 ### Submitting Spark Application
 
+To get started with your app monitoring, please, see also [MONITORING.md](MONITORING.md) 
+
 To submit Spark Application and check its status run:
 ```bash
 #switch to operator namespace, e.g.

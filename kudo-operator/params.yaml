@@ -47,9 +47,14 @@ enableMetrics:
   displayName: "Enable metrics"
 
 metricsPort:
-  description: "Metrics port"
+  description: "Spark Operator Metrics port"
   default: 10254
-  displayName: "Metrics port"
+  displayName: "Operator Metrics port"
+
+appMetricsPort:
+  description: "Spark Application Metrics port"
+  default: 8090
+  displayName: "Application Metrics port"
 
 metricsEndpoint:
   description: "Metrics endpoint"

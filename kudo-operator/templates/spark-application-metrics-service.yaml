@@ -1,0 +1,15 @@
+{{- if .Params.enableMetrics }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: spark-application-metrics
+  labels:
+    "spark/servicemonitor": true
+spec:
+  ports:
+    - port: {{ .Params.appMetricsPort }}
+      name: metrics
+  clusterIP: None
+  selector:
+    "exposedMetrics": true
+{{- end }}

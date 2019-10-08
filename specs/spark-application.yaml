@@ -2,6 +2,8 @@ apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
   name: mock-task-runner
+  labels:
+    exposedMetrics: true
 spec:
   type: Scala
   mode: cluster
@@ -35,18 +37,4 @@ spec:
     exposeExecutorMetrics: true
     prometheus:
       jmxExporterJar: "/prometheus/jmx_prometheus_javaagent-0.11.0.jar"
-      port: 49151
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mock-task-runner-service-monitor
-  labels:
-    "spark/servicemonitor": "true"
-spec:
-  ports:
-    - port: 49151
-      name: metrics
-  clusterIP: None
-  selector:
-    "sparkoperator.k8s.io/app-name": mock-task-runner
+      port: 8090

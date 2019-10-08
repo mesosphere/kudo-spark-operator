@@ -31,7 +31,7 @@ EOF
 fi
 
 kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-driver-rbac.yaml
-# Expose Spark Operator metrics service
-kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-operator-service.yaml
-# Create ServiceMonitor (see prometheus-operator docs) for Spark
+
+# Create ServiceMonitor (see prometheus-operator docs) for Spark.
+# TODO: make the service-monitor.yaml part of kudo-spark-operator once the issue https://github.com/kudobuilder/kudo/issues/913 will be fixed.
 kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-service-monitor.yaml
