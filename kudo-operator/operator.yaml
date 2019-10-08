@@ -1,6 +1,6 @@
 name: "spark"
 version: "0.0.1"
-kudoVersion: 0.7.2
+kudoVersion: 0.7.3
 kubernetesVersion: 1.15.0
 appVersion: "2.4.4"
 maintainers:
