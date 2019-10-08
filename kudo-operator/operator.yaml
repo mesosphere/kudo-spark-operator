@@ -1,14 +1,18 @@
 name: "spark"
 version: "0.0.1"
-kudoVersion: 0.5.0
+kudoVersion: 0.7.3
 kubernetesVersion: 1.15.0
 appVersion: "2.4.4"
 maintainers:
-  - Anton Kirillov <akirillov@d2iq.com>
+  - name: Anton Kirillov
+    email: akirillov@d2iq.com
+  - name: Uladzimir Krautsou
+    email: ukrautsou@d2iq.com
 url: https://spark.apache.org/
 tasks:
   deploy:
     resources:
+      - crds.yaml
       - spark-operator-rbac.yaml
       - spark-operator-serviceaccount.yaml
       - spark-rbac.yaml

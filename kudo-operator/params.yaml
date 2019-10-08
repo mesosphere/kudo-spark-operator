@@ -122,3 +122,8 @@ enableBatchScheduler:
   description: "Enable Batch Scheduler"
   default: false
   displayName: "Enable Batch Scheduler"
+
+installCrds:
+  description: "Install sparkapplications.sparkoperator.k8s.io and scheduledsparkapplications.sparkoperator.k8s.io"
+  default: true
+  displayName: "Install Spark Operator CRDs"

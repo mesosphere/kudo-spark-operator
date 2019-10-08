@@ -13,7 +13,7 @@ cmd = "kubectl --namespace {} get instances.kudo.dev -o json".format(NAMESPACE)
 
 def delete_resource(api, resource):
     log.info("Deleting {} {}".format(api, resource))
-    subprocess.call("kubectl delete {} {}".format(api, resource), shell=True)
+    subprocess.call("kubectl --namespace {} delete {} {}".format(NAMESPACE, api, resource), shell=True)
 
 subprocess.getoutput(cmd)
 instances = json.loads(subprocess.getoutput(cmd))
@@ -21,11 +21,9 @@ instances = json.loads(subprocess.getoutput(cmd))
 versions = set()
 for instance in instances["items"]:
     if instance["metadata"]["labels"]["kudo.dev/operator"] == "spark":
-        name = instance["metadata"]["name"]
-        plan = instance["status"]["activePlan"]["name"]
-
         versions.add(instance["spec"]["operatorVersion"]["name"])
-        delete_resource("planexecutions.kudo.dev", plan)
+
+        name = instance["metadata"]["name"]
         delete_resource("instance.kudo.dev", name)
 
 for version in versions:
