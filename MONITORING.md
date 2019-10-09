@@ -1,4 +1,4 @@
-The `kudo-spark-operator` is able to be seamlessly integrated with Prometheus, which is installed within [Prometheus operator](https://github.com/coreos/prometheus-operator).
+The `kudo-spark-operator` is able to seamlessly integrated with Prometheus, which is installed within [Prometheus operator](https://github.com/coreos/prometheus-operator).
 Integration with other Prometheus distributions, like kube-prometheus, wasn't tested. 
 
 The `prometheus-operator` uses crafted services discovery approach, introducing `ServiceMonitor` kind. 
