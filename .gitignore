@@ -17,3 +17,5 @@ license.txt
 
 docker-*
 *.checksum
+*.bak
+*.tmp
