@@ -9,7 +9,7 @@ Required software:
 * GNU Make 4.2.1 or higher
 * sha1sum
 * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-* [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli)
+* [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli) 0.7.3 or higher
 
 For test cluster provisioning and Stub Universe artifacts upload valid AWS access credentials required:
 * `AWS_PROFILE` **or** `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables should be provided
