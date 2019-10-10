@@ -12,7 +12,7 @@ url: https://spark.apache.org/
 tasks:
   deploy:
     resources:
-      - crds.yaml
+#      - crds.yaml
       - spark-operator-rbac.yaml
       - spark-operator-serviceaccount.yaml
       - spark-rbac.yaml

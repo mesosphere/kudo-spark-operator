@@ -125,5 +125,5 @@ enableBatchScheduler:
 
 installCrds:
   description: "Install sparkapplications.sparkoperator.k8s.io and scheduledsparkapplications.sparkoperator.k8s.io"
-  default: true
+  default: false
   displayName: "Install Spark Operator CRDs"
