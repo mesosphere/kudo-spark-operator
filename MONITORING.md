@@ -2,7 +2,7 @@ The `kudo-spark-operator` is able to seamlessly integrated with Prometheus, whic
 Integration with other Prometheus distributions, like kube-prometheus, wasn't tested. 
 
 The `prometheus-operator` uses crafted services discovery approach, introducing `ServiceMonitor` kind. 
-But the `kudo-spark-operator` take its configuration burden on itself.
+But the `kudo-spark-operator` takes its configuration burden on itself.
 
 #### How to get `kudo-spark-operator` and app's metrics available for scrape by Prometheus:
 1) Ensure `prometheus-operator` is installed on your Kubernetes cluster.
