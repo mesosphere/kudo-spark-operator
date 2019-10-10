@@ -102,9 +102,10 @@ historyServerFsLogDirectory:
   default: "/opt/spark/work-dir"
   displayName: "Spark History Server Event Log Directory"
 
-storageClassName:
-  description: "Storage class for provisioning a persistent volume used for Spark Event Logging."
-  displayName: "Storage Class Name"
+persistentVolumeClaimName:
+  description: "External Persistent Volume Claim Name"
+  default: ""
+  displayName: "Persistent Volume Claim Name"
 
 ## Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/

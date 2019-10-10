@@ -41,11 +41,13 @@ spec:
         ports:
         - containerPort: 18080
           name: "history-server"
+      {{- if .Params.persistentVolumeClaimName }}
         volumeMounts:
         - mountPath: "{{ .Params.historyServerFsLogDirectory }}"
           name: history-server-storage
       volumes:
       - name: history-server-storage
         persistentVolumeClaim:
-          claimName: spark-events-pvc
+          claimName: {{ .Params.persistentVolumeClaimName }}
+      {{- end }}
 {{ end }}
