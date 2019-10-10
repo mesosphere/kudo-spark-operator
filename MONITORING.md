@@ -40,10 +40,15 @@ when monitoring is enabled.
            port: 8090
      ```  
    - if you would like use other than 8090 port for metrics exporting, you must pass appropriate parameter during `kudo-spark-operator` installation `-p appMetricsPort=<desired_port>` 
-   - Mark your application by the label 
+   - Mark `driver` and/or `executor` with the label `metrics-exposed: "true"` -
      ```yaml
-       labels:
-         exposedMetrics: true
+     spec:
+       driver:
+         labels:
+            metrics-exposed: "true"
+       executor:
+         labels:
+           metrics-exposed: "true"
      ```
 
 Full configuration example is available in [specs/spark-application.yaml](specs/spark-application.yaml).
