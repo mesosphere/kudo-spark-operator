@@ -38,7 +38,9 @@ when monitoring is enabled.
            jmxExporterJar: "/prometheus/jmx_prometheus_javaagent-0.11.0.jar"
            port: 8090
      ```  
-   - if you would like use other than 8090 port for metrics exporting, you must pass appropriate parameter during `kudo-spark-operator` installation `-p appMetricsPort=<desired_port>` 
+   - if it's necessary to expose metrics endpoint on other than 8090 port, then, please, 
+     1) change the port value in `SparkApplication` definition yaml (`spec.monitoring.prometheus.port`) and 
+     1) specify appropriate parameter during `kudo-spark-operator` installation - `-p appMetricsPort=<desired_port>`. 
    - Mark `driver` and/or `executor` with the label `metrics-exposed: "true"` -
      ```yaml
      spec:
