@@ -7,8 +7,9 @@ SCRIPTS_DIR := $(ROOT_DIR)/scripts
 KUDO_TOOLS_DIR := $(ROOT_DIR)/shared
 SPARK_OPERATOR_DIR := $(ROOT_DIR)/spark-on-k8s-operator
 
-KONVOY_VERSION ?= v1.1.5
-export KONVOY_VERSION
+export KONVOY_VERSION ?= v1.1.5
+export WORKER_NODE_INSTANCE_TYPE ?= m5.xlarge
+export WORKER_NODE_COUNT ?= 5
 
 NAMESPACE ?= spark
 MKE_CLUSTER_NAME=kubernetes-cluster1
@@ -41,7 +42,6 @@ export AWS_SESSION_TOKEN ?=
 
 .PHONY: aws_credentials
 aws_credentials:
-	# if the variable is not set, set the value from credentials file
 	$(eval AWS_ACCESS_KEY_ID := $(if $(AWS_ACCESS_KEY_ID),$(AWS_ACCESS_KEY_ID),$(call get_aws_credential,aws_access_key_id)))
 	$(eval AWS_SECRET_ACCESS_KEY := $(if $(AWS_SECRET_ACCESS_KEY),$(AWS_SECRET_ACCESS_KEY),$(call get_aws_credential,aws_secret_access_key)))
 	$(eval AWS_SESSION_TOKEN := $(if $(AWS_SESSION_TOKEN),$(AWS_SESSION_TOKEN),$(call get_aws_credential,aws_session_token)))
@@ -135,11 +135,11 @@ clean-docker:
 clean-all: clean-docker
 clean-all:
 	rm -f *.pem *.pub *-created aws_credentials
-	rm -rf state runs .konvoy-* *checksum cluster.yaml cluster.tmp.yaml inventory.yaml admin.conf
+	rm -rf state runs .konvoy-* *checksum cluster.*yaml* inventory.yaml admin.conf
 
 # function for extracting the value of an AWS property passed as an argument
 define get_aws_credential
-$(shell grep $(AWS_PROFILE) -A 3 ~/.aws/credentials | tail -n3 | grep $1 | xargs | cut -d' ' -f3)
+$(if $(AWS_PROFILE),$(shell cat ~/.aws/credentials | grep ${AWS_PROFILE} -A3 | tail -n3 | grep $1 | xargs | cut -d' ' -f3),$(error AWS_PROFILE is not set))
 endef
 
 # function for calculating global checksum of directories and files passed as arguments.
