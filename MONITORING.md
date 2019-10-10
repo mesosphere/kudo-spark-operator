@@ -1,9 +1,8 @@
-The `kudo-spark-operator` is able to seamlessly integrated with Prometheus, which is installed within [Prometheus operator](https://github.com/coreos/prometheus-operator).
-Integration with other Prometheus distributions, like kube-prometheus, wasn't tested. 
+The `kudo-spark-operator` is seamlessly integrating with Prometheus, which is installed via [Prometheus operator](https://github.com/coreos/prometheus-operator).
 
 The `prometheus-operator` uses crafted services discovery approach, introducing `ServiceMonitor` kind. 
-Prometheus Operator relies on ServiceMonitor kind which describes the set of targets to be monitored. 
-KUDO Spark Operator configures ServiceMonitors for both the Operator and submitted Spark Applications automatically 
+Prometheus Operator relies on `ServiceMonitor` kind which describes the set of targets to be monitored. 
+KUDO Spark Operator configures `ServiceMonitor`s for both the Operator and submitted Spark Applications automatically 
 when monitoring is enabled.
 
 #### Configuring Spark Operator and Spark Application metrics export to Prometheus
@@ -29,7 +28,7 @@ when monitoring is enabled.
    EOF
    ```
 1) Composing your Spark Application yaml:
-   - use Spark image with JMXPrometheus exporter jar on the board i.e. `gcr.io/spark-operator/spark:v2.4.4-gcs-prometheus` 
+   - use Spark image with JMXPrometheus exporter jar on the board i.e. `mesosphere/spark:2.4.4-bin-hadoop2.7-k8s` 
    - enable driver/executors monitoring by adding the yaml piece into `spec` section:
      ```yaml
        monitoring:
