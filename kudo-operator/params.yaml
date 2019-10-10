@@ -104,7 +104,6 @@ historyServerFsLogDirectory:
 
 storageClassName:
   description: "Storage class for provisioning a persistent volume used for Spark Event Logging."
-  default: "awsebscsiprovisioner"
   displayName: "Storage Class Name"
 
 ## Node labels for pod assignment
