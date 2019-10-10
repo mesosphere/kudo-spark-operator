@@ -46,4 +46,4 @@ when monitoring is enabled.
          exposedMetrics: true
      ```
 
-Full blown example you can find in [spark-application.yaml](specs/spark-application.yaml).
+Full configuration example is available in [specs/spark-application.yaml](specs/spark-application.yaml).
