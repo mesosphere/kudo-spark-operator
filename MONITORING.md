@@ -6,7 +6,7 @@ But the `kudo-spark-operator` take its configuration burden on itself.
 
 #### How to get `kudo-spark-operator` and app's metrics available for scrape by Prometheus:
 1) Ensure `prometheus-operator` is installed on your Kubernetes cluster.
-1) Install the `kudo-spark-operator` with `-p enableMetrics=true` parameter. (But it's true by default, so typically no need to specify it explicitly)
+1) Install the KUDO Spark Operator. Metrics reporting is enabled by default and can be disabled by modifying `enableMetrics` parameter.
 1) Composing your Spark Application yaml:
    - use Spark image with JMXPrometheus exporter jar on the board i.e. `gcr.io/spark-operator/spark:v2.4.4-gcs-prometheus` 
    - enable driver/executors monitoring by adding the yaml piece into `spec` section:
