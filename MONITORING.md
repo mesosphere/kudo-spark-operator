@@ -4,7 +4,7 @@ Integration with other Prometheus distributions, like kube-prometheus, wasn't te
 The `prometheus-operator` uses crafted services discovery approach, introducing `ServiceMonitor` kind. 
 But the `kudo-spark-operator` takes its configuration burden on itself.
 
-#### How to get `kudo-spark-operator` and app's metrics available for scrape by Prometheus:
+#### Configuring Spark Operator and Spark Application metrics export to Prometheus
 1) Ensure `prometheus-operator` is installed on your Kubernetes cluster.
 1) Install the KUDO Spark Operator. Metrics reporting is enabled by default and can be disabled by modifying `enableMetrics` parameter.
 1) Composing your Spark Application yaml:
