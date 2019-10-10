@@ -4,12 +4,12 @@ kind: Service
 metadata:
   name: spark-application-metrics
   labels:
-    "spark/servicemonitor": true
+    "spark/servicemonitor": "true"
 spec:
   ports:
     - port: {{ .Params.appMetricsPort }}
       name: metrics
   clusterIP: None
   selector:
-    "exposedMetrics": true
+    "metrics-exposed": "true"
 {{- end }}

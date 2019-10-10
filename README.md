@@ -75,8 +75,6 @@ make install NAMESPACE=test-namespace
 
 ### Submitting Spark Application
 
-To get started with your app monitoring, please, see also [MONITORING.md](MONITORING.md) 
-
 To submit Spark Application and check its status run:
 ```bash
 #switch to operator namespace, e.g.
@@ -91,6 +89,8 @@ kubectl get sparkapplication
 # check application status
 kubectl describe sparkapplication mock-task-runner
 ```
+
+To get started with your app monitoring, please, see also [MONITORING.md](MONITORING.md)
 
 ###  MKE cluster provisioning
 

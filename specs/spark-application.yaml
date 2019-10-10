@@ -2,8 +2,6 @@ apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
   name: mock-task-runner
-  labels:
-    exposedMetrics: true
 spec:
   type: Scala
   mode: cluster
@@ -25,6 +23,10 @@ spec:
     memory: "512m"
     labels:
       version: 2.4.4
+      metrics-exposed: "true"
+      heritage: kudo
+      #kudo.dev/instance: spark-psmthx
+      kudo.dev/operator: spark
     serviceAccount: spark-driver
   executor:
     cores: 1
@@ -32,6 +34,10 @@ spec:
     memory: "512m"
     labels:
       version: 2.4.4
+      metrics-exposed: "true"
+      heritage: kudo
+      #kudo.dev/instance: spark-psmthx TODO: decide on how to put here the dynamic value
+      kudo.dev/operator: spark
   monitoring:
     exposeDriverMetrics: true
     exposeExecutorMetrics: true

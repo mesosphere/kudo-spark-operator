@@ -2,11 +2,32 @@ The `kudo-spark-operator` is able to seamlessly integrated with Prometheus, whic
 Integration with other Prometheus distributions, like kube-prometheus, wasn't tested. 
 
 The `prometheus-operator` uses crafted services discovery approach, introducing `ServiceMonitor` kind. 
-But the `kudo-spark-operator` takes its configuration burden on itself.
+Prometheus Operator relies on ServiceMonitor kind which describes the set of targets to be monitored. 
+KUDO Spark Operator configures ServiceMonitors for both the Operator and submitted Spark Applications automatically 
+when monitoring is enabled.
 
 #### Configuring Spark Operator and Spark Application metrics export to Prometheus
 1) Ensure `prometheus-operator` is installed on your Kubernetes cluster.
 1) Install the KUDO Spark Operator. Metrics reporting is enabled by default and can be disabled by modifying `enableMetrics` parameter.
+1) Create ServiceMonitor for Spark (see prometheus-operator docs). Take this yaml without modification - 
+   ```yaml
+   cat <<EOF | kubectl apply -f -
+   apiVersion: monitoring.coreos.com/v1
+    kind: ServiceMonitor
+   metadata:
+     labels:
+       app: prometheus-operator
+       release: prometheus-kubeaddons
+     name: spark-cluster-monitor
+   spec:
+     endpoints:
+       - interval: 5s
+         port: metrics
+     selector:
+       matchLabels:
+         spark/servicemonitor: "true"
+   EOF
+   ```
 1) Composing your Spark Application yaml:
    - use Spark image with JMXPrometheus exporter jar on the board i.e. `gcr.io/spark-operator/spark:v2.4.4-gcs-prometheus` 
    - enable driver/executors monitoring by adding the yaml piece into `spec` section:
