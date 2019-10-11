@@ -40,7 +40,7 @@ when monitoring is enabled.
            port: 8090
      ```  
    - if it's necessary to expose metrics endpoint on other than 8090 port, then, please, 
-     1) change the port value in `SparkApplication` definition yaml (`spec.monitoring.prometheus.port`) and 
+     1) change the `port` value in the `SparkApplication` yaml definition (`spec.monitoring.prometheus.port`)
      1) specify appropriate parameter during `kudo-spark-operator` installation - `-p appMetricsPort=<desired_port>`. 
    - Mark `driver` and/or `executor` with the label `metrics-exposed: "true"` -
      ```yaml
