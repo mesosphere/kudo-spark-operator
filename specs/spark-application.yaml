@@ -5,7 +5,7 @@ metadata:
 spec:
   type: Scala
   mode: cluster
-  image: gcr.io/spark-operator/spark:v2.4.4-gcs-prometheus
+  image: mesosphere/spark:2.4.4-bin-hadoop2.7-k8s
   imagePullPolicy: Always
   mainClass: MockTaskRunner
   mainApplicationFile: "https://infinity-artifacts.s3.amazonaws.com/scale-tests/dcos-spark-scala-tests-assembly-2.4.0-20190325.jar"

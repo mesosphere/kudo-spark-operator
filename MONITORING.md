@@ -1,7 +1,6 @@
 Out of the box, the `kudo-spark-operator` has enabled metrics reporting. 
 By default, it supports integration with the [Prometheus operator](https://github.com/coreos/prometheus-operator).
 
-The `prometheus-operator` uses crafted services discovery approach, introducing `ServiceMonitor` kind. 
 Prometheus Operator relies on `ServiceMonitor` kind which describes the set of targets to be monitored. 
 KUDO Spark Operator configures `ServiceMonitor`s for both the Operator and submitted Spark Applications automatically 
 when monitoring is enabled.
