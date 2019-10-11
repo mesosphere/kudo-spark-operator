@@ -25,13 +25,16 @@ kubectl kudo install ./kudo-operator -p operatorImageName=mesosphere/kudo-spark-
 ### Creating Spark Application
 
 Make sure `specs/spark-application.yaml` has these two configurations added under `spec.sparkConf`.
+
+```
 "spark.eventLog.enabled": "true"
 "spark.eventLog.dir": "/opt/spark/work-dir"
+```
 
 If PVC is passed while installing the Spark Operator, make sure these two fields are also added with following values:
 
 ```
-# Add this SparkApplicationSpec
+# Add this under SparkApplicationSpec
 Volumes:
 - name: pvc-storage
   persistentVolumeClaim:
@@ -60,7 +63,7 @@ kubectl get pods
 ```
 
 Now you can run this command to expose the UI in your local machine.
-`kubectl port-forward <pod-name> <local-port>:<container-port>`
+`kubectl port-forward <history-server-pod-name> <local-port>:<container-port>`
 
 For example:
 ```
