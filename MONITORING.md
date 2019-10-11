@@ -29,7 +29,7 @@ when monitoring is enabled.
    EOF
    ```
 1) Composing your Spark Application yaml:
-   - use Spark image with JMXPrometheus exporter jar on the board i.e. `mesosphere/spark:2.4.4-bin-hadoop2.7-k8s` 
+   - use the following Spark image which includes the `JMXPrometheus` exporter jar: `mesosphere/spark:2.4.4-bin-hadoop2.7-k8s` 
    - enable driver/executors monitoring by adding the yaml piece into `spec` section:
      ```yaml
        monitoring:
