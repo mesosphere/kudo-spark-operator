@@ -13,7 +13,7 @@ when monitoring is enabled.
    ```yaml
    cat <<EOF | kubectl apply -f -
    apiVersion: monitoring.coreos.com/v1
-    kind: ServiceMonitor
+   kind: ServiceMonitor
    metadata:
      labels:
        app: prometheus-operator
