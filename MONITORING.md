@@ -6,7 +6,7 @@ Prometheus Operator relies on `ServiceMonitor` kind which describes the set of t
 KUDO Spark Operator configures `ServiceMonitor`s for both the Operator and submitted Spark Applications automatically 
 when monitoring is enabled.
 
-#### Configuring Spark Operator and Spark Application metrics export to Prometheus
+#### Exporting Spark Operator and Spark Application metrics to Prometheus
 1) Ensure `prometheus-operator` is installed on your Kubernetes cluster.
 1) Install the KUDO Spark Operator. Metrics reporting is enabled by default and can be disabled by modifying `enableMetrics` parameter.
 1) Create ServiceMonitor for Spark (see prometheus-operator docs). Take this yaml without modification - 
