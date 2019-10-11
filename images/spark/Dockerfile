@@ -41,6 +41,7 @@ ADD https://repo1.maven.org/maven2/io/prometheus/jmx/jmx_prometheus_javaagent/0.
 COPY conf/metrics.properties /etc/metrics/conf
 COPY conf/prometheus.yaml /etc/metrics/conf
 
+
 WORKDIR ${SPARK_HOME}/work-dir
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
