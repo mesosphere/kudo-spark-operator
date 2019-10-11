@@ -24,9 +24,6 @@ spec:
     labels:
       version: 2.4.4
       metrics-exposed: "true"
-      heritage: kudo
-      #kudo.dev/instance: spark-psmthx
-      kudo.dev/operator: spark
     serviceAccount: spark-driver
   executor:
     cores: 1
@@ -35,9 +32,6 @@ spec:
     labels:
       version: 2.4.4
       metrics-exposed: "true"
-      heritage: kudo
-      #kudo.dev/instance: spark-psmthx TODO: decide on how to put here the dynamic value
-      kudo.dev/operator: spark
   monitoring:
     exposeDriverMetrics: true
     exposeExecutorMetrics: true
