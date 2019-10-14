@@ -40,6 +40,7 @@ func InstallSparkOperatorWithNamespace(namespace string) (*SparkOperatorInstalla
 		Namespace: namespace,
 		Clients:   clientSet,
 	}
+	spark.CleanUp()
 
 	installScript := exec.Command("bash", path.Join(TestDir, "../scripts/install_operator.sh"))
 	if strings.Contains(OperatorImage, ":") {
