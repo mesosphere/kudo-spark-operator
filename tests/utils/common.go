@@ -12,7 +12,7 @@ const DefaultNamespace = "kudo-spark-operator-testing"
 const rootDirName = "tests"
 
 var OperatorImage = getenvOr("OPERATOR_IMAGE", "mesosphere/kudo-spark-operator")
-var SparkImage = getenvOr("SPARK_IMAGE", "gcr.io/spark-operator/spark:v2.4.4-gcs-prometheus")
+var SparkImage = getenvOr("SPARK_IMAGE", "mesosphere/spark:2.4.4-bin-hadoop2.7-k8s")
 var SparkVersion = getenvOr("SPARK_VERSION", "2.4.4")
 var TestDir = getenvOr("TEST_DIR", goUpToRootDir())
 var KubeConfig = getenvOr("KUBECONFIG", filepath.Join(os.Getenv("HOME"), ".kube", "config"))
