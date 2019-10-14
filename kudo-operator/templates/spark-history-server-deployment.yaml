@@ -1,4 +1,4 @@
-{{ if .Params.enableHistoryServer }}
+{{- if .Params.enableHistoryServer }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -50,4 +50,4 @@ spec:
         persistentVolumeClaim:
           claimName: {{ .Params.persistentVolumeClaimName }}
       {{- end }}
-{{ end }}
+{{- end }}

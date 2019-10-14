@@ -1,4 +1,4 @@
-{{ if .Params.enableHistoryServer }}
+{{- if .Params.enableHistoryServer }}
 kind: Service
 apiVersion: v1
 metadata:
@@ -15,4 +15,4 @@ spec:
     app.kubernetes.io/name: history-server
     app.kubernetes.io/instance: {{ .Name }}
     app.kubernetes.io/version: {{ .Params.operatorVersion }}
-{{ end }}
+{{- end }}
