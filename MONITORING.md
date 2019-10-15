@@ -9,7 +9,7 @@ when monitoring is enabled.
 
 ##### Prerequisite
 * The *`prometheus-operator`*.
-If you are using Kubernetes cluster without pre-installed the `prometheus-operator` then follow 
+If you don't already have the `prometheus-operator` installed on your Kubernetes cluster, you can do so by following
 the [quick start guide](https://github.com/coreos/prometheus-operator#quickstart).
 * The *`kudo-spark-operator`*. [Installing and using spark operator](https://github.com/mesosphere/kudo-spark-operator/blob/master/README.md#installing-and-using-spark-operator).
 
@@ -82,5 +82,5 @@ on previous step.
      selector:
        "metrics-exposed": "true"
    ```  
-1) Now go to the prometheus dashboard at `<kubernetes_endpoint_url>/ops/portal/prometheus/graph` and search for metrics 
-starting with 'spark'. The Prometheus uri might be differ depends on the `prometheus-operator` installation configuration. 
+1) Now, go to the prometheus dashboard (e.g. `<kubernetes_endpoint_url>/ops/portal/prometheus/graph`) and search for metrics 
+starting with 'spark'. The Prometheus URI might be different depending on how you configured and installed the `prometheus-operator`. 
