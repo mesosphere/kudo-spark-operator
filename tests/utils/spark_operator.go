@@ -71,7 +71,7 @@ func InstallSparkOperatorWithNamespace(namespace string) (*SparkOperatorInstalla
 
 func (spark *SparkOperatorInstallation) CleanUp() {
 	// So far multiple Spark operator instances in one namespace is not a supported configuration, so whole namespace will be cleaned
-	log.Infof("Uninstalling _all_ kudo spark operator instances and versions from %s", spark.Namespace)
+	log.Infof("Uninstalling ALL kudo spark operator instances and versions from %s", spark.Namespace)
 	instances, _ := getInstanceNames(spark.Namespace)
 	versions, _ := getOperatorVersions(spark.Namespace)
 
