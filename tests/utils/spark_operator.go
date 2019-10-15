@@ -5,13 +5,11 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"k8s.io/client-go/kubernetes"
-	"os"
-	"os/exec"
-	"path"
-	"regexp"
 	"strings"
 	"time"
 )
+
+const operatorDir = "../kudo-operator"
 
 type SparkOperatorInstallation struct {
 	Namespace    string
@@ -19,54 +17,64 @@ type SparkOperatorInstallation struct {
 	Clients      *kubernetes.Clientset
 }
 
-type SparkInstance struct {
-	Name      string
-	Namespace string
-	Status    string
+func (spark *SparkOperatorInstallation) InstallSparkOperator() error {
+	return spark.InstallSparkOperatorWithParams(nil)
 }
 
-func InstallSparkOperator() (*SparkOperatorInstallation, error) {
-	return InstallSparkOperatorWithNamespace(DefaultNamespace)
-}
+func (spark *SparkOperatorInstallation) InstallSparkOperatorWithParams(params map[string]string) error {
 
-func InstallSparkOperatorWithNamespace(namespace string) (*SparkOperatorInstallation, error) {
+	if !isKudoInstalled() {
+		return errors.New("can't install Spark operator without KUDO")
+	}
+
 	clientSet, err := GetK8sClientSet()
 	if err != nil {
 		log.Fatal(err)
 		panic(err)
 	}
+	spark.Clients = clientSet
 
-	spark := SparkOperatorInstallation{
-		Namespace: namespace,
-		Clients:   clientSet,
+	// Set default namespace and instance name not specified
+	if spark.Namespace == "" {
+		spark.Namespace = DefaultNamespace
 	}
+	if spark.InstanceName == "" {
+		spark.InstanceName = DefaultInstanceName
+	}
+
 	spark.CleanUp()
 
-	installScript := exec.Command("bash", path.Join(TestDir, "../scripts/install_operator.sh"))
+	_, err = CreateNamespace(spark.Clients, spark.Namespace)
+	if err != nil {
+		return err
+	}
+
+	// We install CRDs manually for now. It's a temporary workaround soon to be removed.
+	KubectlApply(spark.Namespace, "../specs/spark-applications-crds.yaml")
+
+	// Handle parameters
+	if params == nil {
+		params = make(map[string]string)
+	}
 	if strings.Contains(OperatorImage, ":") {
 		operatorImage := strings.Split(OperatorImage, ":")
-		installScript.Env = append(os.Environ(),
-			"NAMESPACE="+namespace,
-			"OPERATOR_IMAGE_NAME="+operatorImage[0],
-			"OPERATOR_VERSION="+operatorImage[1])
+		params["operatorImageName"] = operatorImage[0]
+		params["operatorVersion"] = operatorImage[1]
 	} else {
-		installScript.Env = append(os.Environ(),
-			"NAMESPACE="+namespace,
-			"OPERATOR_IMAGE_NAME="+OperatorImage)
+		params["operatorImageName"] = OperatorImage
 	}
-	out, err := installScript.CombinedOutput()
-	log.Infof("KUDO Spark operation installation script output:\n%s", out)
+
+	err = installKudoPackage(spark.Namespace, operatorDir, spark.InstanceName, params)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	instanceNameRE, _ := regexp.Compile(`instance\.kudo\.dev/v1alpha1/(spark-\w{6}) created`)
-	parsedInstanceName := instanceNameRE.FindStringSubmatch(string(out))
-	spark.InstanceName = parsedInstanceName[1]
+	_, err = KubectlApply(spark.Namespace, "../specs/spark-driver-rbac.yaml")
+	if err != nil {
+		return err
+	}
 
-	spark.waitForInstanceStatus("COMPLETE")
-
-	return &spark, nil
+	return spark.waitForInstanceStatus("COMPLETE")
 }
 
 func (spark *SparkOperatorInstallation) CleanUp() {
@@ -88,33 +96,25 @@ func (spark *SparkOperatorInstallation) CleanUp() {
 	}
 
 	DeleteResource(spark.Namespace, "operator.kudo.dev", "spark")
-	//DropNamespace(spark.Clients, spark.Namespace)
+	DropNamespace(spark.Clients, spark.Namespace)
 }
 
 func (spark *SparkOperatorInstallation) waitForInstanceStatus(targetStatus string) error {
 	log.Infof("Waiting for %s/%s to reach status %s", spark.Namespace, spark.InstanceName, targetStatus)
 	return retry(3*time.Minute, 1*time.Second, func() error {
-		instance, err := spark.getInstance()
-		if err == nil && instance.Status != targetStatus {
-			err = errors.New(fmt.Sprintf("%s status is %s, but waiting for %s", instance.Name, instance.Status, targetStatus))
+		status, err := spark.getInstanceStatus()
+		if err == nil && status != targetStatus {
+			err = errors.New(fmt.Sprintf("%s status is %s, but waiting for %s", spark.InstanceName, status, targetStatus))
 		}
 		return err
 	})
 }
 
-func (spark *SparkOperatorInstallation) getInstance() (SparkInstance, error) {
+func (spark *SparkOperatorInstallation) getInstanceStatus() (string, error) {
 	status, err := Kubectl("get", "instances.kudo.dev", spark.InstanceName, "--namespace", spark.Namespace, `-o=jsonpath={.status.aggregatedStatus.status}`)
 	status = strings.Trim(status, `'`)
 
-	if err != nil {
-		return SparkInstance{}, err
-	}
-
-	return SparkInstance{
-		Name:      spark.InstanceName,
-		Namespace: spark.Namespace,
-		Status:    status,
-	}, nil
+	return status, err
 }
 
 func getInstanceNames(namespace string) ([]string, error) {

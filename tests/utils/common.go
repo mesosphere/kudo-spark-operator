@@ -9,6 +9,7 @@ import (
 )
 
 const DefaultNamespace = "kudo-spark-operator-testing"
+const DefaultInstanceName = "test-instance"
 const rootDirName = "tests"
 
 var OperatorImage = getenvOr("OPERATOR_IMAGE", "mesosphere/kudo-spark-operator")

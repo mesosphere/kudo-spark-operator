@@ -33,3 +33,10 @@ func TestTemplating(t *testing.T) {
 
 	log.Infof("Created a temp file at %s", tmpFilePath)
 }
+
+func TestKudoInstall(t *testing.T) {
+	err := InstallKudo()
+	if err != nil {
+		t.Error(err)
+	}
+}

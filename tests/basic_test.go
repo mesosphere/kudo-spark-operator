@@ -7,8 +7,16 @@ import (
 	"testing"
 )
 
+func TestMain(m *testing.M) {
+	utils.InstallKudo()
+	defer utils.UninstallKudo()
+
+	m.Run()
+}
+
 func TestSparkOperatorInstallation(t *testing.T) {
-	spark, err := utils.InstallSparkOperator()
+	spark := utils.SparkOperatorInstallation{}
+	err := spark.InstallSparkOperator()
 	defer spark.CleanUp()
 
 	if err != nil {
@@ -25,8 +33,10 @@ func TestSparkOperatorInstallation(t *testing.T) {
 
 func TestSparkOperatorInstallationWithCustomNamespace(t *testing.T) {
 	customNamespace := "custom-test-namespace"
-
-	spark, err := utils.InstallSparkOperatorWithNamespace(customNamespace)
+	spark := utils.SparkOperatorInstallation{
+		Namespace: customNamespace,
+	}
+	err := spark.InstallSparkOperator()
 	defer spark.CleanUp()
 
 	if err != nil {
@@ -44,7 +54,8 @@ func TestSparkOperatorInstallationWithCustomNamespace(t *testing.T) {
 }
 
 func TestJobSubmission(t *testing.T) {
-	spark, err := utils.InstallSparkOperator()
+	spark := utils.SparkOperatorInstallation{}
+	err := spark.InstallSparkOperator()
 	defer spark.CleanUp()
 
 	if err != nil {
