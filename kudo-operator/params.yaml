@@ -102,6 +102,21 @@ historyServerFsLogDirectory:
   default: "/opt/spark/work-dir"
   displayName: "Spark History Server Event Log Directory"
 
+historyServerCleanerEnabled:
+  description: "Specifies whether the Spark History Server should periodically clean up event logs from storage."
+  default: "false"
+  displayName: "Spark History Server Cleaner Enabled"
+
+historyServerCleanerInterval:
+  description: "Frequency the Spark History Server checks for files to delete."
+  default: "1d"
+  displayName: "Spark History Server Cleaner Interval"
+
+historyServerCleanerMaxAge:
+  description: "History files older than this will be deleted."
+  default: "7d"
+  displayName: "Spark History Server Cleaner Max Age"
+
 historyServerPVCName:
   description: "External Persistent Volume Claim Name used for Spark event logs storage by History Server"
   default: ""

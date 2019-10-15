@@ -25,6 +25,7 @@ else
       labels:
         name: "${NAMESPACE}"
 EOF
+    kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/s3-secret.yaml
     # For the time being we need to install CRDs manually because KUDO doesn't fully support it
     kubectl apply -f ${SPECS_DIR}/spark-applications-crds.yaml
     kubectl kudo --namespace "${NAMESPACE}" install "${OPERATOR_DIR}" -p operatorImageName="${OPERATOR_IMAGE_NAME}" -p operatorVersion="${OPERATOR_VERSION}"
