@@ -6,10 +6,15 @@ KUDO Spark Operator configures `ServiceMonitor`s for both the Operator and submi
 when monitoring is enabled.
 
 #### Exporting Spark Operator and Spark Application metrics to Prometheus
-1) Ensure `prometheus-operator` is installed on your Kubernetes cluster.
-1) Install the KUDO Spark Operator. Metrics reporting is enabled by default and can be disabled by modifying `enableMetrics` parameter.
+
+##### Prerequisite
+* The *`prometheus-operator`*.
+If you are using Kubernetes cluster without pre-installed the `prometheus-operator` then follow 
+the [quick start guide](https://github.com/coreos/prometheus-operator#quickstart).
+* The *`kudo-spark-operator`*. [Installing and using spark operator](https://github.com/mesosphere/kudo-spark-operator/blob/master/README.md#installing-and-using-spark-operator).
+
 1) Create a `ServiceMonitor` for Spark: 
-   ```yaml
+   ```bash
    cat <<EOF | kubectl apply -f -
    apiVersion: monitoring.coreos.com/v1
    kind: ServiceMonitor
@@ -54,5 +59,28 @@ when monitoring is enabled.
          labels:
            metrics-exposed: "true"
      ```
-
-Full configuration example is available in [specs/spark-application.yaml](specs/spark-application.yaml).
+   - Install the SparkApplication:
+   ```
+   kubectl apply -f <path_to_the_application_yaml>   
+   ```
+   Full configuration example is available in [specs/spark-application.yaml](specs/spark-application.yaml).
+1) Create the metrics endpoint service. And don't forget to modify the service port in the yaml in case you have changed it 
+on previous step.
+   ```bash
+   cat <<EOF | kubectl apply -f - 
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: spark-application-metrics
+     labels:
+       "spark/servicemonitor": "true"
+   spec:
+     ports:
+       - port: 8090
+         name: metrics
+     clusterIP: None
+     selector:
+       "metrics-exposed": "true"
+   ```  
+1) Now go to the prometheus dashboard at `<kubernetes_endpoint_url>/ops/portal/prometheus/graph` and search for metrics 
+starting with 'spark'. The Prometheus uri might be differ depends on the `prometheus-operator` installation configuration. 
