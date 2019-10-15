@@ -43,13 +43,18 @@ imagePullPolicy:
 ## Metrics
 enableMetrics:
   description: "Enable metrics"
-  default: false
+  default: true
   displayName: "Enable metrics"
 
-metricsPort:
-  description: "Metrics port"
+operatorMetricsPort:
+  description: "Spark Operator Metrics port"
   default: 10254
-  displayName: "Metrics port"
+  displayName: "Spark Operator Metrics port"
+
+appMetricsPort:
+  description: "Spark Application Metrics port"
+  default: 8090
+  displayName: "Spark Application Metrics port"
 
 metricsEndpoint:
   description: "Metrics endpoint"

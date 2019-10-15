@@ -90,6 +90,8 @@ kubectl get sparkapplication
 kubectl describe sparkapplication mock-task-runner
 ```
 
+To get started with your app monitoring, please, see also [MONITORING.md](MONITORING.md)
+
 ###  MKE cluster provisioning
 
 If you want to create a cluster with MKE Kubernetes distribution, the following environment variables must be set before executing 
