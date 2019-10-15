@@ -32,6 +32,25 @@ the [quick start guide](https://github.com/coreos/prometheus-operator#quickstart
          spark/servicemonitor: "true"
    EOF
    ```
+1) Create the metrics endpoint service. Feel free to modify the service port in the yaml in case you are going to expose 
+the metrics on other one and see further instructions in next step.
+   ```bash
+   cat <<EOF | kubectl apply -f - 
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: spark-application-metrics
+     labels:
+       "spark/servicemonitor": "true"
+   spec:
+     ports:
+       - port: 8090
+         name: metrics
+     clusterIP: None
+     selector:
+       "metrics-exposed": "true"
+   EOF
+   ```  
 1) Composing your Spark Application yaml:
    - use the following Spark image which includes the `JMXPrometheus` exporter jar: `mesosphere/spark:2.4.4-bin-hadoop2.7-k8s` 
    - enable Driver and Executors metrics reporting by adding the following configuration into `SparkApplication` `spec` section:
@@ -60,27 +79,9 @@ the [quick start guide](https://github.com/coreos/prometheus-operator#quickstart
            metrics-exposed: "true"
      ```
    - Install the SparkApplication:
-   ```
-   kubectl apply -f <path_to_the_application_yaml>   
-   ```
+     ```
+     kubectl apply -f <path_to_the_application_yaml>   
+     ```
    Full configuration example is available in [specs/spark-application.yaml](specs/spark-application.yaml).
-1) Create the metrics endpoint service. And don't forget to modify the service port in the yaml in case you have changed it 
-on previous step.
-   ```bash
-   cat <<EOF | kubectl apply -f - 
-   apiVersion: v1
-   kind: Service
-   metadata:
-     name: spark-application-metrics
-     labels:
-       "spark/servicemonitor": "true"
-   spec:
-     ports:
-       - port: 8090
-         name: metrics
-     clusterIP: None
-     selector:
-       "metrics-exposed": "true"
-   ```  
 1) Now, go to the prometheus dashboard (e.g. `<kubernetes_endpoint_url>/ops/portal/prometheus/graph`) and search for metrics 
 starting with 'spark'. The Prometheus URI might be different depending on how you configured and installed the `prometheus-operator`. 
