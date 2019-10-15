@@ -142,7 +142,7 @@ func getOperatorVersions(namespace string) ([]string, error) {
 	}
 
 	if len(out) > 0 {
-		versions := make([]string, 1)
+		var versions []string
 		for _, version := range strings.Split(out, "\n") {
 			for _, contained := range versions {
 				if contained == version {
