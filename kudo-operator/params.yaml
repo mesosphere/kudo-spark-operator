@@ -43,7 +43,7 @@ imagePullPolicy:
 ## Metrics
 enableMetrics:
   description: "Enable metrics"
-  default: false
+  default: true
   displayName: "Enable metrics"
 
 operatorMetricsPort:
