@@ -27,7 +27,7 @@ spec:
     {{- if .Params.enableMetrics }}
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: "{{ .Params.metricsPort }}"
+        prometheus.io/port: "{{ .Params.operatorMetricsPort }}"
         prometheus.io/path: {{ .Params.metricsEndpoint }}
     {{- end }}
       labels:
@@ -59,7 +59,7 @@ spec:
         {{- end }}
         {{- if .Params.enableMetrics }}
         ports:
-          - containerPort: {{ .Params.metricsPort }}
+          - containerPort: {{ .Params.operatorMetricsPort }}
         {{ end }}
         args:
         - -v={{ .Params.logLevel }}
@@ -75,7 +75,7 @@ spec:
         {{- if .Params.enableMetrics }}
         - -enable-metrics=true
         - -metrics-labels=app_type
-        - -metrics-port={{ .Params.metricsPort }}
+        - -metrics-port={{ .Params.operatorMetricsPort }}
         - -metrics-endpoint={{ .Params.metricsEndpoint }}
         - -metrics-prefix={{ .Params.metricsPrefix }}
         {{- end }}

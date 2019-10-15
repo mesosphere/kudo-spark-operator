@@ -7,12 +7,12 @@ maintainers:
   - name: Anton Kirillov
     email: akirillov@d2iq.com
   - name: Uladzimir Krautsou
-    email: ukrautsou@d2iq.com
+    email: ukrautsou.c@d2iq.com
 url: https://spark.apache.org/
 tasks:
   deploy:
     resources:
-#      - crds.yaml
+#      - spark-operator-crds.yaml
       - spark-operator-rbac.yaml
       - spark-operator-serviceaccount.yaml
       - spark-rbac.yaml
@@ -20,6 +20,9 @@ tasks:
       - webhook-init-job.yaml
       - spark-operator-deployment.yaml
       - webhook-service.yaml
+      - spark-operator-metrics-service.yaml
+    #  - spark-application-metrics-service.yaml
+    #  - spark-service-monitor.yaml
 
 plans:
   deploy:
