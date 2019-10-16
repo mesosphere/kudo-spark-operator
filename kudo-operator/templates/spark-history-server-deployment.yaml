@@ -38,7 +38,7 @@ spec:
         - name: SPARK_NO_DAEMONIZE
           value: "true"
         - name: SPARK_HISTORY_OPTS
-          value: "{{ .Params.historyServerOpts }} -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem -Dspark.history.fs.logDirectory={{ .Params.historyServerFsLogDirectory }} -Dspark.history.fs.cleaner.enabled={{ .Params.historyServerCleanerEnabled }} -Dspark.history.fs.cleaner.interval={{ .Params.historyServerCleanerInterval }} -Dspark.history.fs.cleaner.maxAge={{ .Params.historyServerCleanerMaxAge }}"
+          value: "{{ .Params.historyServerOpts }} -Dspark.history.fs.logDirectory={{ .Params.historyServerFsLogDirectory }} -Dspark.history.fs.cleaner.enabled={{ .Params.historyServerCleanerEnabled }} -Dspark.history.fs.cleaner.interval={{ .Params.historyServerCleanerInterval }} -Dspark.history.fs.cleaner.maxAge={{ .Params.historyServerCleanerMaxAge }}"
         ports:
         - containerPort: 18080
           name: "history-server"
