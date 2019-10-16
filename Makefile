@@ -11,7 +11,7 @@ export KONVOY_VERSION ?= v1.1.5
 export WORKER_NODE_INSTANCE_TYPE ?= m5.xlarge
 export WORKER_NODE_COUNT ?= 5
 
-NAMESPACE ?= spark
+export NAMESPACE ?= spark
 MKE_CLUSTER_NAME=kubernetes-cluster1
 
 CLUSTER_TYPE ?= konvoy
@@ -24,9 +24,9 @@ SPARK_IMAGE_DIR ?= $(ROOT_DIR)/images/spark
 SPARK_IMAGE_TAG ?= $(call files_checksum,$(SPARK_IMAGE_DIR))
 SPARK_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(SPARK_IMAGE_NAME):$(SPARK_IMAGE_TAG)
 
-OPERATOR_IMAGE_NAME ?= kudo-spark-operator
+export OPERATOR_IMAGE_NAME ?= kudo-spark-operator
+export OPERATOR_VERSION ?= $(call files_checksum,$(SPARK_IMAGE_DIR) $(OPERATOR_IMAGE_DIR) $(SPARK_OPERATOR_DIR))
 OPERATOR_IMAGE_DIR ?= $(ROOT_DIR)/images/operator
-OPERATOR_VERSION ?= $(call files_checksum,$(SPARK_IMAGE_DIR) $(OPERATOR_IMAGE_DIR) $(SPARK_OPERATOR_DIR))
 OPERATOR_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(OPERATOR_IMAGE_NAME):$(OPERATOR_VERSION)
 
 DOCKER_BUILDER_IMAGE_NAME ?= spark-operator-docker-builder

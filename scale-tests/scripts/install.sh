@@ -11,6 +11,7 @@ OPERATOR_DIR="${PROJECT_ROOT_DIR}/kudo-operator"
 
 NAMESPACE_PREFIX=${NAMESPACE_PREFIX:-spark}
 INSTANCE_NAME_PREFIX=${INSTANCE_NAME_PREFIX:-spark-operator}
+OPERATOR_VERSION=${OPERATOR_VERSION:-spark-2.4.3-hadoop2.9-k8s}
 
 if [[ $# -lt 1 ]]; then
   echo "Usage:" >&2
@@ -26,7 +27,7 @@ for i in $(seq ${1}); do
     echo "Creating namespace $NAMESPACE"
     sed 's|SPARK_NAMESPACE|'"${NAMESPACE}"'|g' ${TEMPLATES_DIR}/namespace.tmpl | kubectl apply -f -
 
-    kubectl kudo --namespace "${NAMESPACE}" install --instance "${INSTANCE_NAME_PREFIX}-${i}" "${OPERATOR_DIR}"
+    kubectl kudo --namespace "${NAMESPACE}" install --instance "${INSTANCE_NAME_PREFIX}-${i}" "${OPERATOR_DIR}" -p operatorVersion="${OPERATOR_VERSION}"
     kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-driver-rbac.yaml
     # Metrics
     kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-operator-service.yaml

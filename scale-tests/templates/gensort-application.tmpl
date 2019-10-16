@@ -1,0 +1,48 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: sort-dataset-generator
+spec:
+  type: Scala
+  mode: cluster
+  image: mesosphere/spark:2.4.3-bin-hadoop2.9-k8s
+  imagePullPolicy: Always
+  mainClass: sorting.DatasetGenerator
+  mainApplicationFile: "https://akirillov-dev.s3-us-west-2.amazonaws.com/spark-tests-sorting.jar"
+  arguments:
+    - "--num-files"
+    - "1000"
+    - "--num-records"
+    - "1000000"
+    - "--static-prefix-length"
+    - "120"
+    - "--random-suffix-length"
+    - "8"
+    - "--value-size-bytes"
+    - "1000000"
+    - "--output-path"
+    - "TARGET_S3_PATH"
+  sparkConf:
+    "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
+    "spark.scheduler.minRegisteredResourcesRatio": "1.0"
+    "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider"
+    "spark.hadoop.fs.s3a.endpoint": "S3_ENDPOINT"
+    "spark.hadoop.fs.s3a.access.key": "AWS_ACCESS_KEY_ID"
+    "spark.hadoop.fs.s3a.secret.key": "AWS_SECRET_ACCESS_KEY"
+    "spark.hadoop.fs.s3a.session.token": "AWS_SESSION_TOKEN"
+  sparkVersion: "2.4.3"
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 1
+    memory: "1g"
+    labels:
+      version: 2.4.3
+    serviceAccount: spark-driver
+  executor:
+    cores: 1
+    instances: NUM_EXECUTORS
+    memory: "3g"
+    labels:
+      version: 2.4.3
