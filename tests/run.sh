@@ -2,7 +2,7 @@
 
 set -e
 
-# The following environment variables are available to customize test execution:
+# The following environment variables are used to parameterize test execution:
 # - KUBECONFIG
 # - OPERATOR_IMAGE
 # - SPARK_IMAGE
