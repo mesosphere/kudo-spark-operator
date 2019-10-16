@@ -25,7 +25,6 @@ else
       labels:
         name: "${NAMESPACE}"
 EOF
-    kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/s3-secret.yaml
     # For the time being we need to install CRDs manually because KUDO doesn't fully support it.
     # Once the issue will be resolved https://github.com/kudobuilder/kudo/issues/935,
     # move the CRDs instalaltion back to the kudo-spark-operator.

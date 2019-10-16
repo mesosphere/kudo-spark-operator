@@ -99,12 +99,12 @@ ingressUrlFormat:
 
 enableHistoryServer:
   description: "Start Spark History Server"
-  default: true
+  default: false
   displayName: "Enable Spark History Server"
 
 historyServerFsLogDirectory:
   description: "Spark EventLog Directory from which to load events for prior Spark job runs (e.g., hdfs://hdfs/ or s3a://path/to/bucket). Note: You'd typically want to set this to point to distributed/HA storage"
-  default: "/opt/spark/work-dir"
+  default: ""
   displayName: "Spark History Server Event Log Directory"
 
 historyServerCleanerEnabled:
@@ -121,6 +121,11 @@ historyServerCleanerMaxAge:
   description: "History files older than this will be deleted."
   default: "7d"
   displayName: "Spark History Server Cleaner Max Age"
+
+historyServerOpts:
+  description: "Extra options to pass to the Spark History Server"
+  default: ""
+  displayName: "Spark History Server Options"
 
 historyServerPVCName:
   description: "External Persistent Volume Claim Name used for Spark event logs storage by History Server"
