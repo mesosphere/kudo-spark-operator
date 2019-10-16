@@ -9,11 +9,11 @@ import (
 )
 
 const DefaultNamespace = "kudo-spark-operator-testing"
-const OperatorName = "kudo-spark-operator"
+const DefaultInstanceName = "test-instance"
 const rootDirName = "tests"
 
-var OperatorImage = getenvOr("OPERATOR_IMAGE", "gcr.io/spark-operator/spark-operator")
-var SparkImage = getenvOr("SPARK_IMAGE", "gcr.io/spark-operator/spark:v2.4.4-gcs-prometheus")
+var OperatorImage = getenvOr("OPERATOR_IMAGE", "mesosphere/kudo-spark-operator")
+var SparkImage = getenvOr("SPARK_IMAGE", "mesosphere/spark:2.4.4-bin-hadoop2.7-k8s")
 var SparkVersion = getenvOr("SPARK_VERSION", "2.4.4")
 var TestDir = getenvOr("TEST_DIR", goUpToRootDir())
 var KubeConfig = getenvOr("KUBECONFIG", filepath.Join(os.Getenv("HOME"), ".kube", "config"))
@@ -23,6 +23,7 @@ func init() {
 		ForceColors:   true,
 		FullTimestamp: true,
 	})
+
 	log.Info("  -- Test run parameters --")
 	log.Infof("Operator image:\t\t%s", OperatorImage)
 	log.Infof("Spark image:\t\t\t%s", SparkImage)
@@ -57,7 +58,7 @@ func retry(timeout time.Duration, interval time.Duration, fn func() error) error
 	for err = fn(); err != nil && timeoutPoint.After(time.Now()); {
 		log.Warn(err.Error())
 		time.Sleep(interval)
-		log.Warn("Retrying...")
+		log.Warnf("Retrying... Timeout in %d seconds", int(timeoutPoint.Sub(time.Now()).Seconds()))
 		err = fn()
 	}
 	return err
