@@ -15,14 +15,10 @@ type SparkOperatorInstallation struct {
 	Namespace    string
 	InstanceName string
 	Clients      *kubernetes.Clientset
+	Params       map[string]string
 }
 
 func (spark *SparkOperatorInstallation) InstallSparkOperator() error {
-	return spark.InstallSparkOperatorWithParams(nil)
-}
-
-func (spark *SparkOperatorInstallation) InstallSparkOperatorWithParams(params map[string]string) error {
-
 	if !isKudoInstalled() {
 		return errors.New("can't install Spark operator without KUDO")
 	}
@@ -53,18 +49,18 @@ func (spark *SparkOperatorInstallation) InstallSparkOperatorWithParams(params ma
 	KubectlApply(spark.Namespace, "../specs/spark-applications-crds.yaml")
 
 	// Handle parameters
-	if params == nil {
-		params = make(map[string]string)
+	if spark.Params == nil {
+		spark.Params = make(map[string]string)
 	}
 	if strings.Contains(OperatorImage, ":") {
 		operatorImage := strings.Split(OperatorImage, ":")
-		params["operatorImageName"] = operatorImage[0]
-		params["operatorVersion"] = operatorImage[1]
+		spark.Params["operatorImageName"] = operatorImage[0]
+		spark.Params["operatorVersion"] = operatorImage[1]
 	} else {
-		params["operatorImageName"] = OperatorImage
+		spark.Params["operatorImageName"] = OperatorImage
 	}
 
-	err = installKudoPackage(spark.Namespace, operatorDir, spark.InstanceName, params)
+	err = installKudoPackage(spark.Namespace, operatorDir, spark.InstanceName, spark.Params)
 	if err != nil {
 		return err
 	}
