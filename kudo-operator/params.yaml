@@ -99,7 +99,7 @@ ingressUrlFormat:
 
 enableHistoryServer:
   description: "Start Spark History Server"
-  default: false
+  required: false
   displayName: "Enable Spark History Server"
 
 historyServerFsLogDirectory:

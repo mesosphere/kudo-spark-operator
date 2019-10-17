@@ -1,4 +1,4 @@
-{{- if eq .Params.enableHistoryServer "true" }}
+{{- if .Params.enableHistoryServer }}
 kind: Service
 apiVersion: v1
 metadata:

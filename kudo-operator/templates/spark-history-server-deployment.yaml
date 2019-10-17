@@ -1,4 +1,4 @@
-{{- if eq .Params.enableHistoryServer "true" }}
+{{- if .Params.enableHistoryServer }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
