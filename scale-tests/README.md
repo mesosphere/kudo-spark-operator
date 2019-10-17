@@ -32,4 +32,4 @@ Example:
 ```
 
 ## Dashboards
-TBD
+Dashboards can be imported to Grafana from [dashboards](dashboards) folder.
