@@ -1,7 +1,7 @@
 apiVersion: "sparkoperator.k8s.io/v1beta2"
 kind: SparkApplication
 metadata:
-  name: sort-dataset-generator
+  name: SPARK_APP_NAME
 spec:
   type: Scala
   mode: cluster
@@ -28,6 +28,7 @@ spec:
     memory: "2g"
     labels:
       version: 2.4.3
+      metrics-exposed: "true"
     serviceAccount: spark-driver
   executor:
     cores: 1
@@ -35,9 +36,10 @@ spec:
     memory: "3g"
     labels:
       version: 2.4.3
+      metrics-exposed: "true"
   monitoring:
     exposeDriverMetrics: true
     exposeExecutorMetrics: true
     prometheus:
       jmxExporterJar: "/prometheus/jmx_prometheus_javaagent-0.11.0.jar"
-      port: 49151
+      port: 8090

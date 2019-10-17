@@ -22,8 +22,7 @@ fi
 . ${SCRIPT_DIR}/aws_credentials.sh
 
 for n in $(seq ${2}); do
-#    NAMESPACE="${NAMESPACE_PREFIX}-${n}"
-    NAMESPACE=spark
+    NAMESPACE="${NAMESPACE_PREFIX}-${n}"
     echo "Generating applications spec for namespace ${NAMESPACE}"
     MULTI_APP_SPEC=""
     for i in $(seq ${1}); do

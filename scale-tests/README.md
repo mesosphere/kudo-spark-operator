@@ -4,7 +4,7 @@ Scale Tests Tooling
 ## Before you start
 
 * `kubectl` should be configured and point to the cluster under test
-* KUDO CLI initialized with `kubect kudo init [--client-only]`
+* KUDO CLI initialized with `kubectl kudo init [--client-only]`
 
 ## Naming conventions
 
