@@ -29,4 +29,4 @@ cat ${TEMPLATES_DIR}/gensort-application.tmpl \
   | sed "s|AWS_SESSION_TOKEN|${AWS_SESSION_TOKEN:-}|" \
   | sed "s|S3_ENDPOINT|${S3_ENDPOINT}|" \
   | sed "s|NUM_EXECUTORS|${NUM_EXECUTORS}|" \
-  | sed "s|TARGET_S3_PATH|${1:-}|" | kubectl --namespace "${NAMESPACE}" apply -f -
+  | sed "s|TARGET_S3_PATH|${2:-}|" | kubectl --namespace "${NAMESPACE}" apply -f -

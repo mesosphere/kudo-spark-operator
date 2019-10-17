@@ -8,7 +8,7 @@ spec:
   image: mesosphere/spark:2.4.3-bin-hadoop2.9-k8s
   imagePullPolicy: Always
   mainClass: sorting.SortingApp
-  mainApplicationFile: "https://akirillov-dev.s3-us-west-2.amazonaws.com/spark-tests-sorting.jar"
+  mainApplicationFile: "https://infinity-artifacts.s3-us-west-2.amazonaws.com/spark/scale-tests-spark-2.4.3-20191017.jar"
   arguments:
     - "S3_PATH"
   sparkConf:
@@ -31,7 +31,13 @@ spec:
     serviceAccount: spark-driver
   executor:
     cores: 1
-    instances: EXECUTOR_INSTANCES
+    instances: NUM_EXECUTORS
     memory: "3g"
     labels:
       version: 2.4.3
+  monitoring:
+    exposeDriverMetrics: true
+    exposeExecutorMetrics: true
+    prometheus:
+      jmxExporterJar: "/prometheus/jmx_prometheus_javaagent-0.11.0.jar"
+      port: 49151

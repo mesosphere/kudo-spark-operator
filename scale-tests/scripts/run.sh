@@ -19,8 +19,11 @@ if [[ $# -lt 2 ]]; then
   exit 1
 fi
 
+. ${SCRIPT_DIR}/aws_credentials.sh
+
 for n in $(seq ${2}); do
-    NAMESPACE="${NAMESPACE_PREFIX}-${n}"
+#    NAMESPACE="${NAMESPACE_PREFIX}-${n}"
+    NAMESPACE=spark
     echo "Generating applications spec for namespace ${NAMESPACE}"
     MULTI_APP_SPEC=""
     for i in $(seq ${1}); do
@@ -33,11 +36,11 @@ for n in $(seq ${2}); do
         | sed "s|S3_ENDPOINT|${S3_ENDPOINT}|" \
         | sed "s|SPARK_APP_NAME|${SPARK_APP_NAME}|" \
         | sed "s|NUM_EXECUTORS|${NUM_EXECUTORS}|" \
-        | sed "s|S3_PATH|${1:-}|")
+        | sed "s|S3_PATH|${S3_PATH}|")
 
         MULTI_APP_SPEC=${MULTI_APP_SPEC}$'\n'"---"$'\n'"${APP_SPEC}"
     done
     echo "Submitting ${1} applications to namespace ${NAMESPACE}"
     echo "${MULTI_APP_SPEC}"
-#    echo "${MULTI_APP_SPEC}" | kubectl apply --namespace "${NAMESPACE}" -f -
+    echo "${MULTI_APP_SPEC}" | kubectl apply --namespace "${NAMESPACE}" -f -
 done
