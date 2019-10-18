@@ -3,8 +3,8 @@ FROM openjdk:8-alpine
 ARG SPARK_HOME=/opt/spark
 ARG SPARK_DIST=/dist
 ENV SPARK_HOME ${SPARK_HOME}
-ARG SPARK_DIST_NAME="spark-2.4.4-bin-hadoop2.7"
-ARG SPARK_DIST_URL="http://archive.apache.org/dist/spark/spark-2.4.4/${SPARK_DIST_NAME}.tgz"
+ARG SPARK_DIST_NAME="spark-2.4.3-hadoop-2.9-k8s"
+ARG SPARK_DIST_URL="https://downloads.mesosphere.io/spark/assets/${SPARK_DIST_NAME}.tgz"
 
 RUN set -ex && \
     apk upgrade --no-cache && \
@@ -33,10 +33,6 @@ WORKDIR ${SPARK_HOME}
 # https://github.com/GoogleCloudPlatform/spark-on-k8s-operator/issues/591
 RUN rm jars/kubernetes-client-4.1.2.jar
 ADD https://repo1.maven.org/maven2/io/fabric8/kubernetes-client/4.4.2/kubernetes-client-4.4.2.jar jars
-
-# Jars for S3 access support in case of Spark History Server
-ADD http://central.maven.org/maven2/org/apache/hadoop/hadoop-aws/2.7.3/hadoop-aws-2.7.3.jar jars
-ADD http://central.maven.org/maven2/com/amazonaws/aws-java-sdk/1.7.4/aws-java-sdk-1.7.4.jar jars
 
 # Setup for the Prometheus JMX exporter.
 RUN mkdir -p /etc/metrics/conf
