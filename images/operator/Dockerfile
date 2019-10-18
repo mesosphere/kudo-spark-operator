@@ -1,4 +1,4 @@
-ARG SPARK_IMAGE=mesosphere/spark-2.4.4-bin-hadoop2.7-k8s
+ARG SPARK_IMAGE=mesosphere/spark:spark-2.4.3-hadoop-2.9-k8s
 
 FROM golang:1.12.5-alpine as builder
 LABEL stage=spark-operator-builder

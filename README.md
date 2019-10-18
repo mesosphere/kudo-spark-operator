@@ -25,7 +25,7 @@ GNU Make is used as the main build tool and includes the following main targets:
 * `make cluster-create` creates a Konvoy or MKE cluster
 * `make cluster-destroy` creates a Konvoy or MKE cluster
 * `make clean-all` removes all artifacts produced by targets from local filesystem
-* `make docker-spark` builds Spark base image based on Apache Spark 2.4.4
+* `make docker-spark` builds Spark base image based on Apache Spark 2.4.3
 * `make docker-operator` builds Operator image and Spark base image if it's not built
 * `make docker-builder` builds image with required tools to run tests
 * `make docker-push` publishes Spark base image and Spark Operator image to DockerHub
@@ -45,8 +45,8 @@ To run tests on a pre-existing cluster with specified operator and spark images,
 
 ```
 make test KUBECONFIG=$HOME/.kube/config \
-SPARK_IMAGE_FULL_NAME=gcr.io/spark-operator/spark:v2.4.4-gcs-prometheus \
-OPERATOR_IMAGE_FULL_NAME=gcr.io/spark-operator/spark-operator
+SPARK_IMAGE_FULL_NAME=mesosphere/spark:spark-2.4.3-hadoop-2.9-k8s \
+OPERATOR_IMAGE_FULL_NAME=mesosphere/kudo-spark-operator:spark-2.4.3-hadoop-2.9-k8s
 ```
 
 # Installing and using Spark Operator
@@ -55,7 +55,6 @@ OPERATOR_IMAGE_FULL_NAME=gcr.io/spark-operator/spark-operator
 
 * Kubernetes cluster up and running
 * `kubectl` configured to work with provisioned cluster
-* `helm` client
 * [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli)
 
 ### Installation

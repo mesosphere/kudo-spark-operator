@@ -52,7 +52,7 @@ the metrics on other one and see further instructions in next step.
    EOF
    ```  
 1) Composing your Spark Application yaml:
-   - use the following Spark image which includes the `JMXPrometheus` exporter jar: `mesosphere/spark:2.4.4-bin-hadoop2.7-k8s` 
+   - use the following Spark image which includes the `JMXPrometheus` exporter jar: `mesosphere/spark:spark-2.4.3-hadoop-2.9-k8s`
    - enable Driver and Executors metrics reporting by adding the following configuration into `SparkApplication` `spec` section:
      ```yaml
        monitoring:
