@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"testing"
+	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -75,7 +76,7 @@ func TestJobSubmission(t *testing.T) {
 		t.Error(err.Error())
 	}
 
-	err = spark.WaitUntilSucceeded(job)
+	err = spark.WaitUntilSucceeded(10*time.Minute, job)
 	if err != nil {
 		t.Error(err.Error())
 	}

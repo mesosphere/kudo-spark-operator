@@ -44,9 +44,9 @@ func DropNamespace(clientSet *kubernetes.Clientset, name string) error {
 	return clientSet.CoreV1().Namespaces().Delete(name, &options)
 }
 
-func waitForPodStatusPhase(clientSet *kubernetes.Clientset, podName string, namespace string, status string) error {
+func waitForPodStatusPhase(clientSet *kubernetes.Clientset, podName string, namespace string, status string, timeout time.Duration) error {
 	log.Infof("Waiting for pod %s to enter phase %s", podName, status)
-	return retry(5*time.Minute, 1*time.Second, func() error {
+	return retry(timeout, 1*time.Second, func() error {
 		pod, err := clientSet.CoreV1().Pods(namespace).Get(podName, metav1.GetOptions{})
 		if err == nil && string(pod.Status.Phase) != status {
 			err = errors.New("Expected pod status to be " + status + ", but it's " + string(pod.Status.Phase))

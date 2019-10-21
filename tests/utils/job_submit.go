@@ -2,6 +2,7 @@ package utils
 
 import (
 	log "github.com/sirupsen/logrus"
+	"time"
 )
 
 type SparkJob struct {
@@ -20,7 +21,7 @@ func (spark *SparkOperatorInstallation) SubmitJob(job SparkJob) error {
 	return err
 }
 
-func (spark *SparkOperatorInstallation) WaitUntilSucceeded(job SparkJob) error {
+func (spark *SparkOperatorInstallation) WaitUntilSucceeded(timeout time.Duration, job SparkJob) error {
 	driverPodName := job.Name + "-driver"
-	return waitForPodStatusPhase(spark.Clients, driverPodName, job.Namespace, "Succeeded")
+	return waitForPodStatusPhase(spark.Clients, driverPodName, job.Namespace, "Succeeded", timeout)
 }
