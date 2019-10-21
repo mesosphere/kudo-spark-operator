@@ -16,6 +16,18 @@ type SparkJob struct {
 }
 
 func (spark *SparkOperatorInstallation) SubmitJob(job SparkJob) error {
+
+	// Set default values
+	if job.Namespace == "" {
+		job.Namespace = spark.Namespace
+	}
+	if job.Image == "" {
+		job.Image = SparkImage
+	}
+	if job.SparkVersion == "" {
+		job.SparkVersion = SparkVersion
+	}
+
 	yamlFile := createSparkJob(job)
 	log.Infof("Submitting the job")
 	_, err := KubectlApply(job.Namespace, yamlFile)
@@ -29,5 +41,5 @@ func (spark *SparkOperatorInstallation) WaitUntilSucceeded(job SparkJob) error {
 
 func (spark *SparkOperatorInstallation) WaitUntilSucceededWithTimeout(timeout time.Duration, job SparkJob) error {
 	driverPodName := job.Name + "-driver"
-	return waitForPodStatusPhase(spark.Clients, driverPodName, job.Namespace, "Succeeded", timeout)
+	return waitForPodStatusPhase(spark.K8sClients, driverPodName, job.Namespace, "Succeeded", timeout)
 }
