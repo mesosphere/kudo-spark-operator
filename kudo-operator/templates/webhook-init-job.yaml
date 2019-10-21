@@ -1,4 +1,4 @@
-{{ if .Params.enableWebhook }}
+{{- if eq .Params.enableWebhook "true" }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -10,7 +10,7 @@ metadata:
 spec:
   template:
     spec:
-      {{- if .Params.createOperatorServiceAccount }}
+      {{- if eq .Params.createOperatorServiceAccount "true" }}
       serviceAccountName: {{ .Name }}-{{ .Params.operatorServiceAccountName }}
       {{- else }}
       serviceAccountName: {{ .Params.operatorServiceAccountName }}
@@ -21,4 +21,4 @@ spec:
         image: {{ .Params.operatorImageName }}:{{ .Params.operatorVersion }}
         imagePullPolicy: {{ .Params.imagePullPolicy }}
         command: ["/usr/bin/gencerts.sh", "-n", "{{ .Namespace }}", "-s", "{{ .OperatorName }}-webhook", "-p"]
-{{ end }}
+{{- end }}

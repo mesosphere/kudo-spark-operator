@@ -1,4 +1,4 @@
-{{ if .Params.enableWebhook }}
+{{- if eq .Params.enableWebhook "true" }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -10,7 +10,7 @@ metadata:
 spec:
   template:
     spec:
-      {{- if .Params.createOperatorServiceAccount }}
+      {{- if eq .Params.createOperatorServiceAccount "true" }}
       serviceAccountName: {{ .Name }}-{{ .Params.operatorServiceAccountName }}
       {{- else }}
       serviceAccountName: {{ .Params.operatorServiceAccountName }}
@@ -29,4 +29,4 @@ spec:
           -H \"Accept: application/json\" \
           -H \"Content-Type: application/json\" \
           https://kubernetes.default.svc/api/v1/namespaces/{{ .Namespace }}/secrets/spark-webhook-certs"
-{{ end }}
+{{- end }}

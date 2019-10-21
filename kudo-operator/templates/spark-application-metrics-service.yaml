@@ -1,4 +1,4 @@
-{{- if .Params.enableMetrics }}
+{{- if eq .Params.enableMetrics "true" }}
 apiVersion: v1
 kind: Service
 metadata:

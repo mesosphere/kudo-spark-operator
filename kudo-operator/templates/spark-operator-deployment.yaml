@@ -24,7 +24,7 @@ spec:
     type: Recreate
   template:
     metadata:
-    {{- if .Params.enableMetrics }}
+    {{- if eq .Params.enableMetrics "true" }}
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "{{ .Params.operatorMetricsPort }}"
@@ -37,7 +37,7 @@ spec:
       initializers:
         pending: []
     spec:
-      {{- if .Params.createOperatorServiceAccount }}
+      {{- if eq .Params.createOperatorServiceAccount "true" }}
       serviceAccountName: {{ .Name }}-{{ .Params.operatorServiceAccountName }}
       {{- else }}
       serviceAccountName: {{ .Params.operatorServiceAccountName }}
@@ -52,12 +52,12 @@ spec:
       - name: sparkoperator
         image: {{ .Params.operatorImageName }}:{{ .Params.operatorVersion }}
         imagePullPolicy: {{ .Params.imagePullPolicy }}
-        {{- if .Params.enableWebhook }}
+        {{- if eq .Params.enableWebhook "true" }}
         volumeMounts:
           - name: webhook-certs
             mountPath: /etc/webhook-certs
         {{- end }}
-        {{- if .Params.enableMetrics }}
+        {{- if eq .Params.enableMetrics "true" }}
         ports:
           - containerPort: {{ .Params.operatorMetricsPort }}
         {{ end }}
@@ -72,7 +72,7 @@ spec:
         - -controller-threads={{ .Params.controllerThreads }}
         - -resync-interval={{ .Params.resyncIntervalSeconds }}
         - -logtostderr
-        {{- if .Params.enableMetrics }}
+        {{- if eq .Params.enableMetrics "true" }}
         - -enable-metrics=true
         - -metrics-labels=app_type
         - -metrics-port={{ .Params.operatorMetricsPort }}
@@ -80,7 +80,7 @@ spec:
         - -metrics-prefix={{ .Params.metricsPrefix }}
         {{- end }}
         - -enable-batch-scheduler={{ .Params.enableBatchScheduler }}
-        {{- if .Params.enableWebhook }}
+        {{- if eq .Params.enableWebhook "true" }}
         - -enable-webhook=true
         - -webhook-svc-namespace={{ .Namespace }}
         - -webhook-port={{ .Params.webhookPort }}

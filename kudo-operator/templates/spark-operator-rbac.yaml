@@ -1,4 +1,4 @@
-{{- if .Params.createRBAC }}
+{{- if eq .Params.createRBAC "true" }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
@@ -31,7 +31,7 @@ rules:
 - apiGroups: ["sparkoperator.k8s.io"]
   resources: ["sparkapplications", "scheduledsparkapplications", "sparkapplications/status", "scheduledsparkapplications/status"]
   verbs: ["*"]
-  {{- if .Params.enableBatchScheduler }}
+  {{- if eq .Params.enableBatchScheduler "true" }}
   # This api resources below is configured for the `volcano` batch scheduler.
 - apiGroups: ["scheduling.incubator.k8s.io", "scheduling.sigs.dev"]
   resources: ["podgroups"]
@@ -48,7 +48,7 @@ metadata:
     app.kubernetes.io/instance: {{ .Name }}
 subjects:
   - kind: ServiceAccount
-    {{- if .Params.createOperatorServiceAccount }}
+    {{- if eq .Params.createOperatorServiceAccount "true" }}
     name: {{ .Name }}-{{ .Params.operatorServiceAccountName }}
     {{- else }}
     name: {{ .Params.operatorServiceAccountName }}
