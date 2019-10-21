@@ -24,6 +24,7 @@ func GetK8sClientSet() (*kubernetes.Clientset, error) {
 }
 
 func CreateNamespace(clientSet *kubernetes.Clientset, name string) (*v1.Namespace, error) {
+	log.Infof("Creating namespace %s", name)
 	namespace := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -34,6 +35,7 @@ func CreateNamespace(clientSet *kubernetes.Clientset, name string) (*v1.Namespac
 }
 
 func DropNamespace(clientSet *kubernetes.Clientset, name string) error {
+	log.Infof("Deleting namespace %s", name)
 	gracePeriod := int64(0)
 	propagationPolicy := metav1.DeletePropagationForeground
 	options := metav1.DeleteOptions{
