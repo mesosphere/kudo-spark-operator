@@ -52,12 +52,52 @@ kubectl apply -n <NAMESPACE> -f specs/spark-application.yaml
 
 ### Accessing Spark History Server UI
 
+ **Using Port-Forwarding:**
+
 You can run this command to expose the UI in your local machine.
 
-`kubectl port-forward <HISTORY_SERVER_POD_NAME> 18080:18080`
+```
+kubectl port-forward <HISTORY_SERVER_POD_NAME> 18080:18080
+```
 
-Verify local access using this: `curl -L localhost:18080`
+Verify local access using this:
 
+```
+curl -L localhost:18080
+```
+
+**Using LoadBalancer:**
+
+Create a Service with type as `LoadBalancer` which will expose the Spark History Server UI. Service specification will be as follows:
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: history-server-ui-lb
+  name: history-server-ui-lb
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: history-server
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 18080
+```
+
+Create service with following command:
+
+```
+kubectl create -f history-server-svc.yaml -n spark
+```
+
+Wait for few minutes and verify the access to Spark History Server UI via external address as follows:
+
+```
+curl -L http://$(kubectl get svc history-server-ui-lb -n spark --output jsonpath='{.status.loadBalancer.ingress[*].hostname}')
+```
 
 ### List of available parameters for Spark History Server
 
