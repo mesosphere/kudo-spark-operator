@@ -42,7 +42,7 @@ spec:
       {{- else }}
       serviceAccountName: {{ .Params.operatorServiceAccountName }}
       {{- end }}
-      {{- if .Params.enableWebhook }}
+      {{- if eq .Params.enableWebhook "true" }}
       volumes:
         - name: webhook-certs
           secret:
