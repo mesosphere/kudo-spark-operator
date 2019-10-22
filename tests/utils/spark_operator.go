@@ -40,6 +40,8 @@ func (spark *SparkOperatorInstallation) InstallSparkOperator() error {
 
 	spark.CleanUp()
 
+	log.Infof("Installing KUDO spark operator in %s", spark.Namespace)
+
 	_, err = CreateNamespace(spark.Clients, spark.Namespace)
 	if err != nil {
 		return err

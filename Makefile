@@ -120,6 +120,7 @@ test:
 		-e KUBECONFIG=/root/.kube/config \
 		-e SPARK_IMAGE=$(SPARK_IMAGE_FULL_NAME) \
 		-e OPERATOR_IMAGE=$(OPERATOR_IMAGE_FULL_NAME) \
+		-e TEAMCITY_VERSION="$(TEAMCITY_VERSION)" \
 		$(shell cat $(ROOT_DIR)/docker-builder) \
 		/kudo-spark-operator/tests/run.sh
 

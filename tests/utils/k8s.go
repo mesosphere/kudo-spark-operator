@@ -24,6 +24,7 @@ func GetK8sClientSet() (*kubernetes.Clientset, error) {
 }
 
 func CreateNamespace(clientSet *kubernetes.Clientset, name string) (*v1.Namespace, error) {
+	log.Infof("Creating namespace %s", name)
 	namespace := v1.Namespace{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
@@ -34,6 +35,7 @@ func CreateNamespace(clientSet *kubernetes.Clientset, name string) (*v1.Namespac
 }
 
 func DropNamespace(clientSet *kubernetes.Clientset, name string) error {
+	log.Infof("Deleting namespace %s", name)
 	gracePeriod := int64(0)
 	propagationPolicy := metav1.DeletePropagationForeground
 	options := metav1.DeleteOptions{
@@ -44,9 +46,9 @@ func DropNamespace(clientSet *kubernetes.Clientset, name string) error {
 	return clientSet.CoreV1().Namespaces().Delete(name, &options)
 }
 
-func waitForPodStatusPhase(clientSet *kubernetes.Clientset, podName string, namespace string, status string) error {
+func waitForPodStatusPhase(clientSet *kubernetes.Clientset, podName string, namespace string, status string, timeout time.Duration) error {
 	log.Infof("Waiting for pod %s to enter phase %s", podName, status)
-	return retry(5*time.Minute, 1*time.Second, func() error {
+	return retry(timeout, 1*time.Second, func() error {
 		pod, err := clientSet.CoreV1().Pods(namespace).Get(podName, metav1.GetOptions{})
 		if err == nil && string(pod.Status.Phase) != status {
 			err = errors.New("Expected pod status to be " + status + ", but it's " + string(pod.Status.Phase))
