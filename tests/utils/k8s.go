@@ -4,6 +4,7 @@ import (
 	"errors"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
+	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
@@ -11,6 +12,8 @@ import (
 	"strings"
 	"time"
 )
+
+const namespaceDeletionTimeout = 5 * time.Minute
 
 /* client-go util methods */
 
@@ -43,7 +46,22 @@ func DropNamespace(clientSet *kubernetes.Clientset, name string) error {
 		PropagationPolicy:  &propagationPolicy,
 	}
 
-	return clientSet.CoreV1().Namespaces().Delete(name, &options)
+	err := clientSet.CoreV1().Namespaces().Delete(name, &options)
+	if err != nil {
+		return err
+	}
+
+	return retry(namespaceDeletionTimeout, 3*time.Second, func() error {
+		_, err := clientSet.CoreV1().Namespaces().Get(name, metav1.GetOptions{})
+		if err == nil {
+			return errors.New("the namespace is still there")
+		} else if statusErr, ok := err.(*apiErrors.StatusError); !ok || statusErr.Status().Reason != metav1.StatusReasonNotFound {
+			return err
+		} else {
+			log.Info("Deleted!")
+			return nil
+		}
+	})
 }
 
 func waitForPodStatusPhase(clientSet *kubernetes.Clientset, podName string, namespace string, status string, timeout time.Duration) error {
