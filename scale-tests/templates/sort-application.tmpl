@@ -1,0 +1,45 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: SPARK_APP_NAME
+spec:
+  type: Scala
+  mode: cluster
+  image: mesosphere/spark:2.4.3-bin-hadoop2.9-k8s
+  imagePullPolicy: Always
+  mainClass: sorting.SortingApp
+  mainApplicationFile: "https://infinity-artifacts.s3-us-west-2.amazonaws.com/spark/scale-tests-spark-2.4.3-20191017.jar"
+  arguments:
+    - "S3_PATH"
+  sparkConf:
+    "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
+    "spark.scheduler.minRegisteredResourcesRatio": "1.0"
+    "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider"
+    "spark.hadoop.fs.s3a.endpoint": "S3_ENDPOINT"
+    "spark.hadoop.fs.s3a.access.key": "AWS_ACCESS_KEY_ID"
+    "spark.hadoop.fs.s3a.secret.key": "AWS_SECRET_ACCESS_KEY"
+    "spark.hadoop.fs.s3a.session.token": "AWS_SESSION_TOKEN"
+  sparkVersion: "2.4.3"
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 2
+    memory: "2g"
+    labels:
+      version: 2.4.3
+      metrics-exposed: "true"
+    serviceAccount: spark-driver
+  executor:
+    cores: 1
+    instances: NUM_EXECUTORS
+    memory: "3g"
+    labels:
+      version: 2.4.3
+      metrics-exposed: "true"
+  monitoring:
+    exposeDriverMetrics: true
+    exposeExecutorMetrics: true
+    prometheus:
+      jmxExporterJar: "/prometheus/jmx_prometheus_javaagent-0.11.0.jar"
+      port: 8090
