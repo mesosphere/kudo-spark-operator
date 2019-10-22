@@ -1,0 +1,38 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+spec:
+  type: Scala
+  mode: cluster
+  image: {{ .Image }}
+  imagePullPolicy: Always
+  mainClass: ShuffleApp
+  mainApplicationFile: "https://infinity-artifacts.s3.amazonaws.com/scale-tests/dcos-spark-scala-tests-assembly-2.4.0-20190325.jar"
+  arguments:
+    - "4"
+    - {{ index .Params "group_count" }}
+    - "100"
+    - "4"
+    - "1500"
+  sparkConf:
+    "spark.scheduler.maxRegisteredResourcesWaitingTime": "3m"
+    "spark.scheduler.minRegisteredResourcesRatio": "1"
+  sparkVersion: {{ .SparkVersion }}
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 1
+    memory: "512m"
+    labels:
+      version: {{ .SparkVersion }}
+      metrics-exposed: "true"
+    serviceAccount: spark-driver
+  executor:
+    cores: 1
+    instances: {{ index .Params "executor_count" }}
+    memory: "512m"
+    labels:
+      version: {{ .SparkVersion }}
+      metrics-exposed: "true"

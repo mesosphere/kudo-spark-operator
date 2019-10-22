@@ -24,8 +24,7 @@ func InstallKudo() error {
 		args = []string{"init"}
 	}
 	kudoInit := exec.Command(KudoCmd, args...)
-	out, err := kudoInit.CombinedOutput()
-	log.Infof(">%s %v\n%s", kudoInit.Path, kudoInit.Args, out)
+	_, err := runAndLogCommandOutput(kudoInit)
 
 	return err
 }
@@ -45,8 +44,7 @@ func installKudoPackage(namespace string, operatorDir string, instance string, p
 	}
 
 	cmd := exec.Command(KudoCmd, args...)
-	out, err := cmd.CombinedOutput()
-	log.Infof(">%s %v\n%s", cmd.Path, cmd.Args, out)
+	_, err := runAndLogCommandOutput(cmd)
 
 	return err
 }

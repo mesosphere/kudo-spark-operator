@@ -79,7 +79,7 @@ func (spark *SparkOperatorInstallation) InstallSparkOperator() error {
 		return err
 	}
 
-	_, err = KubectlApply(spark.Namespace, "../specs/spark-driver-rbac.yaml")
+	err = KubectlApply(spark.Namespace, "../specs/spark-driver-rbac.yaml")
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func getSparkOperatorClientSet() (*operator.Clientset, error) {
 
 func (spark *SparkOperatorInstallation) waitForInstanceStatus(targetStatus string) error {
 	log.Infof("Waiting for %s/%s to reach status %s", spark.Namespace, spark.InstanceName, targetStatus)
-	return retry(3*time.Minute, 1*time.Second, func() error {
+	return Retry(3*time.Minute, 1*time.Second, func() error {
 		status, err := spark.getInstanceStatus()
 		if err == nil && status != targetStatus {
 			err = errors.New(fmt.Sprintf("%s status is %s, but waiting for %s", spark.InstanceName, status, targetStatus))
@@ -137,8 +137,8 @@ func (spark *SparkOperatorInstallation) getInstanceStatus() (string, error) {
 }
 
 func (spark *SparkOperatorInstallation) WaitForJobState(job SparkJob, state v1beta2.ApplicationStateType, duration time.Duration) error {
-	log.Infof("Waiting for spark application %s to reach % state", job.Name, state)
-	retry(duration, 1*time.Second, func() error {
+	log.Infof("Waiting for spark application %s to reach %s state", job.Name, state)
+	err := Retry(duration, 1*time.Second, func() error {
 		app, err := spark.SparkClients.SparkoperatorV1beta2().SparkApplications(spark.Namespace).Get(job.Name, v1.GetOptions{})
 		if err != nil {
 			return err
@@ -147,7 +147,36 @@ func (spark *SparkOperatorInstallation) WaitForJobState(job SparkJob, state v1be
 		}
 		return nil
 	})
-	return nil
+
+	if err == nil {
+		log.Infof("Spark application %s is now %s", job.Name, state)
+	}
+
+	return err
+}
+
+func (spark *SparkOperatorInstallation) JobExecutors(job SparkJob) (map[string]v1beta2.ExecutorState, error) {
+	log.Infof("Getting %s executors status", job.Name)
+	app, err := spark.SparkClients.SparkoperatorV1beta2().SparkApplications(spark.Namespace).Get(job.Name, v1.GetOptions{})
+	if err != nil {
+		return nil, err
+	} else {
+		for k, v := range app.Status.ExecutorState {
+			log.Infof("%s is %s", k, v)
+		}
+		return app.Status.ExecutorState, err
+	}
+}
+
+func (spark *SparkOperatorInstallation) DeleteJob(job SparkJob) {
+	log.Infof("Deleting job %s", job.Name)
+	gracePeriod := int64(0)
+	propagationPolicy := v1.DeletePropagationForeground
+	options := v1.DeleteOptions{
+		GracePeriodSeconds: &gracePeriod,
+		PropagationPolicy:  &propagationPolicy,
+	}
+	spark.SparkClients.SparkoperatorV1beta2().SparkApplications(spark.Namespace).Delete(job.Name, &options)
 }
 
 func getInstanceNames(namespace string) ([]string, error) {

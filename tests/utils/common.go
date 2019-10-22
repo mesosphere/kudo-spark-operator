@@ -3,14 +3,17 @@ package utils
 import (
 	log "github.com/sirupsen/logrus"
 	"os"
+	"os/exec"
 	"path"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
 const DefaultNamespace = "kudo-spark-operator-testing"
 const DefaultInstanceName = "test-instance"
 const rootDirName = "tests"
+const cmdLogFormat = ">%s %v\n%s"
 
 var OperatorImage = getenvOr("OPERATOR_IMAGE", "mesosphere/kudo-spark-operator:spark-2.4.3-hadoop-2.9-k8s")
 var SparkImage = getenvOr("SPARK_IMAGE", "mesosphere/spark:spark-2.4.3-hadoop-2.9-k8s")
@@ -51,7 +54,7 @@ func goUpToRootDir() string {
 	return workDir
 }
 
-func retry(timeout time.Duration, interval time.Duration, fn func() error) error {
+func Retry(timeout time.Duration, interval time.Duration, fn func() error) error {
 	timeoutPoint := time.Now().Add(timeout)
 	var err error
 
@@ -62,4 +65,15 @@ func retry(timeout time.Duration, interval time.Duration, fn func() error) error
 		err = fn()
 	}
 	return err
+}
+
+func runAndLogCommandOutput(cmd *exec.Cmd) (string, error) {
+	out, err := cmd.CombinedOutput()
+
+	if err == nil {
+		log.Infof(cmdLogFormat, cmd.Path, cmd.Args, out)
+	} else {
+		log.Errorf(cmdLogFormat, cmd.Path, cmd.Args, out)
+	}
+	return strings.TrimSpace(string(out)), err
 }

@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	log "github.com/sirupsen/logrus"
+	"io"
 	v1 "k8s.io/api/core/v1"
 	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -53,7 +56,7 @@ func DropNamespace(clientSet *kubernetes.Clientset, name string) error {
 		return err
 	}
 
-	return retry(namespaceDeletionTimeout, namespaceDeletionCheckInterval, func() error {
+	return Retry(namespaceDeletionTimeout, namespaceDeletionCheckInterval, func() error {
 		_, err := clientSet.CoreV1().Namespaces().Get(name, metav1.GetOptions{})
 		if err == nil {
 			return errors.New(fmt.Sprintf("Namespace '%s' still exists", name))
@@ -66,9 +69,64 @@ func DropNamespace(clientSet *kubernetes.Clientset, name string) error {
 	})
 }
 
+func getPodLog(clientSet *kubernetes.Clientset, namespace string, pod string, lines int64) (string, error) {
+	opts := v1.PodLogOptions{}
+	if lines > 0 {
+		opts.TailLines = &lines
+	}
+	req := clientSet.CoreV1().Pods(namespace).GetLogs(pod, &opts)
+
+	logSteam, err := req.Stream()
+	if err != nil {
+		return "", err
+	}
+	defer logSteam.Close()
+
+	logBuffer := new(bytes.Buffer)
+	_, err = io.Copy(logBuffer, logSteam)
+	if err != nil {
+		return "", err
+	}
+
+	return logBuffer.String(), nil
+}
+
+func podLogContains(clientSet *kubernetes.Clientset, namespace string, pod string, text string) (bool, error) {
+	opts := v1.PodLogOptions{}
+	req := clientSet.CoreV1().Pods(namespace).GetLogs(pod, &opts)
+
+	logSteam, err := req.Stream()
+	if err != nil {
+		return false, err
+	}
+	defer logSteam.Close()
+
+	scanner := bufio.NewScanner(logSteam)
+	for scanner.Scan() {
+		if strings.Contains(scanner.Text(), text) {
+			return true, nil
+		}
+	}
+
+	if err = scanner.Err(); err != nil {
+		return false, err
+	} else {
+		return false, nil
+	}
+}
+
+func logPodLogTail(clientSet *kubernetes.Clientset, namespace string, pod string, lines int64) error {
+	logTail, err := getPodLog(clientSet, namespace, pod, lines)
+	if err == nil {
+		log.Infof("Last %d lines of %s log:\n%s", lines, pod, logTail)
+	}
+	return err
+}
+
 func waitForPodStatusPhase(clientSet *kubernetes.Clientset, podName string, namespace string, status string, timeout time.Duration) error {
 	log.Infof("Waiting for pod %s to enter phase %s", podName, status)
-	return retry(timeout, 1*time.Second, func() error {
+
+	return Retry(timeout, 1*time.Second, func() error {
 		pod, err := clientSet.CoreV1().Pods(namespace).Get(podName, metav1.GetOptions{})
 		if err == nil && string(pod.Status.Phase) != status {
 			err = errors.New("Expected pod status to be " + status + ", but it's " + string(pod.Status.Phase))
@@ -81,35 +139,27 @@ func waitForPodStatusPhase(clientSet *kubernetes.Clientset, podName string, name
 
 func Kubectl(args ...string) (string, error) {
 	cmd := exec.Command("kubectl", args...)
-	out, err := cmd.CombinedOutput()
-	log.Infof(">%s %v\n%s", cmd.Path, cmd.Args, out)
-	return strings.TrimSpace(string(out)), err
+	return runAndLogCommandOutput(cmd)
 
 }
 
 func DeleteResource(namespace string, resource string, name string) error {
-	_, err := Kubectl("delete", resource, name, "--namespace", namespace)
+	_, err := Kubectl("delete", resource, name, "--namespace", namespace, "--ignore-not-found=true")
 	return err
 }
 
-func KubectlApply(namespace string, filename string) ([]byte, error) {
+func KubectlApply(namespace string, filename string) error {
 	log.Infof("Applying file %s with kubectl", filename)
 	return kubectlRunFile("apply", namespace, filename)
 }
 
-func KubectlDelete(namespace string, filename string) ([]byte, error) {
+func KubectlDelete(namespace string, filename string) error {
 	log.Infof("Deleting objects from file %s with kubectl", filename)
 	return kubectlRunFile("delete", namespace, filename)
 }
 
-func kubectlRunFile(method string, namespace string, filename string) ([]byte, error) {
+func kubectlRunFile(method string, namespace string, filename string) error {
 	kubectl := exec.Command("kubectl", method, "--namespace", namespace, "-f", filename)
-	out, err := kubectl.CombinedOutput()
-	log.Infof(">%s %v\n%s", kubectl.Path, kubectl.Args, out)
-	if err != nil {
-		if exitError, ok := err.(*exec.ExitError); ok {
-			return exitError.Stderr, err
-		}
-	}
-	return out, err
+	_, err := runAndLogCommandOutput(kubectl)
+	return err
 }
