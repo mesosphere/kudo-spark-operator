@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-const operatorDir = "../kudo-operator"
+const operatorDir = "../kudo-operator/operator"
 
 type SparkOperatorInstallation struct {
 	Namespace    string

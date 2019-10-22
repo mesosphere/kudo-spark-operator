@@ -3,7 +3,7 @@
 set -ex
 SCRIPT_DIR=$(dirname "$0")
 SPECS_DIR="$(dirname ${SCRIPT_DIR})/specs"
-OPERATOR_DIR="$(dirname ${SCRIPT_DIR})/kudo-operator"
+OPERATOR_DIR="$(dirname ${SCRIPT_DIR})/kudo-operator/operator"
 
 NAMESPACE=${NAMESPACE:-spark}
 OPERATOR_IMAGE_NAME=${OPERATOR_IMAGE_NAME:-mesosphere/kudo-spark-operator}
