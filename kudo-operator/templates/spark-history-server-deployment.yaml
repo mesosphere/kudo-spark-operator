@@ -1,4 +1,4 @@
-{{- if .Params.enableHistoryServer }}
+{{- if eq .Params.enableHistoryServer "true" }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,7 +24,7 @@ spec:
         app.kubernetes.io/instance: {{ .Name }}
         app.kubernetes.io/version: {{ .Params.operatorVersion }}
     spec:
-      {{- if .Params.createOperatorServiceAccount }}
+      {{- if eq .Params.createOperatorServiceAccount "true" }}
       serviceAccountName: {{ .Name }}-{{ .Params.operatorServiceAccountName }}
       {{- else }}
       serviceAccountName: {{ .Params.operatorServiceAccountName }}

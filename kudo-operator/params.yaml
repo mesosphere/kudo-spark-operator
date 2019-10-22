@@ -71,35 +71,10 @@ resyncIntervalSeconds:
   default: 30
   displayName: "Informer resync interval in seconds"
 
-## Miscellaneous
-sparkJobNamespace:
-  description: "Namespace for Spark Applications. Defaults to Operator namespace"
-  default: ""
-  displayName: "Namespace for Spark Applications"
-
-enableWebhook:
-  description: "Enable webhook"
-  default: true
-  displayName: "Enable webhook"
-
-webhookPort:
-  description: "Webhook port"
-  default: 8080
-  displayName: "Webhook port"
-
-controllerThreads:
-  description: "Controller threads"
-  default: 10
-  displayName: "Controller threads"
-
-ingressUrlFormat:
-  description: "Ingress URL format"
-  default: ""
-  displayName: "Ingress URL format"
-
+# History Server
 enableHistoryServer:
   description: "Start Spark History Server"
-  required: false
+  default: false
   displayName: "Enable Spark History Server"
 
 historyServerFsLogDirectory:
@@ -131,6 +106,32 @@ historyServerPVCName:
   description: "External Persistent Volume Claim Name used for Spark event logs storage by History Server"
   default: ""
   displayName: "Spark History Server Persistent Volume Claim Name"
+
+## Miscellaneous
+sparkJobNamespace:
+  description: "Namespace for Spark Applications. Defaults to Operator namespace"
+  default: ""
+  displayName: "Namespace for Spark Applications"
+
+enableWebhook:
+  description: "Enable webhook"
+  default: true
+  displayName: "Enable webhook"
+
+webhookPort:
+  description: "Webhook port"
+  default: 8080
+  displayName: "Webhook port"
+
+controllerThreads:
+  description: "Controller threads"
+  default: 10
+  displayName: "Controller threads"
+
+ingressUrlFormat:
+  description: "Ingress URL format"
+  default: ""
+  displayName: "Ingress URL format"
 
 ## Node labels for pod assignment
 ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
