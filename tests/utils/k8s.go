@@ -15,6 +15,7 @@ import (
 )
 
 const namespaceDeletionTimeout = 5 * time.Minute
+const namespaceDeletionCheckInterval = 3 * time.Second
 
 /* client-go util methods */
 
@@ -52,14 +53,14 @@ func DropNamespace(clientSet *kubernetes.Clientset, name string) error {
 		return err
 	}
 
-	return retry(namespaceDeletionTimeout, 3*time.Second, func() error {
+	return retry(namespaceDeletionTimeout, namespaceDeletionCheckInterval, func() error {
 		_, err := clientSet.CoreV1().Namespaces().Get(name, metav1.GetOptions{})
 		if err == nil {
-			return errors.New(fmt.Sprintf("namespace %s is still there", name))
+			return errors.New(fmt.Sprintf("Namespace %s is still there", name))
 		} else if statusErr, ok := err.(*apiErrors.StatusError); !ok || statusErr.Status().Reason != metav1.StatusReasonNotFound {
 			return err
 		} else {
-			log.Info("Deleted!")
+			log.Info(fmt.Sprintf("Namespace %s is deleted", name))
 			return nil
 		}
 	})
