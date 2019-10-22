@@ -2,6 +2,7 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	apiErrors "k8s.io/apimachinery/pkg/api/errors"
@@ -54,7 +55,7 @@ func DropNamespace(clientSet *kubernetes.Clientset, name string) error {
 	return retry(namespaceDeletionTimeout, 3*time.Second, func() error {
 		_, err := clientSet.CoreV1().Namespaces().Get(name, metav1.GetOptions{})
 		if err == nil {
-			return errors.New("the namespace is still there")
+			return errors.New(fmt.Sprintf("namespace %s is still there", name))
 		} else if statusErr, ok := err.(*apiErrors.StatusError); !ok || statusErr.Status().Reason != metav1.StatusReasonNotFound {
 			return err
 		} else {
