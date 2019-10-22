@@ -4,15 +4,13 @@
 
 Required software:
 * K8s cluster
-* [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli) 0.7.3 or higher
+* [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli) 0.7.5 or higher
 
 ### Installing Spark Operator with History Server Enabled
 
 ```
 kubectl kudo install ./kudo-operator \
-    -n <NAMESPACE> \
-    -p operatorImageName=mesosphere/kudo-spark-operator \
-    -p operatorVersion=latest \
+    --namespace <NAMESPACE> \
     -p enableHistoryServer=true \
     -p historyServerFsLogDirectory="s3a://<BUCKET_NAME>/<FOLDER>" \
     -p historyServerOpts="-Dspark.hadoop.fs.s3a.access.key=<AWS_ACCESS_KEY_ID> -Dspark.hadoop.fs.s3a.secret.key=<AWS_SECRET_ACCESS_KEY> -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem"
@@ -22,7 +20,7 @@ This will deploy a Pod and Service for the `Spark History Server` with the `Spar
 
 ### Creating Spark Application
 
-Make sure `specs/spark-application.yaml` has these configurations present under `spec.sparkConf`.
+Make sure `specs/spark-application.yaml` has these properties specified under `spec.sparkConf`:
 
 ```
 "spark.eventLog.enabled": "true"
@@ -46,7 +44,7 @@ volumeMounts:
   name: pvc-storage
 ```
 
-Make sure that CRD and RBAC for SparkApplication is already created. Now we can run the application as follows:
+Make sure that CRD and RBAC for SparkApplication are already created. Now we can run the application as follows:
 
 ```
 kubectl apply -n <NAMESPACE> -f specs/spark-application.yaml
