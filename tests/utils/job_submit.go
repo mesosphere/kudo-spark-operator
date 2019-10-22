@@ -5,6 +5,8 @@ import (
 	"time"
 )
 
+const defaultJobCompletionTimeout = 10 * time.Minute
+
 type SparkJob struct {
 	Name         string
 	Namespace    string
@@ -21,7 +23,11 @@ func (spark *SparkOperatorInstallation) SubmitJob(job SparkJob) error {
 	return err
 }
 
-func (spark *SparkOperatorInstallation) WaitUntilSucceeded(timeout time.Duration, job SparkJob) error {
+func (spark *SparkOperatorInstallation) WaitUntilSucceeded(job SparkJob) error {
+	return spark.WaitUntilSucceededWithTimeout(defaultJobCompletionTimeout, job)
+}
+
+func (spark *SparkOperatorInstallation) WaitUntilSucceededWithTimeout(timeout time.Duration, job SparkJob) error {
 	driverPodName := job.Name + "-driver"
 	return waitForPodStatusPhase(spark.Clients, driverPodName, job.Namespace, "Succeeded", timeout)
 }
