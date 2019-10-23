@@ -86,7 +86,13 @@ the metrics on other one and see further instructions in next step.
 1) Now, go to the prometheus dashboard (e.g. `<kubernetes_endpoint_url>/ops/portal/prometheus/graph`) and search for metrics 
 starting with 'spark'. The Prometheus URI might be different depending on how you configured and installed the `prometheus-operator`. 
 
-1) Now it's an excellent time to get metrics visualized with Grafana. You can compose your dashboards or get started with these 
-two [Spark Applications Dashboard](/dashboards/grafana_spark_applications.json) and [Spark Operator Dashboard](dashboards/grafana_spark_operator.json).
-Open the Grafana site (e.g. `<kubernetes_endpoint_url>/ops/portal/grafana`) and follow the official guide [Importing a dashboard](https://grafana.com/docs/reference/export_import/#importing-a-dashboard) 
-to get instruction on how to do import. 
+#### Dashboards
+ * [Spark Applications Dashboard](/dashboards/grafana_spark_applications.json) 
+ * [Spark Operator Dashboard](dashboards/grafana_spark_operator.json)
+ 
+ Dashboard installation : 
+1) Open the Grafana site (e.g. `<kubernetes_endpoint_url>/ops/portal/grafana`).  
+1) Press + button and pick `Import` item from the menu.  
+1) Copy content of the dashboard json file and paste it to the textarea on importing form. 
+
+For more information visit Grafana documentation: [Importing a dashboard guide](https://grafana.com/docs/reference/export_import/#importing-a-dashboard). 
