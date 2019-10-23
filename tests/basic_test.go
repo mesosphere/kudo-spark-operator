@@ -20,12 +20,12 @@ func TestSparkOperatorInstallation(t *testing.T) {
 	defer spark.CleanUp()
 
 	if err != nil {
-		t.Error(err.Error())
+		t.Fatal(err.Error())
 	}
 
 	k8sNamespace, err := spark.Clients.CoreV1().Namespaces().Get(spark.Namespace, v1.GetOptions{})
 	if err != nil {
-		t.Error(err.Error())
+		t.Fatal(err.Error())
 	}
 
 	log.Infof("Spark operator is installed in namespace %s", k8sNamespace.Name)
@@ -40,12 +40,12 @@ func TestSparkOperatorInstallationWithCustomNamespace(t *testing.T) {
 	defer spark.CleanUp()
 
 	if err != nil {
-		t.Error(err.Error())
+		t.Fatal(err.Error())
 	}
 
 	k8sNamespace, err := spark.Clients.CoreV1().Namespaces().Get(spark.Namespace, v1.GetOptions{})
 	if err != nil {
-		t.Error(err.Error())
+		t.Fatal(err.Error())
 	}
 
 	if k8sNamespace.Name != customNamespace {
@@ -59,7 +59,7 @@ func TestJobSubmission(t *testing.T) {
 	defer spark.CleanUp()
 
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
 	job := utils.SparkJob{
@@ -72,7 +72,7 @@ func TestJobSubmission(t *testing.T) {
 
 	err = spark.SubmitJob(job)
 	if err != nil {
-		t.Error(err.Error())
+		t.Fatal(err.Error())
 	}
 
 	err = spark.WaitUntilSucceeded(job)
