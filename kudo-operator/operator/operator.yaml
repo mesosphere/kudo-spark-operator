@@ -1,6 +1,6 @@
 name: "spark"
 version: "0.0.1"
-kudoVersion: 0.7.3
+kudoVersion: 0.7.5
 kubernetesVersion: 1.15.0
 appVersion: "2.4.3"
 maintainers:
@@ -12,7 +12,7 @@ url: https://spark.apache.org/
 tasks:
   deploy:
     resources:
-#      - spark-operator-crds.yaml
+      - spark-operator-crds.yaml
       - spark-operator-rbac.yaml
       - spark-operator-serviceaccount.yaml
       - spark-rbac.yaml
@@ -23,8 +23,8 @@ tasks:
       - spark-history-server-deployment.yaml
       - spark-history-server-service.yaml
       - spark-operator-metrics-service.yaml
-    #  - spark-application-metrics-service.yaml
-    #  - spark-service-monitor.yaml
+   #   - spark-application-metrics-service.yaml
+      - spark-service-monitor.yaml
 
 plans:
   deploy:

@@ -25,10 +25,7 @@ else
       labels:
         name: "${NAMESPACE}"
 EOF
-    # For the time being we need to install CRDs manually because KUDO doesn't fully support it.
-    # Once the issue will be resolved https://github.com/kudobuilder/kudo/issues/935,
-    # move the CRDs instalaltion back to the kudo-spark-operator.
-    kubectl apply -f ${SPECS_DIR}/spark-applications-crds.yaml
+
     kubectl kudo --namespace "${NAMESPACE}" install "${OPERATOR_DIR}" -p operatorImageName="${OPERATOR_IMAGE_NAME}" -p operatorVersion="${OPERATOR_VERSION}"
 fi
 
@@ -38,6 +35,3 @@ kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-driver-rbac.yaml
 # TODO: make the spark-application-metrics-service.yaml manageable by the kudo-spark-operator once the issue https://github.com/kudobuilder/kudo/issues/916 will be fixed.
 kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-application-metrics-service.yaml
 
-# Create ServiceMonitor (see prometheus-operator docs) for Spark.
-# TODO: make the service-monitor.yaml manageable by the kudo-spark-operator once the issue https://github.com/kudobuilder/kudo/issues/913 will be fixed.
-kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-service-monitor.yaml
