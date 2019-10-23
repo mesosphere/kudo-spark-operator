@@ -56,11 +56,11 @@ func DropNamespace(clientSet *kubernetes.Clientset, name string) error {
 	return retry(namespaceDeletionTimeout, namespaceDeletionCheckInterval, func() error {
 		_, err := clientSet.CoreV1().Namespaces().Get(name, metav1.GetOptions{})
 		if err == nil {
-			return errors.New(fmt.Sprintf("Namespace %s is still there", name))
+			return errors.New(fmt.Sprintf("Namespace '%s' still exists", name))
 		} else if statusErr, ok := err.(*apiErrors.StatusError); !ok || statusErr.Status().Reason != metav1.StatusReasonNotFound {
 			return err
 		} else {
-			log.Info(fmt.Sprintf("Namespace %s is deleted", name))
+			log.Info(fmt.Sprintf("Namespace '%s' successfully deleted", name))
 			return nil
 		}
 	})
