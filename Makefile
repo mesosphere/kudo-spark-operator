@@ -9,7 +9,7 @@ SPARK_OPERATOR_DIR := $(ROOT_DIR)/spark-on-k8s-operator
 
 export KONVOY_VERSION ?= v1.1.5
 export WORKER_NODE_INSTANCE_TYPE ?= m5.xlarge
-export WORKER_NODE_COUNT ?= 6
+export WORKER_NODE_COUNT ?= 5
 
 export NAMESPACE ?= spark
 MKE_CLUSTER_NAME=kubernetes-cluster1
