@@ -1,5 +1,14 @@
-# These owners will be the default owners for everything in
-# the repo. Unless a later match takes precedence,
-# @global-owner1 and @global-owner2 will be requested for
-# review when someone opens a pull request.
-*       @VladimirKravtsov @akirillov @rpalaznik @farhan5900 @samvantran @alembiewski
+# The following list of usernames are owners of this project
+# and will tagged as reviewers when you create a PR:
+
+*                   @akirillov @VladimirKravtsov @rpalaznik @farhan5900 @samvantran @alembiewski
+/dashboards         @VladimirKravtsov @akirillov
+/images             @alembiewski @akirillov
+/kudo-operator      @farhan5900 @VladimirKravtsov @akirillov
+/kudo-operator/docs @samvantran @akirillov
+/scripts            @alembiewski @VladimirKravtsov @akirillov
+/specs              @farhan5900 @VladimirKravtsov @akirillov
+/tests              @rpalaznik @akirillov
+*.md                @samvantran @akirillov
+
+# Read about the file in the guide - https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
