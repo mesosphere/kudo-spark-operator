@@ -47,9 +47,6 @@ func (spark *SparkOperatorInstallation) InstallSparkOperator() error {
 		return err
 	}
 
-	// We install CRDs manually for now. It's a temporary workaround soon to be removed.
-	KubectlApply(spark.Namespace, "../specs/spark-applications-crds.yaml")
-
 	// Handle parameters
 	if spark.Params == nil {
 		spark.Params = make(map[string]string)
