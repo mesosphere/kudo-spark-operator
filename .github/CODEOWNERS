@@ -1,0 +1,14 @@
+# The following list of usernames are owners of this project
+# and will be tagged as reviewers when you create a PR:
+
+*                   @akirillov @VladimirKravtsov @rpalaznik @farhan5900 @samvantran @alembiewski
+/dashboards         @VladimirKravtsov @akirillov
+/images             @alembiewski @akirillov
+/kudo-operator      @farhan5900 @VladimirKravtsov @akirillov
+/kudo-operator/docs @samvantran @akirillov
+/scripts            @alembiewski @VladimirKravtsov @akirillov
+/specs              @farhan5900 @VladimirKravtsov @akirillov
+/tests              @rpalaznik @akirillov
+*.md                @samvantran @akirillov
+
+# Read about the file in the guide - https://help.github.com/en/github/creating-cloning-and-archiving-repositories/about-code-owners
