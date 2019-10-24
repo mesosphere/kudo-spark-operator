@@ -14,6 +14,8 @@ const DefaultNamespace = "kudo-spark-operator-testing"
 const DefaultInstanceName = "test-instance"
 const rootDirName = "tests"
 const cmdLogFormat = ">%s %v\n%s"
+const defaultRetryInterval = 5 * time.Second
+const defaultRetryTimeout = 10 * time.Minute
 
 var OperatorImage = getenvOr("OPERATOR_IMAGE", "mesosphere/kudo-spark-operator:spark-2.4.3-hadoop-2.9-k8s")
 var SparkImage = getenvOr("SPARK_IMAGE", "mesosphere/spark:spark-2.4.3-hadoop-2.9-k8s")
@@ -54,7 +56,11 @@ func goUpToRootDir() string {
 	return workDir
 }
 
-func Retry(timeout time.Duration, interval time.Duration, fn func() error) error {
+func Retry(fn func() error) error {
+	return RetryWithTimeout(defaultRetryTimeout, defaultRetryInterval, fn)
+}
+
+func RetryWithTimeout(timeout time.Duration, interval time.Duration, fn func() error) error {
 	timeoutPoint := time.Now().Add(timeout)
 	var err error
 

@@ -8,9 +8,9 @@ import (
 	log "github.com/sirupsen/logrus"
 	v12 "k8s.io/api/core/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"strconv"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestShuffleApp(t *testing.T) {
@@ -31,7 +31,7 @@ func TestShuffleApp(t *testing.T) {
 		Template: "spark-shuffle-job.yaml",
 		Params: map[string]interface{}{
 			"executor_count": expectedExecutorCount,
-			"group_count":    fmt.Sprintf("\"%d\"", expectedGroupCount),
+			"args":           []string{"4", strconv.Itoa(expectedGroupCount), "100", "4", "1500"},
 		},
 	}
 
@@ -39,14 +39,14 @@ func TestShuffleApp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = spark.WaitForJobState(job, v1beta2.RunningState, 5*time.Minute)
+	err = spark.WaitForJobState(job, v1beta2.RunningState)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Wait for correct number of executors to show up
-	err = utils.Retry(30*time.Second, time.Second, func() error {
-		executors, err := spark.JobExecutors(job)
+	err = utils.Retry(func() error {
+		executors, err := spark.GetExecutorState(job)
 		if err != nil {
 			return err
 		} else if len(executors) != expectedExecutorCount {
@@ -82,14 +82,15 @@ func TestMockTaskRunner(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = spark.WaitForJobState(job, v1beta2.RunningState, 5*time.Minute)
+	err = spark.WaitForJobState(job, v1beta2.RunningState)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Wait for correct number of executors to show up
-	err = utils.Retry(30*time.Second, time.Second, func() error {
-		executors, err := spark.JobExecutors(job)
+
+	err = utils.Retry(func() error {
+		executors, err := spark.GetExecutorState(job)
 		if err != nil {
 			return err
 		} else if len(executors) != expectedExecutorCount {
@@ -106,7 +107,7 @@ func TestMockTaskRunner(t *testing.T) {
 
 	// Make sure no executors or drivers left
 	log.Info("Verifying that all executors and drivers are terminated")
-	err = utils.Retry(time.Minute, 5*time.Second, func() error {
+	err = utils.Retry(func() error {
 		// Get all pods named mock-task-runner*
 		var jobPods []v12.Pod
 		pods, _ := spark.K8sClients.CoreV1().Pods(spark.Namespace).List(v1.ListOptions{})

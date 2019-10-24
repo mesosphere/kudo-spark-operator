@@ -10,12 +10,8 @@ spec:
   imagePullPolicy: Always
   mainClass: ShuffleApp
   mainApplicationFile: "https://infinity-artifacts.s3.amazonaws.com/scale-tests/dcos-spark-scala-tests-assembly-2.4.0-20190325.jar"
-  arguments:
-    - "4"
-    - {{ index .Params "group_count" }}
-    - "100"
-    - "4"
-    - "1500"
+  arguments:{{ range $i, $arg := index .Params "args" }}
+    - "{{ $arg }}"{{ end }}
   sparkConf:
     "spark.scheduler.maxRegisteredResourcesWaitingTime": "3m"
     "spark.scheduler.minRegisteredResourcesRatio": "1"

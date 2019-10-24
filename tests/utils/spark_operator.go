@@ -10,7 +10,6 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	"strings"
-	"time"
 )
 
 const operatorDir = "../kudo-operator/operator"
@@ -120,7 +119,7 @@ func getSparkOperatorClientSet() (*operator.Clientset, error) {
 
 func (spark *SparkOperatorInstallation) waitForInstanceStatus(targetStatus string) error {
 	log.Infof("Waiting for %s/%s to reach status %s", spark.Namespace, spark.InstanceName, targetStatus)
-	return Retry(3*time.Minute, 1*time.Second, func() error {
+	return Retry(func() error {
 		status, err := spark.getInstanceStatus()
 		if err == nil && status != targetStatus {
 			err = errors.New(fmt.Sprintf("%s status is %s, but waiting for %s", spark.InstanceName, status, targetStatus))
@@ -136,9 +135,9 @@ func (spark *SparkOperatorInstallation) getInstanceStatus() (string, error) {
 	return status, err
 }
 
-func (spark *SparkOperatorInstallation) WaitForJobState(job SparkJob, state v1beta2.ApplicationStateType, duration time.Duration) error {
+func (spark *SparkOperatorInstallation) WaitForJobState(job SparkJob, state v1beta2.ApplicationStateType) error {
 	log.Infof("Waiting for spark application %s to reach %s state", job.Name, state)
-	err := Retry(duration, 1*time.Second, func() error {
+	err := Retry(func() error {
 		app, err := spark.SparkClients.SparkoperatorV1beta2().SparkApplications(spark.Namespace).Get(job.Name, v1.GetOptions{})
 		if err != nil {
 			return err
@@ -155,7 +154,7 @@ func (spark *SparkOperatorInstallation) WaitForJobState(job SparkJob, state v1be
 	return err
 }
 
-func (spark *SparkOperatorInstallation) JobExecutors(job SparkJob) (map[string]v1beta2.ExecutorState, error) {
+func (spark *SparkOperatorInstallation) GetExecutorState(job SparkJob) (map[string]v1beta2.ExecutorState, error) {
 	log.Infof("Getting %s executors status", job.Name)
 	app, err := spark.SparkClients.SparkoperatorV1beta2().SparkApplications(spark.Namespace).Get(job.Name, v1.GetOptions{})
 	if err != nil {

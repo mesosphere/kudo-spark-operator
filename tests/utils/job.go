@@ -3,11 +3,7 @@ package utils
 import (
 	"errors"
 	log "github.com/sirupsen/logrus"
-	"time"
 )
-
-const defaultJobCompletionTimeout = 10 * time.Minute
-const defaultRetryInterval = 5 * time.Second
 
 type SparkJob struct {
 	Name         string
@@ -50,7 +46,7 @@ func (spark *SparkOperatorInstallation) DriverLogContains(job SparkJob, text str
 
 func (spark *SparkOperatorInstallation) WaitForOutput(job SparkJob, text string) error {
 	log.Infof("Waiting for the following text to appear in the driver log: %s", text)
-	err := Retry(defaultJobCompletionTimeout, defaultRetryInterval, func() error {
+	err := Retry(func() error {
 		if contains, err := spark.DriverLogContains(job, text); !contains {
 			if err != nil {
 				return err
@@ -64,19 +60,15 @@ func (spark *SparkOperatorInstallation) WaitForOutput(job SparkJob, text string)
 	})
 
 	if err != nil {
-		log.Errorf("The text '%s' haven't appeared in the log in %s", text, defaultJobCompletionTimeout.String())
+		log.Errorf("The text '%s' haven't appeared in the log in %s", text, defaultRetryTimeout.String())
 		logPodLogTail(spark.K8sClients, job.Namespace, driverPodName(job.Name), 10)
 	}
 	return err
 }
 
 func (spark *SparkOperatorInstallation) WaitUntilSucceeded(job SparkJob) error {
-	return spark.WaitUntilSucceededWithTimeout(defaultJobCompletionTimeout, job)
-}
-
-func (spark *SparkOperatorInstallation) WaitUntilSucceededWithTimeout(timeout time.Duration, job SparkJob) error {
 	driverPodName := driverPodName(job.Name)
-	return waitForPodStatusPhase(spark.K8sClients, driverPodName, job.Namespace, "Succeeded", timeout)
+	return waitForPodStatusPhase(spark.K8sClients, driverPodName, job.Namespace, "Succeeded")
 }
 
 func driverPodName(jobName string) string {

@@ -56,7 +56,7 @@ func DropNamespace(clientSet *kubernetes.Clientset, name string) error {
 		return err
 	}
 
-	return Retry(namespaceDeletionTimeout, namespaceDeletionCheckInterval, func() error {
+	return Retry(func() error {
 		_, err := clientSet.CoreV1().Namespaces().Get(name, metav1.GetOptions{})
 		if err == nil {
 			return errors.New(fmt.Sprintf("Namespace '%s' still exists", name))
@@ -69,10 +69,10 @@ func DropNamespace(clientSet *kubernetes.Clientset, name string) error {
 	})
 }
 
-func getPodLog(clientSet *kubernetes.Clientset, namespace string, pod string, lines int64) (string, error) {
+func getPodLog(clientSet *kubernetes.Clientset, namespace string, pod string, tailLines int64) (string, error) {
 	opts := v1.PodLogOptions{}
-	if lines > 0 {
-		opts.TailLines = &lines
+	if tailLines > 0 {
+		opts.TailLines = &tailLines
 	}
 	req := clientSet.CoreV1().Pods(namespace).GetLogs(pod, &opts)
 
@@ -123,10 +123,10 @@ func logPodLogTail(clientSet *kubernetes.Clientset, namespace string, pod string
 	return err
 }
 
-func waitForPodStatusPhase(clientSet *kubernetes.Clientset, podName string, namespace string, status string, timeout time.Duration) error {
+func waitForPodStatusPhase(clientSet *kubernetes.Clientset, podName string, namespace string, status string) error {
 	log.Infof("Waiting for pod %s to enter phase %s", podName, status)
 
-	return Retry(timeout, 1*time.Second, func() error {
+	return Retry(func() error {
 		pod, err := clientSet.CoreV1().Pods(namespace).Get(podName, metav1.GetOptions{})
 		if err == nil && string(pod.Status.Phase) != status {
 			err = errors.New("Expected pod status to be " + status + ", but it's " + string(pod.Status.Phase))
