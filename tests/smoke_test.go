@@ -13,7 +13,7 @@ import (
 	"testing"
 )
 
-func TestShuffleApp(t *testing.T) {
+func TestShuffleAppDriverOutput(t *testing.T) {
 	spark := utils.SparkOperatorInstallation{}
 	err := spark.InstallSparkOperator()
 	defer spark.CleanUp()
@@ -61,7 +61,7 @@ func TestShuffleApp(t *testing.T) {
 	spark.WaitForOutput(job, fmt.Sprintf("Groups count: %d", expectedGroupCount))
 }
 
-func TestMockTaskRunner(t *testing.T) {
+func TestRunningAppDeletion(t *testing.T) {
 	spark := utils.SparkOperatorInstallation{}
 	err := spark.InstallSparkOperator()
 	defer spark.CleanUp()
