@@ -66,6 +66,11 @@ metricsPrefix:
   default: ""
   displayName: "Metrics prefix"
 
+metricsPollingInterval:
+  description: "The time interval after which the metrics endpoint will be polled"
+  default: "5s"
+  displayName: "Metrics polling interval"
+
 resyncIntervalSeconds:
   description: "Informer resync interval in seconds"
   default: 30
@@ -166,5 +171,5 @@ enableBatchScheduler:
 
 installCrds:
   description: "Install sparkapplications.sparkoperator.k8s.io and scheduledsparkapplications.sparkoperator.k8s.io"
-  default: false
+  default: true
   displayName: "Install Spark Operator CRDs"

@@ -19,9 +19,6 @@ if [[ $# -lt 1 ]]; then
   exit 1
 fi
 
-echo "Installing CRDs"
-kubectl apply -f ${SPECS_DIR}/spark-applications-crds.yaml
-
 for i in $(seq ${1}); do
     NAMESPACE="${NAMESPACE_PREFIX}-${i}"
     echo "Creating namespace $NAMESPACE"
@@ -30,6 +27,5 @@ for i in $(seq ${1}); do
     kubectl kudo --namespace "${NAMESPACE}" install --instance "${INSTANCE_NAME_PREFIX}-${i}" "${OPERATOR_DIR}" -p operatorVersion="${OPERATOR_VERSION}"
     kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-driver-rbac.yaml
     # Metrics
-    kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-service-monitor.yaml
     kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-application-metrics-service.yaml
 done
