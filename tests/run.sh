@@ -17,5 +17,4 @@ else
   go test -v -count=1 -timeout 30m .
 fi
 
-
 popd

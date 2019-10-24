@@ -23,7 +23,7 @@ func TestSparkOperatorInstallation(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 
-	k8sNamespace, err := spark.Clients.CoreV1().Namespaces().Get(spark.Namespace, v1.GetOptions{})
+	k8sNamespace, err := spark.K8sClients.CoreV1().Namespaces().Get(spark.Namespace, v1.GetOptions{})
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -43,7 +43,7 @@ func TestSparkOperatorInstallationWithCustomNamespace(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 
-	k8sNamespace, err := spark.Clients.CoreV1().Namespaces().Get(spark.Namespace, v1.GetOptions{})
+	k8sNamespace, err := spark.K8sClients.CoreV1().Namespaces().Get(spark.Namespace, v1.GetOptions{})
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -63,14 +63,11 @@ func TestJobSubmission(t *testing.T) {
 	}
 
 	job := utils.SparkJob{
-		Name:         "linear-regression",
-		Namespace:    spark.Namespace,
-		Image:        utils.SparkImage,
-		SparkVersion: utils.SparkVersion,
-		Template:     "spark-linear-regression-job.yaml",
+		Name:     "linear-regression",
+		Template: "spark-linear-regression-job.yaml",
 	}
 
-	err = spark.SubmitJob(job)
+	err = spark.SubmitJob(&job)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
