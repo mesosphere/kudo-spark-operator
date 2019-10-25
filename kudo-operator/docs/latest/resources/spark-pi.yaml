@@ -25,10 +25,7 @@ spec:
     serviceAccount: spark-driver
   executor:
     cores: 1
-    instances: 2
+    instances: 4
     memory: "512m"
     labels:
       version: 2.4.3
-    volumeMounts:
-      - name: "test-volume"
-        mountPath: "/tmp"

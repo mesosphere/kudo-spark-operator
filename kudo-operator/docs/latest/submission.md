@@ -1,6 +1,11 @@
 Submitting Spark Applications
 ---
 
+#### Prerequisites
+
+- kubectl 
+- KUDO Spark installed (please refer to the [Installation](installation.md))
+
 In order to deploy a Spark Application to Kubernetes using the KUDO Spark Operator, it should be described as a Kubernetes object. To do that, create a specification in `yaml` format with all the necessary configuration required for the application.
 
 Let's take a simple `SparkPi` application as an example. The `yaml` specification could be found here: [spark-pi.yaml](resources/spark-pi.yaml)
@@ -41,16 +46,26 @@ spec:
 
 Basically, all the Spark application configuration is placed under `spec` section. Here you can specify Spark related configuration properties, such as number of executors, number of cores for drivers/executors, amount of memory and the other. There is also a `sparkConf` section, where you can place configuration parameters in a form of key-value pairs. In the example we override the default `spark.ui.port` with a custom value.
 
+#### Creating the application
+
 After the application spec is ready, the following command can be used to submit it to the operator:
+
 ```
 $ kubectl create -f ./resources/spark-pi.yaml
 ```
-
-To describe the newly created application, use the following command:
+You can list all Spark applications with the following command:
 ```bash
-$ kubectl get sparkapplications.sparkoperator.k8s.io spark-pi -n spark
+$ kubectl get sparkapplications -n spark
+NAME       AGE
+spark-pi   1m
 ```
+
 In the example above `-n` flag specifies the namespace where the application is deployed. 
+
+To describe the `spark-pi` application, use the following command:
+```bash
+$ kubectl describe sparkapplications spark-pi -n spark
+```
 
 To get the list of pods:
 ```bash
@@ -82,10 +97,37 @@ $ kubectl logs --tail=20 spark-pi-driver -n spark | grep 'Pi is'
 Pi is roughly 3.141644502283289
 ```
 
-### Accessing Spark UI
-When running Spark applications on K8s, it could be useful to have an access to Spark UI to monitor and inspect Spark job executions in a web browser. 
+#### Updating the application
 
-*Tip: *
+Let's say you want to update the application and increase the number of executors from 2 to 4. 
+To do so, you need to modify the spec file and update the value of `spec.worker.instances`. 
+
+Save the changes and apply the updated spec using the following command:
+```bash
+$ kubectl apply -f ./resources/spark-pi.yaml -n spark
+```
+
+Now let's verify the number of executors has changed:
+```bash
+$ kubectl get pods -n spark | grep spark-pi             
+spark-pi-1571999377454-exec-1         1/1     Running     0          118s
+spark-pi-1571999377454-exec-2         1/1     Running     0          118s
+spark-pi-1571999377454-exec-3         1/1     Running     0          117s
+spark-pi-1571999377454-exec-4         1/1     Running     0          117s
+spark-pi-driver                       1/1     Running     0          2m4s
+```
+
+#### Deleting the application
+
+You can delete the application with the following command:
+```bash
+$ kubectl delete sparkapplication spark-pi -n spark
+```
+This will delete all the pods and services related to the application.
+
+### Accessing Spark UI
+
+When running Spark applications on K8s, it could be useful to have an access to Spark UI to monitor and inspect Spark job executions in a web browser. 
 
 The are a few ways to expose Spark UI for you application. 
 
@@ -98,6 +140,7 @@ spark-pi-ui-svc                       ClusterIP   10.0.5.197    <none>        40
 ```
 
 #### Using Port Forwarding
+
 Port forwarding works in a way that connections made to a local port are forwarded to port of the pod which is running the Spark driver. With this connection in place, you can use your local workstation to access Spark UI which is running in the Driver pod.
 
 Command example:
@@ -117,6 +160,7 @@ After that the Spark UI should be available via URL: [localhost:4040](localhost:
 ![](./resources/img/spark-ui-1.png)
 
 #### Using a Service
+
 From the K8s documentation: 
 
 "When creating a service, you have the option of automatically creating a cloud network load balancer. This provides an externally-accessible IP address that sends traffic to the correct port on your cluster nodes provided your cluster runs in a supported environment and is configured with the correct cloud load balancer provider package."
