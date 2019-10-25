@@ -1,10 +1,11 @@
 package tests
 
 import (
+	"testing"
+
 	"github.com/mesosphere/kudo-spark-operator/tests/utils"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 )
 
 func TestMain(m *testing.M) {
@@ -65,6 +66,50 @@ func TestJobSubmission(t *testing.T) {
 	job := utils.SparkJob{
 		Name:     "linear-regression",
 		Template: "spark-linear-regression-job.yaml",
+	}
+
+	err = spark.SubmitJob(&job)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	err = spark.WaitUntilSucceeded(job)
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestSparkHistoryServerInstallation(t *testing.T) {
+	awsAccessKey := utils.getenvOr("AWS_ACCESS_KEY_ID", "")
+	awsAccessSecret := utils.getenvOr("AWS_SECRET_ACCESS_KEY", "")
+	awsBucketName := utils.getenvOr("AWS_BUCKET_NAME", "infinity-artifacts-ci")
+	awsBucketPath := "s3a://" + awsBucketName + "/autodelete7d/kudo-spark-operator"
+	historyParams := map[string]string{
+		"enableHistoryServer":         "true",
+		"historyServerFsLogDirectory": awsBucketPath,
+		"historyServerOpts": "-Dspark.hadoop.fs.s3a.access.key=" + awsAccessKey +
+			"-Dspark.hadoop.fs.s3a.secret.key=" + awsAccessSecret +
+			"-Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem",
+	}
+	spark := utils.SparkOperatorInstallation{
+		Params: historyParams,
+	}
+	err := spark.InstallSparkOperator()
+	defer spark.CleanUp()
+
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	awsParams := map[string]string{
+		"AwsBucketPath":   awsBucketPath,
+		"AwsAccessKey":    awsAccessKey,
+		"AwsAccessSecret": awsAccessSecret,
+	}
+	job := utils.SparkJob{
+		Name:     "history-server-mock-task",
+		Params:   awsParams,
+		Template: "spark-mock-task-history-server-job.yaml",
 	}
 
 	err = spark.SubmitJob(&job)
