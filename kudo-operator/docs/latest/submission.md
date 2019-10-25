@@ -1,7 +1,7 @@
 Submitting Spark Applications
 ---
 
-In order to deploy your application to Kubernetes using Kudo Spark Operator, first you need to describe it as a Kubernetes object. To do that, you need to create a specification in `yaml` format, that will contain all the configuration required for the application.
+In order to deploy a Spark Application to Kubernetes using the KUDO Spark Operator, it should be described as a Kubernetes object. To do that, create a specification in `yaml` format with all the necessary configuration required for the application.
 
 Let's take a simple `SparkPi` application as an example. The `yaml` specification could be found here: [spark-pi.yaml](resources/spark-pi.yaml)
 
@@ -41,16 +41,16 @@ spec:
 
 Basically, all the Spark application configuration is placed under `spec` section. Here you can specify Spark related configuration properties, such as number of executors, number of cores for drivers/executors, amount of memory and the other. There is also a `sparkConf` section, where you can place configuration parameters in a form of key-value pairs. In the example we override the default `spark.ui.port` with a custom value.
 
-After the application spec is ready, the following command can be used to run it on the operator:
+After the application spec is ready, the following command can be used to submit it to the operator:
 ```
 $ kubectl create -f ./resources/spark-pi.yaml
 ```
 
-To describe the newly created application, you can use:
+To describe the newly created application, use the following command:
 ```bash
 $ kubectl get sparkapplications.sparkoperator.k8s.io spark-pi -n spark
 ```
-Pay attentions to the `-n spark` flag - it the name of the namespace, where our application is deployed. 
+In the example above `-n` flag specifies the namespace where the application is deployed. 
 
 To get the list of pods:
 ```bash
@@ -62,7 +62,7 @@ spark-pi-1571911449587-exec-1         1/1     Running     0          4s
 spark-pi-1571911449587-exec-2         1/1     Running     0          4s
 spark-pi-driver                       1/1     Running     0          11s
 ```
-From the output above we can see the app has been created and is currently running as three pods: one driver and two executors.
+From the output above we can see the application has been created and is currently running as three pods: one driver and two executors.
 
 To see pod's logs, use:
 ```
@@ -98,7 +98,7 @@ spark-pi-ui-svc                       ClusterIP   10.0.5.197    <none>        40
 ```
 
 #### Using Port Forwarding
-Port forwarding works in a way that connections made to a local port are forwarded to port of the pod that is running the Spark driver. With this connection in place you can use your local workstation to access Spark UI that is running in the Driver pod.
+Port forwarding works in a way that connections made to a local port are forwarded to port of the pod which is running the Spark driver. With this connection in place, you can use your local workstation to access Spark UI which is running in the Driver pod.
 
 Command example:
 ```
@@ -112,7 +112,7 @@ Forwarding from 127.0.0.1:4040 -> 4041
 Forwarding from [::1]:4040 -> 4041
 
 ```
-After that you can verify Spark UI is available on `localhost:4040`:
+After that the Spark UI should be available via URL: [localhost:4040](localhost:4040):
 
 ![](./resources/img/spark-ui-1.png)
 
@@ -155,6 +155,6 @@ Now you can use `a55f8bba6615346149d96bf438d87438-1803869262.us-west-2.elb.amazo
 
 ![](./resources/img/spark-ui-2.png)
 
-Spark UI provides a valuable insights into various aspects of an application, but it's main drawback is that it's only available for the duration of the application. If you want to be able to explore an application's UI after it's finished, please consider setting up the [Spark History Server](./history-server.md).
+Spark UI provides valuable insights into various aspects of an application, but its main drawback is that it's only available for the duration of the application. If you want to be able to explore an application's UI after it's finished, consider setting up the [Spark History Server](./history-server.md).
 
 You also might want to consider setting up a complete monitoring solution to be able to visualize and analyze your Spark cluster performance using real-time metrics and dashboards. To do so, please refer to the [Monitoring](monitoring.md) section of the documentation. 
