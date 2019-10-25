@@ -80,9 +80,9 @@ func TestJobSubmission(t *testing.T) {
 }
 
 func TestSparkHistoryServerInstallation(t *testing.T) {
-	awsAccessKey := utils.getenvOr("AWS_ACCESS_KEY_ID", "")
-	awsAccessSecret := utils.getenvOr("AWS_SECRET_ACCESS_KEY", "")
-	awsBucketName := utils.getenvOr("AWS_BUCKET_NAME", "infinity-artifacts-ci")
+	awsAccessKey := utils.GetenvOr("AWS_ACCESS_KEY_ID", "")
+	awsAccessSecret := utils.GetenvOr("AWS_SECRET_ACCESS_KEY", "")
+	awsBucketName := utils.GetenvOr("AWS_BUCKET_NAME", "infinity-artifacts-ci")
 	awsBucketPath := "s3a://" + awsBucketName + "/autodelete7d/kudo-spark-operator"
 	historyParams := map[string]string{
 		"enableHistoryServer":         "true",

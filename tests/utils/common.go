@@ -1,13 +1,14 @@
 package utils
 
 import (
-	log "github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
 	"path"
 	"path/filepath"
 	"strings"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const DefaultNamespace = "kudo-spark-operator-testing"
@@ -17,11 +18,11 @@ const cmdLogFormat = ">%s %v\n%s"
 const defaultRetryInterval = 5 * time.Second
 const defaultRetryTimeout = 10 * time.Minute
 
-var OperatorImage = getenvOr("OPERATOR_IMAGE", "mesosphere/kudo-spark-operator:spark-2.4.3-hadoop-2.9-k8s")
-var SparkImage = getenvOr("SPARK_IMAGE", "mesosphere/spark:spark-2.4.3-hadoop-2.9-k8s")
-var SparkVersion = getenvOr("SPARK_VERSION", "2.4.3")
-var TestDir = getenvOr("TEST_DIR", goUpToRootDir())
-var KubeConfig = getenvOr("KUBECONFIG", filepath.Join(os.Getenv("HOME"), ".kube", "config"))
+var OperatorImage = GetenvOr("OPERATOR_IMAGE", "mesosphere/kudo-spark-operator:spark-2.4.3-hadoop-2.9-k8s")
+var SparkImage = GetenvOr("SPARK_IMAGE", "mesosphere/spark:spark-2.4.3-hadoop-2.9-k8s")
+var SparkVersion = GetenvOr("SPARK_VERSION", "2.4.3")
+var TestDir = GetenvOr("TEST_DIR", goUpToRootDir())
+var KubeConfig = GetenvOr("KUBECONFIG", filepath.Join(os.Getenv("HOME"), ".kube", "config"))
 
 func init() {
 	log.SetFormatter(&log.TextFormatter{
@@ -37,7 +38,7 @@ func init() {
 	log.Infof("k8s config path:\t\t\t%s", KubeConfig)
 }
 
-func getenvOr(key string, defaultValue string) string {
+func GetenvOr(key string, defaultValue string) string {
 	val := os.Getenv(key)
 	if len(val) == 0 {
 		val = defaultValue
