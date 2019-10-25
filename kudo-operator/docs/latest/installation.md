@@ -13,19 +13,19 @@ Requirements:
 Check out existing [limitations](./limitations.md) before installing a KUDO Spark instance. Currently, multi-instance 
 (multi-tenant) operator installation supports only a single instance per namespace. 
 
-
 ```
 kubectl kudo install spark --instance=spark
 ```
 
-Verify the if the deploy plan for `--instance=spark` is complete.
+Verify if the deploy plan for `--instance=spark` is complete:
 ```
 kubectl kudo plan status --instance=spark
+
 Plan(s) for "spark" in namespace "default":
 .
-└── spark (Operator-Version: "spark-0.1.0" Active-Plan: "spark-deploy-177456474")
+└── spark (Operator-Version: "spark-beta1" Active-Plan: "deploy")
     └── Plan deploy (serial strategy) [COMPLETE]
-        └── Phase deploy-spark (serial strategy) [COMPLETE]
+        └── Phase deploy-spark [COMPLETE]
             └── Step deploy (COMPLETE)
 ```
 
@@ -49,6 +49,7 @@ metadata:
   name: spark-operator-2
   labels:
     name: spark-operator-2
+EOF
 ```
 
 
