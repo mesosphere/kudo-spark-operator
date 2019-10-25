@@ -101,7 +101,7 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 
-	awsParams := map[string]string{
+	awsParams := map[string]interface{}{
 		"AwsBucketPath":   awsBucketPath,
 		"AwsAccessKey":    awsAccessKey,
 		"AwsAccessSecret": awsAccessSecret,
