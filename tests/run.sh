@@ -12,9 +12,9 @@ pushd $TEST_DIR
 
 if [ -n "$TEAMCITY_VERSION" ]; then
   # Running in Teamcity, therefore we need to convert `go test` output accordingly
-  go test -v -count=1 -timeout 30m . | go-test-teamcity
+  go test -v -count=1 -timeout 30m -run TestSparkHistoryServerInstallation . | go-test-teamcity
 else
-  go test -v -count=1 -timeout 30m .
+  go test -v -count=1 -timeout 30m -run TestSparkHistoryServerInstallation .
 fi
 
 popd

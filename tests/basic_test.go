@@ -87,9 +87,9 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	historyParams := map[string]string{
 		"enableHistoryServer":         "true",
 		"historyServerFsLogDirectory": awsBucketPath,
-		"historyServerOpts": "-Dspark.hadoop.fs.s3a.access.key=" + awsAccessKey +
-			"-Dspark.hadoop.fs.s3a.secret.key=" + awsAccessSecret +
-			"-Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem",
+		"historyServerOpts": "\"-Dspark.hadoop.fs.s3a.access.key=" + awsAccessKey +
+			" -Dspark.hadoop.fs.s3a.secret.key=" + awsAccessSecret +
+			" -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem\"",
 	}
 	spark := utils.SparkOperatorInstallation{
 		Params: historyParams,
