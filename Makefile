@@ -121,6 +121,8 @@ test:
 		-e SPARK_IMAGE=$(SPARK_IMAGE_FULL_NAME) \
 		-e OPERATOR_IMAGE=$(OPERATOR_IMAGE_FULL_NAME) \
 		-e TEAMCITY_VERSION="$(TEAMCITY_VERSION)" \
+		-e AWS_ACCESS_KEY_ID="$(AWS_ACCESS_KEY_ID)" \
+		-e AWS_SECRET_ACCESS_KEY="$(AWS_SECRET_ACCESS_KEY)" \
 		$(shell cat $(ROOT_DIR)/docker-builder) \
 		/kudo-spark-operator/tests/run.sh
 
