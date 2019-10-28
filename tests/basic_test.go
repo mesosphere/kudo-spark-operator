@@ -84,13 +84,14 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	awsAccessSecret := utils.GetenvOr("AWS_SECRET_ACCESS_KEY", "")
 	awsBucketName := utils.GetenvOr("AWS_BUCKET_NAME", "infinity-artifacts-ci")
 	awsBucketPath := "s3a://" + awsBucketName + "/autodelete7d/kudo-spark-operator"
-	historyParams := map[string]string{
-		"enableHistoryServer":         "true",
-		"historyServerFsLogDirectory": awsBucketPath,
-		"historyServerOpts": "\"-Dspark.hadoop.fs.s3a.access.key=" + awsAccessKey +
-			" -Dspark.hadoop.fs.s3a.secret.key=" + awsAccessSecret +
-			" -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem\"",
-	}
+
+	historyParams := make(map[string]string)
+	historyParams["enableHistoryServer"] = "true"
+	historyParams["historyServerFsLogDirectory"] = awsBucketPath
+	historyParams["historyServerOpts"] = "-Dspark.hadoop.fs.s3a.access.key=" + awsAccessKey +
+		" -Dspark.hadoop.fs.s3a.secret.key=" + awsAccessSecret +
+		" -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem"
+
 	spark := utils.SparkOperatorInstallation{
 		Params: historyParams,
 	}
