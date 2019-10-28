@@ -44,7 +44,7 @@ spec:
       version: 2.4.3
 ```
 
-Basically, all the Spark application configuration is placed under `spec` section. Here you can specify Spark related configuration properties, such as number of executors, number of cores for drivers/executors, amount of memory and the other. There is also a `sparkConf` section, where you can place configuration parameters in a form of key-value pairs. In the example we override the default `spark.ui.port` with a custom value.
+Basically, all the Spark application configuration is placed under `spec` section. Here you can specify Spark related configuration properties, such as number of executors, number of cores for drivers/executors, amount of memory, etc. There is also a `sparkConf` section, where you can place configuration parameters in the form of key-value pairs. In this example, we override the default `spark.ui.port` with a custom value.
 
 #### Creating the application
 
@@ -91,7 +91,7 @@ You can get the full description of the driver pod with the following command:
 ```
 $ kubectl describe pod spark-pi-driver -n spark
 ```
-Verify the driver pod is completed successfully:
+Verify the driver pod has completed successfully:
 ```bash
 $ kubectl logs --tail=20 spark-pi-driver -n spark | grep 'Pi is'
 Pi is roughly 3.141644502283289
