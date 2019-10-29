@@ -135,7 +135,7 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		"svc",
 		"history-server-ui-lb",
 		"--namespace="+spark.Namespace,
-		"--output=jsonpath='{.status.loadBalancer.ingress[*].hostname}'",
+		"--output=jsonpath={.status.loadBalancer.ingress[*].hostname}",
 	)
 	log.Infof("SVC DETAILS: %s", hostName)
 	if err != nil {
