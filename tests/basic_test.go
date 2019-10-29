@@ -1,6 +1,8 @@
 package tests
 
 import (
+	"io/ioutil"
+	"net/http"
 	"testing"
 
 	"github.com/mesosphere/kudo-spark-operator/tests/utils"
@@ -108,9 +110,14 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		"AwsAccessSecret": awsAccessSecret,
 	}
 	job := utils.SparkJob{
-		Name:     "history-server-mock-task",
+		Name:     "history-server-linear-regression",
 		Params:   awsParams,
-		Template: "spark-mock-task-history-server-job.yaml",
+		Template: "spark-linear-regression-history-server-job.yaml",
+	}
+
+	err = utils.KubectlApply(spark.Namespace, "templates/history-server-ui-lb.yaml")
+	if err != nil {
+		t.Fatal(err.Error())
 	}
 
 	err = spark.SubmitJob(&job)
@@ -122,4 +129,25 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	if err != nil {
 		t.Error(err.Error())
 	}
+
+	hostName, err := utils.Kubectl(
+		"get",
+		"svc",
+		"history-server-ui-lb",
+		"--namespace="+spark.Namespace,
+		"--output=jsonpath='{.status.loadBalancer.ingress[*].hostname}'",
+	)
+	log.Infof("SVC DETAILS: %s", hostName)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	historyServerEndPoint := "http://" + hostName + "/api/v1/applications"
+	response, err := http.Get(historyServerEndPoint)
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	data, _ := ioutil.ReadAll(response.Body)
+	log.Infof(string(data))
 }
