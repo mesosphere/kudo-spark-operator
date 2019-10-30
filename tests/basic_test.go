@@ -3,6 +3,7 @@ package tests
 import (
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
 
 	"github.com/mesosphere/kudo-spark-operator/tests/utils"
@@ -81,6 +82,28 @@ func TestJobSubmission(t *testing.T) {
 	}
 }
 
+func getApplicationsFromHistoryServer(hostName string) (string, error) {
+	apiUrl := "http://" + hostName + "/api/v1/applications"
+
+	request, err := http.NewRequest(http.MethodGet, apiUrl, nil)
+	if err != nil {
+		return "", err
+	}
+
+	client := http.DefaultClient
+	response, err := client.Do(request)
+	if err != nil {
+		return "", err
+	}
+	defer response.Body.Close()
+
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return "", err
+	}
+	return string(body), nil
+}
+
 func TestSparkHistoryServerInstallation(t *testing.T) {
 	awsAccessKey := utils.GetenvOr("AWS_ACCESS_KEY_ID", "")
 	awsAccessSecret := utils.GetenvOr("AWS_SECRET_ACCESS_KEY", "")
@@ -115,11 +138,13 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		Template: "spark-linear-regression-history-server-job.yaml",
 	}
 
+	// Apply LoadBalancer service to expose History Server UI
 	err = utils.KubectlApply(spark.Namespace, "templates/history-server-ui-lb.yaml")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
 
+	// Submit a SparkApplication
 	err = spark.SubmitJob(&job)
 	if err != nil {
 		t.Fatal(err.Error())
@@ -130,6 +155,7 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		t.Error(err.Error())
 	}
 
+	// Find out external hostname from the History Server Service
 	hostName, err := utils.Kubectl(
 		"get",
 		"svc",
@@ -137,17 +163,27 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		"--namespace="+spark.Namespace,
 		"--output=jsonpath={.status.loadBalancer.ingress[*].hostname}",
 	)
-	log.Infof("SVC DETAILS: %s", hostName)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	historyServerEndPoint := "http://" + hostName + "/api/v1/applications"
-	response, err := http.Get(historyServerEndPoint)
+	// Find out the Job ID for the submitted SparkApplication
+	jobId, err := utils.Kubectl(
+		"get",
+		"pods",
+		"--namespace="+spark.Namespace,
+		"--output=jsonpath={.items[*].metadata.labels.spark-app-selector}",
+	)
+
+	// Get the list of applications in History Server
+	historyServerResponse, err := getApplicationsFromHistoryServer(hostName)
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	data, _ := ioutil.ReadAll(response.Body)
-	log.Infof(string(data))
+	if strings.Contains(historyServerResponse, jobId) {
+		log.Infof("Job ID: %s is successfully recorded in History Server", jobId)
+	} else {
+		t.Errorf("Job ID: %s is not found in History Server", jobId)
+	}
 }
