@@ -16,7 +16,7 @@ func TestMain(m *testing.M) {
 
 func TestSparkOperatorInstallation(t *testing.T) {
 	spark := utils.SparkOperatorInstallation{}
-	err := spark.InstallSparkOperator()
+	err := spark.InstallSparkOperator(true)
 	defer spark.CleanUp()
 
 	if err != nil {
@@ -36,7 +36,7 @@ func TestSparkOperatorInstallationWithCustomNamespace(t *testing.T) {
 	spark := utils.SparkOperatorInstallation{
 		Namespace: customNamespace,
 	}
-	err := spark.InstallSparkOperator()
+	err := spark.InstallSparkOperator(true)
 	defer spark.CleanUp()
 
 	if err != nil {
@@ -55,7 +55,7 @@ func TestSparkOperatorInstallationWithCustomNamespace(t *testing.T) {
 
 func TestJobSubmission(t *testing.T) {
 	spark := utils.SparkOperatorInstallation{}
-	err := spark.InstallSparkOperator()
+	err := spark.InstallSparkOperator(true)
 	defer spark.CleanUp()
 
 	if err != nil {

@@ -15,7 +15,7 @@ import (
 
 func TestShuffleAppDriverOutput(t *testing.T) {
 	spark := utils.SparkOperatorInstallation{}
-	err := spark.InstallSparkOperator()
+	err := spark.InstallSparkOperator(true)
 	defer spark.CleanUp()
 
 	if err != nil {
@@ -66,7 +66,7 @@ func TestShuffleAppDriverOutput(t *testing.T) {
 
 func TestRunningAppDeletion(t *testing.T) {
 	spark := utils.SparkOperatorInstallation{}
-	err := spark.InstallSparkOperator()
+	err := spark.InstallSparkOperator(true)
 	defer spark.CleanUp()
 
 	if err != nil {
