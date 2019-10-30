@@ -91,11 +91,11 @@ func verifyComponents(t *testing.T, operators []*utils.SparkOperatorInstallation
 			}
 		}
 
-		clusterRole := fmt.Sprintf("%s-%s:spark-cr", operator.InstanceName, operator.Namespace)
+		clusterRole := fmt.Sprintf("%s-%s-cr", operator.InstanceName, operator.Namespace)
 		_, err := operator.K8sClients.RbacV1().ClusterRoles().Get(clusterRole, v1.GetOptions{})
 		assert.NilError(t, err)
 
-		clusterRoleBinding := fmt.Sprintf("%s-%s:spark-crb", operator.InstanceName, operator.Namespace)
+		clusterRoleBinding := fmt.Sprintf("%s-%s-crb", operator.InstanceName, operator.Namespace)
 		_, err = operator.K8sClients.RbacV1().ClusterRoleBindings().Get(clusterRoleBinding, v1.GetOptions{})
 		assert.NilError(t, err)
 	}
