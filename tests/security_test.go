@@ -75,9 +75,7 @@ func runServiceAccountTestCase(tc serviceAccountTestCase) error {
 		return err
 	}
 
-	// Prepare parameters and expected SA names
-	var expectedDriverSA, expectedOperatorSA string
-
+	// Prepare SAs before installation if needed
 	if tc.prepareOperatorSA {
 		err = utils.CreateServiceAccount(client, tc.expectedOperatorSA, tc.namespace)
 		if err != nil {
@@ -85,7 +83,6 @@ func runServiceAccountTestCase(tc serviceAccountTestCase) error {
 			return err
 		}
 	}
-
 	if tc.prepareDriverSA {
 		err = utils.CreateServiceAccount(client, tc.expectedDriverSA, tc.namespace)
 		if err != nil {
@@ -109,15 +106,15 @@ func runServiceAccountTestCase(tc serviceAccountTestCase) error {
 	}
 
 	// Verify that SAs exists
-	_, err = spark.K8sClients.CoreV1().ServiceAccounts(spark.Namespace).Get(expectedOperatorSA, metav1.GetOptions{})
+	_, err = spark.K8sClients.CoreV1().ServiceAccounts(spark.Namespace).Get(tc.expectedOperatorSA, metav1.GetOptions{})
 	if err != nil {
-		log.Errorf("Can't get operator service account '%s'", expectedOperatorSA)
+		log.Errorf("Can't get operator service account '%s'", tc.expectedOperatorSA)
 		return err
 	}
 
-	_, err = spark.K8sClients.CoreV1().ServiceAccounts(spark.Namespace).Get(expectedDriverSA, metav1.GetOptions{})
+	_, err = spark.K8sClients.CoreV1().ServiceAccounts(spark.Namespace).Get(tc.expectedDriverSA, metav1.GetOptions{})
 	if err != nil {
-		log.Errorf("Can't get Spark driver service account '%s'", expectedDriverSA)
+		log.Errorf("Can't get Spark driver service account '%s'", tc.expectedDriverSA)
 		return err
 	}
 
@@ -126,7 +123,7 @@ func runServiceAccountTestCase(tc serviceAccountTestCase) error {
 	job := utils.SparkJob{
 		Name:           jobName,
 		Template:       "spark-mock-task-runner-job.yaml",
-		ServiceAccount: expectedDriverSA,
+		ServiceAccount: tc.expectedDriverSA,
 		Params: map[string]interface{}{
 			"args": []string{"1", "15"},
 		},
