@@ -59,7 +59,7 @@ func runServiceAccountTestCase(tc serviceAccountTestCase) error {
 	if tc.operatorServiceAccount != "" {
 		err = utils.CreateServiceAccount(client, tc.operatorServiceAccount, tc.namespace)
 		if err != nil {
-			log.Errorf("Can't create operator service account '%'", tc.operatorServiceAccount)
+			log.Errorf("Can't create operator service account '%s'", tc.operatorServiceAccount)
 			return err
 		}
 		sparkParams["createOperatorServiceAccount"] = "false"
@@ -74,7 +74,7 @@ func runServiceAccountTestCase(tc serviceAccountTestCase) error {
 	if tc.driverServiceAccount != "" {
 		err = utils.CreateServiceAccount(client, tc.driverServiceAccount, tc.namespace)
 		if err != nil {
-			log.Errorf("Can't create spark driver service account '%'", tc.operatorServiceAccount)
+			log.Errorf("Can't create spark driver service account '%s'", tc.operatorServiceAccount)
 		}
 		sparkParams["createSparkServiceAccount"] = "false"
 		sparkParams["sparkServiceAccountName"] = tc.driverServiceAccount
