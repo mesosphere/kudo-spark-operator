@@ -7,98 +7,85 @@ import (
 	"testing"
 )
 
-func TestDefaultServiceAccounts(t *testing.T) {
-	const driverSA = "spark-service-account"
-	const operatorSA = "spark-operator-service-account"
-	spark := utils.SparkOperatorInstallation{
-		Namespace: "test-default-service-accounts",
-		Params: map[string]string{
-			"createOperatorServiceAccount": "true",
-			"createSparkServiceAccount":    "true",
-			"operatorServiceAccountName":   operatorSA,
-			"sparkServiceAccountName":      driverSA,
+type serviceAccountTestCase struct {
+	name                   string
+	namespace              string
+	operatorServiceAccount string
+	driverServiceAccount   string
+}
+
+func TestServiceAccounts(t *testing.T) {
+	testCases := []serviceAccountTestCase{
+		{
+			name:      "DefaultConfiguration",
+			namespace: "sa-test-default",
+		},
+		{
+			name:                   "ProvidedOperatorServiceAccount",
+			namespace:              "sa-test-operator",
+			operatorServiceAccount: "custom-operator-sa",
+		},
+		{
+			name:                 "ProvidedSparkServiceAccount",
+			namespace:            "sa-test-spark",
+			driverServiceAccount: "custom-spark-sa",
 		},
 	}
 
-	err := testServiceAccounts(spark,
-		utils.DefaultInstanceName+"-"+operatorSA,
-		utils.DefaultInstanceName+"-"+driverSA)
-	if err != nil {
-		t.Fatal(err.Error())
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := runServiceAccountTestCase(t, tc)
+			if err != nil {
+				t.Errorf("Test case: %v\nfailed with error: %s", tc, err)
+			}
+		})
 	}
 }
 
-func TestSparkServiceAccount(t *testing.T) {
-	const namespace = "test-provided-spark-sa"
-	const driverSA = "spark-driver"
-	const operatorSA = "spark-operator-service-account"
-
-	// Prepare a namespace with a service account
-	err := createNamespaceAndServiceAccount(namespace, driverSA)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	spark := utils.SparkOperatorInstallation{
-		Namespace:            namespace,
-		SkipNamespaceCleanUp: true,
-		Params: map[string]string{
-			"createOperatorServiceAccount": "true",
-			"operatorServiceAccountName":   operatorSA,
-			"createSparkServiceAccount":    "false",
-			"sparkServiceAccountName":      driverSA,
-		},
-	}
-
-	err = testServiceAccounts(spark, utils.DefaultInstanceName+"-"+operatorSA, driverSA)
-	if err != nil {
-		t.Fatal(err.Error())
-	}
-}
-
-func TestOperatorServiceAccount(t *testing.T) {
-	const namespace = "test-provided-operator-sa"
-	const driverSA = "spark-service-account"
-	const operatorSA = "operator-test-service-account"
-
-	// Prepare a namespace with a service account
-	err := createNamespaceAndServiceAccount(namespace, operatorSA)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	spark := utils.SparkOperatorInstallation{
-		Namespace:            namespace,
-		SkipNamespaceCleanUp: true,
-		Params: map[string]string{
-			"createOperatorServiceAccount": "false",
-			"operatorServiceAccountName":   operatorSA,
-			"createSparkServiceAccount":    "true",
-			"sparkServiceAccountName":      driverSA,
-		},
-	}
-
-	err = testServiceAccounts(spark, operatorSA, utils.DefaultInstanceName+"-"+driverSA)
-	if err != nil {
-		t.Fatal(err.Error())
-	}
-}
-
-func createNamespaceAndServiceAccount(namespace string, saName string) error {
+func runServiceAccountTestCase(t *testing.T, tc serviceAccountTestCase) error {
 	client, err := utils.GetK8sClientSet()
 	if err != nil {
 		return err
 	}
-	_, err = utils.CreateNamespace(client, namespace)
+	_, err = utils.CreateNamespace(client, tc.namespace)
 	if err != nil {
 		return err
 	}
 
-	return utils.CreateServiceAccount(client, saName, namespace)
-}
+	// Prepare parameters and expected SA names
+	var expectedDriverSA, expectedOperatorSA string
+	sparkParams := make(map[string]string)
 
-func testServiceAccounts(spark utils.SparkOperatorInstallation, operatorSAName string, driverSAName string) error {
-	err := spark.InstallSparkOperator()
+	if tc.operatorServiceAccount != "" {
+		utils.CreateServiceAccount(client, tc.operatorServiceAccount, tc.namespace)
+		sparkParams["createOperatorServiceAccount"] = "false"
+		sparkParams["operatorServiceAccountName"] = tc.operatorServiceAccount
+		expectedOperatorSA = tc.operatorServiceAccount
+	} else {
+		sparkParams["createOperatorServiceAccount"] = "true"
+		sparkParams["operatorServiceAccountName"] = "spark-operator-service-account"
+		expectedOperatorSA = utils.DefaultInstanceName + "-" + sparkParams["operatorServiceAccountName"]
+	}
+
+	if tc.driverServiceAccount != "" {
+		utils.CreateServiceAccount(client, tc.driverServiceAccount, tc.namespace)
+		sparkParams["createSparkServiceAccount"] = "false"
+		sparkParams["sparkServiceAccountName"] = tc.driverServiceAccount
+		expectedDriverSA = tc.driverServiceAccount
+	} else {
+		sparkParams["createSparkServiceAccount"] = "true"
+		sparkParams["sparkServiceAccountName"] = "spark-service-account"
+		expectedDriverSA = utils.DefaultInstanceName + "-" + sparkParams["sparkServiceAccountName"]
+	}
+
+	// Install spark operator
+	spark := utils.SparkOperatorInstallation{
+		Namespace:            tc.namespace,
+		SkipNamespaceCleanUp: true,
+		Params:               sparkParams,
+	}
+
+	err = spark.InstallSparkOperator()
 	defer spark.CleanUp()
 
 	if err != nil {
@@ -106,15 +93,15 @@ func testServiceAccounts(spark utils.SparkOperatorInstallation, operatorSAName s
 	}
 
 	// Verify that SAs exists
-	_, err = spark.K8sClients.CoreV1().ServiceAccounts(spark.Namespace).Get(operatorSAName, metav1.GetOptions{})
+	_, err = spark.K8sClients.CoreV1().ServiceAccounts(spark.Namespace).Get(expectedOperatorSA, metav1.GetOptions{})
 	if err != nil {
-		log.Errorf("Can't get operator service account '%s'", operatorSAName)
+		log.Errorf("Can't get operator service account '%s'", expectedOperatorSA)
 		return err
 	}
 
-	_, err = spark.K8sClients.CoreV1().ServiceAccounts(spark.Namespace).Get(driverSAName, metav1.GetOptions{})
+	_, err = spark.K8sClients.CoreV1().ServiceAccounts(spark.Namespace).Get(expectedDriverSA, metav1.GetOptions{})
 	if err != nil {
-		log.Errorf("Can't get Spark driver service account '%s'", driverSAName)
+		log.Errorf("Can't get Spark driver service account '%s'", expectedDriverSA)
 		return err
 	}
 
@@ -123,7 +110,7 @@ func testServiceAccounts(spark utils.SparkOperatorInstallation, operatorSAName s
 	job := utils.SparkJob{
 		Name:           jobName,
 		Template:       "spark-mock-task-runner-job.yaml",
-		ServiceAccount: driverSAName,
+		ServiceAccount: expectedDriverSA,
 		Params: map[string]interface{}{
 			"args": []string{"1", "15"},
 		},
