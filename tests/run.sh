@@ -21,4 +21,4 @@ EXIT_CODE=$?
 
 popd
 
-return $EXIT_CODE
+exit $EXIT_CODE
