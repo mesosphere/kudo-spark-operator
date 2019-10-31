@@ -55,10 +55,13 @@ func TestShuffleAppDriverOutput(t *testing.T) {
 		return nil
 	})
 	if err != nil {
-		t.Error(err)
+		t.Fatal(err)
 	}
 
-	spark.WaitForOutput(job, fmt.Sprintf("Groups count: %d", expectedGroupCount))
+	err = spark.WaitForOutput(job, fmt.Sprintf("Groups count: %d", expectedGroupCount))
+	if err != nil {
+		t.Error(err)
+	}
 }
 
 func TestRunningAppDeletion(t *testing.T) {
@@ -74,6 +77,9 @@ func TestRunningAppDeletion(t *testing.T) {
 	job := utils.SparkJob{
 		Name:     jobName,
 		Template: "spark-mock-task-runner-job.yaml",
+		Params: map[string]interface{}{
+			"args": []string{"1", "600"},
+		},
 	}
 	expectedExecutorCount := 1
 

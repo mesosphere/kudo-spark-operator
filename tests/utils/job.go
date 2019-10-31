@@ -6,12 +6,13 @@ import (
 )
 
 type SparkJob struct {
-	Name         string
-	Namespace    string
-	Image        string
-	SparkVersion string
-	Template     string
-	Params       map[string]interface{}
+	Name           string
+	Namespace      string
+	Image          string
+	SparkVersion   string
+	Template       string
+	ServiceAccount string
+	Params         map[string]interface{}
 }
 
 func (spark *SparkOperatorInstallation) SubmitJob(job *SparkJob) error {
@@ -25,6 +26,9 @@ func (spark *SparkOperatorInstallation) SubmitJob(job *SparkJob) error {
 	}
 	if job.SparkVersion == "" {
 		job.SparkVersion = SparkVersion
+	}
+	if job.ServiceAccount == "" {
+		job.ServiceAccount = spark.InstanceName + "-spark-service-account"
 	}
 
 	yamlFile := createSparkJob(*job)

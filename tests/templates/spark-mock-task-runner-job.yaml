@@ -10,9 +10,8 @@ spec:
   imagePullPolicy: Always
   mainClass: MockTaskRunner
   mainApplicationFile: "https://infinity-artifacts.s3.amazonaws.com/scale-tests/dcos-spark-scala-tests-assembly-2.4.0-20190325.jar"
-  arguments:
-    - "1"
-    - "600"
+  arguments: {{ range $i, $arg := index .Params "args" }}
+  - "{{ $arg }}"{{ end }}
   sparkConf:
     "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
@@ -25,7 +24,7 @@ spec:
     labels:
       version: {{ .SparkVersion }}
       metrics-exposed: "true"
-    serviceAccount: spark-driver
+    serviceAccount: {{ .ServiceAccount }}
   executor:
     cores: 1
     instances: 1
