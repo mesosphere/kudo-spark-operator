@@ -17,16 +17,22 @@ func TestTenancyTwoOperatorsDifferentNamespaces(t *testing.T) {
 		assert.NilError(t, err)
 	}
 
-	verifyComponents(t, operators)
-	verifyWorkloads(t, operators)
+	t.Run("TestComponents", func(t *testing.T) {
+		verifyComponents(t, operators)
+	})
+	t.Run("TestWorkloads", func(t *testing.T) {
+		verifyWorkloads(t, operators)
+	})
 
-	// verify CRDs are present after one of the operators is deleted
-	operators[0].CleanUp()
-	assert.Assert(t, crdsInstalled(t), "CRDs are not present!")
+	t.Run("TestCRDsDeletion", func(t *testing.T) {
+		// verify CRDs are present after one of the operators is deleted
+		operators[0].CleanUp()
+		assert.Assert(t, crdsInstalled(t), "CRDs are not present!")
 
-	// check that CRDs are deleted after no operator instances left
-	operators[1].CleanUp()
-	assert.Assert(t, !crdsInstalled(t), "CRDs are not deleted!")
+		// check that CRDs are deleted after no operator instances left
+		operators[1].CleanUp()
+		assert.Assert(t, !crdsInstalled(t), "CRDs are not deleted!")
+	})
 }
 
 func TestTenancyTwoOperatorsSingleNamespace(t *testing.T) {
@@ -37,8 +43,12 @@ func TestTenancyTwoOperatorsSingleNamespace(t *testing.T) {
 		defer operator.CleanUp()
 	}
 
-	verifyComponents(t, operators)
-	verifyWorkloads(t, operators)
+	t.Run("TestComponents", func(t *testing.T) {
+		verifyComponents(t, operators)
+	})
+	t.Run("TestWorkloads", func(t *testing.T) {
+		verifyWorkloads(t, operators)
+	})
 }
 
 func TestTenancyTwoOperatorsSameNameDifferentNamespaces(t *testing.T) {
@@ -46,10 +56,15 @@ func TestTenancyTwoOperatorsSameNameDifferentNamespaces(t *testing.T) {
 	for _, operator := range operators {
 		err := operator.InstallSparkOperator(true)
 		assert.NilError(t, err)
+		defer operator.CleanUp()
 	}
 
-	verifyComponents(t, operators)
-	verifyWorkloads(t, operators)
+	t.Run("TestComponents", func(t *testing.T) {
+		verifyComponents(t, operators)
+	})
+	t.Run("TestWorkloads", func(t *testing.T) {
+		verifyWorkloads(t, operators)
+	})
 
 }
 
@@ -59,56 +74,65 @@ func verifyComponents(t *testing.T, operators []*utils.SparkOperatorInstallation
 	roles := []string{"spark-driver-role", "%s-spark-role"}
 
 	for _, operator := range operators {
-		for _, service := range services {
-			serviceName := fmt.Sprint(operator.InstanceName, "-", service)
-			log.Infof("Checking Service \"%s\" is created in namespace \"%s\" for \"%s\"", serviceName,
-				operator.Namespace, operator.InstanceName)
-			result, err := operator.K8sClients.CoreV1().Services(operator.Namespace).Get(fmt.Sprint(serviceName), v1.GetOptions{})
-			assert.NilError(t, err)
-			assert.Equal(t, result.Labels["kudo.dev/instance"], operator.InstanceName)
-		}
-
-		for _, sa := range serviceAccounts {
-			serviceAccount := fmt.Sprint(operator.InstanceName, "-", sa)
-			log.Infof("Checking ServiceAccount \"%s\" is created in namespace \"%s\" for \"%s\"", serviceAccount,
-				operator.Namespace, operator.InstanceName)
-			result, err := operator.K8sClients.CoreV1().ServiceAccounts(operator.Namespace).Get(serviceAccount, v1.GetOptions{})
-			assert.NilError(t, err)
-			assert.Equal(t, result.Labels["kudo.dev/instance"], operator.InstanceName)
-		}
-
-		for _, role := range roles {
-			if strings.Contains(role, "%s") {
-				role = fmt.Sprintf(role, operator.InstanceName)
+		t.Run("TestServices", func(t *testing.T) {
+			for _, service := range services {
+				serviceName := fmt.Sprint(operator.InstanceName, "-", service)
+				log.Infof("Checking Service \"%s\" is created in namespace \"%s\" for \"%s\"", serviceName,
+					operator.Namespace, operator.InstanceName)
+				result, err := operator.K8sClients.CoreV1().Services(operator.Namespace).Get(fmt.Sprint(serviceName), v1.GetOptions{})
+				assert.NilError(t, err)
+				assert.Equal(t, result.Labels["kudo.dev/instance"], operator.InstanceName)
 			}
-			log.Infof("Checking Role \"%s\" is created in namespace \"%s\" for \"%s\"",
-				role, operator.Namespace, operator.InstanceName)
-			result, err := operator.K8sClients.RbacV1().Roles(operator.Namespace).Get(role, v1.GetOptions{})
-			assert.NilError(t, err)
-			instanceLabel, present := result.Labels["kudo.dev/instance"]
-			if present {
-				assert.Equal(t, instanceLabel, operator.InstanceName)
+		})
+
+		t.Run("TestServiceAccounts", func(t *testing.T) {
+			for _, sa := range serviceAccounts {
+				serviceAccount := fmt.Sprint(operator.InstanceName, "-", sa)
+				log.Infof("Checking ServiceAccount \"%s\" is created in namespace \"%s\" for \"%s\"", serviceAccount,
+					operator.Namespace, operator.InstanceName)
+				result, err := operator.K8sClients.CoreV1().ServiceAccounts(operator.Namespace).Get(serviceAccount, v1.GetOptions{})
+				assert.NilError(t, err)
+				assert.Equal(t, result.Labels["kudo.dev/instance"], operator.InstanceName)
 			}
-		}
+		})
 
-		clusterRole := fmt.Sprintf("%s-%s-cr", operator.InstanceName, operator.Namespace)
-		_, err := operator.K8sClients.RbacV1().ClusterRoles().Get(clusterRole, v1.GetOptions{})
-		assert.NilError(t, err)
+		t.Run("TestRoles", func(t *testing.T) {
+			for _, role := range roles {
+				if strings.Contains(role, "%s") {
+					role = fmt.Sprintf(role, operator.InstanceName)
+				}
+				log.Infof("Checking Role \"%s\" is created in namespace \"%s\" for \"%s\"",
+					role, operator.Namespace, operator.InstanceName)
+				result, err := operator.K8sClients.RbacV1().Roles(operator.Namespace).Get(role, v1.GetOptions{})
+				assert.NilError(t, err)
+				instanceLabel, present := result.Labels["kudo.dev/instance"]
+				if present {
+					assert.Equal(t, instanceLabel, operator.InstanceName)
+				}
+			}
+		})
 
-		clusterRoleBinding := fmt.Sprintf("%s-%s-crb", operator.InstanceName, operator.Namespace)
-		_, err = operator.K8sClients.RbacV1().ClusterRoleBindings().Get(clusterRoleBinding, v1.GetOptions{})
-		assert.NilError(t, err)
+		t.Run("TestClusterRole", func(t *testing.T) {
+			clusterRole := fmt.Sprintf("%s-%s-cr", operator.InstanceName, operator.Namespace)
+			_, err := operator.K8sClients.RbacV1().ClusterRoles().Get(clusterRole, v1.GetOptions{})
+			assert.NilError(t, err)
+		})
+
+		t.Run("TestClusterRoleBinding", func(t *testing.T) {
+			clusterRoleBinding := fmt.Sprintf("%s-%s-crb", operator.InstanceName, operator.Namespace)
+			_, err := operator.K8sClients.RbacV1().ClusterRoleBindings().Get(clusterRoleBinding, v1.GetOptions{})
+			assert.NilError(t, err)
+		})
+
 	}
 }
 
 func verifyWorkloads(t *testing.T, operators []*utils.SparkOperatorInstallation) {
 	for _, operator := range operators {
 		job := utils.SparkJob{
-			Name:         "spark-pi",
-			Namespace:    operator.Namespace,
-			Image:        utils.SparkImage,
-			SparkVersion: utils.SparkVersion,
-			Template:     "spark-pi.yaml",
+			Name:      "spark-pi",
+			Namespace: operator.Namespace,
+			Template:  "spark-pi.yaml",
 		}
 
 		err := operator.SubmitJob(&job)
