@@ -86,7 +86,20 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	awsAccessKey := utils.GetenvOr("AWS_ACCESS_KEY_ID", "")
 	awsAccessSecret := utils.GetenvOr("AWS_SECRET_ACCESS_KEY", "")
 	awsBucketName := utils.GetenvOr("AWS_BUCKET_NAME", "infinity-artifacts-ci")
-	awsBucketPath := "s3a://" + awsBucketName + "/autodelete7d/kudo-spark-operator"
+	awsFolderPath := "/autodelete7d/spark-operator-history-server-test/"
+
+	// Make sure folder is deleted
+	success := utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
+	if !success {
+		t.Fatal("Unable to Delete S3 object")
+	}
+	// Make sure folder is created
+	success = utils.AwsS3CreateFolder(awsBucketName, awsFolderPath)
+	if !success {
+		t.Fatal("Unable to Create S3 object")
+	}
+
+	awsBucketPath := "s3a://" + awsBucketName + awsFolderPath
 
 	historyParams := make(map[string]string)
 	historyParams["enableHistoryServer"] = "true"
@@ -150,7 +163,7 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	}
 
 	// Get an application detail from History Server
-	err = utils.RetryWithTimeout(10*time.Minute, 5*time.Second, func() error {
+	err = utils.RetryWithTimeout(2*time.Minute, 5*time.Second, func() error {
 		historyServerResponse, err := utils.Kubectl(
 			"exec",
 			historyServerPodName,
@@ -175,4 +188,5 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	if err != nil {
 		t.Errorf("The Job Id '%s' haven't appeared in History Server", jobId)
 	}
+	utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
 }
