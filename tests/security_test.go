@@ -8,10 +8,13 @@ import (
 )
 
 type serviceAccountTestCase struct {
-	name                   string
-	namespace              string
-	operatorServiceAccount string
-	driverServiceAccount   string
+	name               string
+	namespace          string
+	params             map[string]string
+	expectedOperatorSA string
+	prepareOperatorSA  bool
+	expectedDriverSA   string
+	prepareDriverSA    bool
 }
 
 func TestServiceAccounts(t *testing.T) {
@@ -19,16 +22,36 @@ func TestServiceAccounts(t *testing.T) {
 		{
 			name:      "DefaultConfiguration",
 			namespace: "sa-test-default",
+			params: map[string]string{
+				"operatorServiceAccountName": "spark-operator-service-account",
+				"sparkServiceAccountName":    "spark-service-account",
+			},
+			expectedOperatorSA: utils.DefaultInstanceName + "-spark-operator-service-account",
+			expectedDriverSA:   utils.DefaultInstanceName + "-spark-service-account",
 		},
 		{
-			name:                   "ProvidedOperatorServiceAccount",
-			namespace:              "sa-test-operator",
-			operatorServiceAccount: "custom-operator-sa",
+			name:      "ProvidedOperatorServiceAccount",
+			namespace: "sa-test-operator",
+			params: map[string]string{
+				"operatorServiceAccountName":   "custom-operator-sa",
+				"createOperatorServiceAccount": "false",
+				"sparkServiceAccountName":      "spark-service-account",
+			},
+			prepareOperatorSA:  true,
+			expectedOperatorSA: "custom-operator-sa",
+			expectedDriverSA:   utils.DefaultInstanceName + "-spark-service-account",
 		},
 		{
-			name:                 "ProvidedSparkServiceAccount",
-			namespace:            "sa-test-spark",
-			driverServiceAccount: "custom-spark-sa",
+			name:      "ProvidedSparkServiceAccount",
+			namespace: "sa-test-spark",
+			params: map[string]string{
+				"operatorServiceAccountName": "spark-operator-service-account",
+				"createSparkServiceAccount":  "false",
+				"sparkServiceAccountName":    "custom-spark-sa",
+			},
+			prepareDriverSA:    true,
+			expectedOperatorSA: utils.DefaultInstanceName + "-spark-operator-service-account",
+			expectedDriverSA:   "custom-spark-sa",
 		},
 	}
 
@@ -54,42 +77,28 @@ func runServiceAccountTestCase(tc serviceAccountTestCase) error {
 
 	// Prepare parameters and expected SA names
 	var expectedDriverSA, expectedOperatorSA string
-	sparkParams := make(map[string]string)
 
-	if tc.operatorServiceAccount != "" {
-		err = utils.CreateServiceAccount(client, tc.operatorServiceAccount, tc.namespace)
+	if tc.prepareOperatorSA {
+		err = utils.CreateServiceAccount(client, tc.expectedOperatorSA, tc.namespace)
 		if err != nil {
-			log.Errorf("Can't create operator service account '%s'", tc.operatorServiceAccount)
+			log.Errorf("Can't create operator service account '%s'", tc.expectedOperatorSA)
 			return err
 		}
-		sparkParams["createOperatorServiceAccount"] = "false"
-		sparkParams["operatorServiceAccountName"] = tc.operatorServiceAccount
-		expectedOperatorSA = tc.operatorServiceAccount
-	} else {
-		sparkParams["createOperatorServiceAccount"] = "true"
-		sparkParams["operatorServiceAccountName"] = "spark-operator-service-account"
-		expectedOperatorSA = utils.DefaultInstanceName + "-" + sparkParams["operatorServiceAccountName"]
 	}
 
-	if tc.driverServiceAccount != "" {
-		err = utils.CreateServiceAccount(client, tc.driverServiceAccount, tc.namespace)
+	if tc.prepareDriverSA {
+		err = utils.CreateServiceAccount(client, tc.expectedDriverSA, tc.namespace)
 		if err != nil {
-			log.Errorf("Can't create spark driver service account '%s'", tc.operatorServiceAccount)
+			log.Errorf("Can't create spark driver service account '%s'", tc.expectedDriverSA)
+			return err
 		}
-		sparkParams["createSparkServiceAccount"] = "false"
-		sparkParams["sparkServiceAccountName"] = tc.driverServiceAccount
-		expectedDriverSA = tc.driverServiceAccount
-	} else {
-		sparkParams["createSparkServiceAccount"] = "true"
-		sparkParams["sparkServiceAccountName"] = "spark-service-account"
-		expectedDriverSA = utils.DefaultInstanceName + "-" + sparkParams["sparkServiceAccountName"]
 	}
 
 	// Install spark operator
 	spark := utils.SparkOperatorInstallation{
 		Namespace:            tc.namespace,
 		SkipNamespaceCleanUp: true,
-		Params:               sparkParams,
+		Params:               tc.params,
 	}
 
 	err = spark.InstallSparkOperator()
