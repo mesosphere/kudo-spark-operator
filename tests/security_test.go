@@ -34,7 +34,7 @@ func TestServiceAccounts(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := runServiceAccountTestCase(t, tc)
+			err := runServiceAccountTestCase(tc)
 			if err != nil {
 				t.Errorf("Test case: %v\nfailed with error: %s", tc, err)
 			}
@@ -42,7 +42,7 @@ func TestServiceAccounts(t *testing.T) {
 	}
 }
 
-func runServiceAccountTestCase(t *testing.T, tc serviceAccountTestCase) error {
+func runServiceAccountTestCase(tc serviceAccountTestCase) error {
 	client, err := utils.GetK8sClientSet()
 	if err != nil {
 		return err
@@ -57,7 +57,11 @@ func runServiceAccountTestCase(t *testing.T, tc serviceAccountTestCase) error {
 	sparkParams := make(map[string]string)
 
 	if tc.operatorServiceAccount != "" {
-		utils.CreateServiceAccount(client, tc.operatorServiceAccount, tc.namespace)
+		err = utils.CreateServiceAccount(client, tc.operatorServiceAccount, tc.namespace)
+		if err != nil {
+			log.Errorf("Can't create operator service account '%'", tc.operatorServiceAccount)
+			return err
+		}
 		sparkParams["createOperatorServiceAccount"] = "false"
 		sparkParams["operatorServiceAccountName"] = tc.operatorServiceAccount
 		expectedOperatorSA = tc.operatorServiceAccount
@@ -68,7 +72,10 @@ func runServiceAccountTestCase(t *testing.T, tc serviceAccountTestCase) error {
 	}
 
 	if tc.driverServiceAccount != "" {
-		utils.CreateServiceAccount(client, tc.driverServiceAccount, tc.namespace)
+		err = utils.CreateServiceAccount(client, tc.driverServiceAccount, tc.namespace)
+		if err != nil {
+			log.Errorf("Can't create spark driver service account '%'", tc.operatorServiceAccount)
+		}
 		sparkParams["createSparkServiceAccount"] = "false"
 		sparkParams["sparkServiceAccountName"] = tc.driverServiceAccount
 		expectedDriverSA = tc.driverServiceAccount
