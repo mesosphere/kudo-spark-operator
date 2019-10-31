@@ -21,6 +21,3 @@ for i in $(seq ${1}); do
     kubectl delete --namespace "${NAMESPACE}" instance "${INSTANCE_NAME_PREFIX}-${i}"
     kubectl delete namespace "${NAMESPACE}"
 done
-
-echo "Deleting CRDs"
-kubectl delete -f ${SPECS_DIR}/spark-applications-crds.yaml
