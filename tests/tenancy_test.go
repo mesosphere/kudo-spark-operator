@@ -11,9 +11,9 @@ import (
 )
 
 func TestTenancyTwoOperatorsDifferentNamespaces(t *testing.T) {
-	operators := operatorBuilder(2, true, true)
+	operators := operatorBuilder(1, true, true)
 	for _, operator := range operators {
-		err := operator.InstallSparkOperator(true)
+		err := operator.InstallSparkOperator()
 		assert.NilError(t, err)
 	}
 
@@ -37,8 +37,11 @@ func TestTenancyTwoOperatorsDifferentNamespaces(t *testing.T) {
 
 func TestTenancyTwoOperatorsSingleNamespace(t *testing.T) {
 	operators := operatorBuilder(2, false, true)
-	for _, operator := range operators {
-		err := operator.InstallSparkOperator(false)
+	for i, operator := range operators {
+		if i > 0 {
+			operator.SkipNamespaceCleanUp = true
+		}
+		err := operator.InstallSparkOperator()
 		assert.NilError(t, err)
 		defer operator.CleanUp()
 	}
@@ -54,7 +57,7 @@ func TestTenancyTwoOperatorsSingleNamespace(t *testing.T) {
 func TestTenancyTwoOperatorsSameNameDifferentNamespaces(t *testing.T) {
 	operators := operatorBuilder(2, true, false)
 	for _, operator := range operators {
-		err := operator.InstallSparkOperator(true)
+		err := operator.InstallSparkOperator()
 		assert.NilError(t, err)
 		defer operator.CleanUp()
 	}
@@ -71,7 +74,6 @@ func TestTenancyTwoOperatorsSameNameDifferentNamespaces(t *testing.T) {
 func verifyComponents(t *testing.T, operators []*utils.SparkOperatorInstallation) {
 	serviceAccounts := []string{"spark-operator-service-account", "spark-service-account"}
 	services := []string{"spark-webhook", "spark-operator-metrics"}
-	roles := []string{"spark-driver-role", "%s-spark-role"}
 
 	for _, operator := range operators {
 		t.Run("TestServices", func(t *testing.T) {
@@ -79,7 +81,8 @@ func verifyComponents(t *testing.T, operators []*utils.SparkOperatorInstallation
 				serviceName := fmt.Sprint(operator.InstanceName, "-", service)
 				log.Infof("Checking Service \"%s\" is created in namespace \"%s\" for \"%s\"", serviceName,
 					operator.Namespace, operator.InstanceName)
-				result, err := operator.K8sClients.CoreV1().Services(operator.Namespace).Get(fmt.Sprint(serviceName), v1.GetOptions{})
+				result, err := operator.K8sClients.CoreV1().Services(operator.Namespace).Get(
+					fmt.Sprint(serviceName), v1.GetOptions{})
 				assert.NilError(t, err)
 				assert.Equal(t, result.Labels["kudo.dev/instance"], operator.InstanceName)
 			}
@@ -90,26 +93,20 @@ func verifyComponents(t *testing.T, operators []*utils.SparkOperatorInstallation
 				serviceAccount := fmt.Sprint(operator.InstanceName, "-", sa)
 				log.Infof("Checking ServiceAccount \"%s\" is created in namespace \"%s\" for \"%s\"", serviceAccount,
 					operator.Namespace, operator.InstanceName)
-				result, err := operator.K8sClients.CoreV1().ServiceAccounts(operator.Namespace).Get(serviceAccount, v1.GetOptions{})
+				result, err := operator.K8sClients.CoreV1().ServiceAccounts(operator.Namespace).Get(
+					serviceAccount, v1.GetOptions{})
 				assert.NilError(t, err)
 				assert.Equal(t, result.Labels["kudo.dev/instance"], operator.InstanceName)
 			}
 		})
 
 		t.Run("TestRoles", func(t *testing.T) {
-			for _, role := range roles {
-				if strings.Contains(role, "%s") {
-					role = fmt.Sprintf(role, operator.InstanceName)
-				}
-				log.Infof("Checking Role \"%s\" is created in namespace \"%s\" for \"%s\"",
-					role, operator.Namespace, operator.InstanceName)
-				result, err := operator.K8sClients.RbacV1().Roles(operator.Namespace).Get(role, v1.GetOptions{})
-				assert.NilError(t, err)
-				instanceLabel, present := result.Labels["kudo.dev/instance"]
-				if present {
-					assert.Equal(t, instanceLabel, operator.InstanceName)
-				}
-			}
+			role := fmt.Sprintf("%s-spark-role", operator.InstanceName)
+			log.Infof("Checking Role \"%s\" is created in namespace \"%s\" for \"%s\"", role,
+				operator.Namespace, operator.InstanceName)
+			result, err := operator.K8sClients.RbacV1().Roles(operator.Namespace).Get(role, v1.GetOptions{})
+			assert.NilError(t, err)
+			assert.Equal(t, result.Labels["kudo.dev/instance"], operator.InstanceName)
 		})
 
 		t.Run("TestClusterRole", func(t *testing.T) {
@@ -152,7 +149,7 @@ func crdsInstalled(t *testing.T) bool {
 		strings.Contains(output, "scheduledsparkapplications.sparkoperator.k8s.io")
 }
 
-func operatorBuilder(numberOfOperators int, separateNamespace bool, uniqueOperatorName bool) []*utils.SparkOperatorInstallation {
+func operatorBuilder(numberOfOperators int, separateNamespace bool, uniqueOperatorInstanceName bool) []*utils.SparkOperatorInstallation {
 	const operatorInstanceName = "spark-operator"
 	const operatorNamespace = "namespace"
 
@@ -165,7 +162,7 @@ func operatorBuilder(numberOfOperators int, separateNamespace bool, uniqueOperat
 		if separateNamespace {
 			operator.Namespace = fmt.Sprintf("%s-%d", operatorNamespace, i)
 		}
-		if uniqueOperatorName {
+		if uniqueOperatorInstanceName {
 			operator.InstanceName = fmt.Sprintf("%s-%d", operatorInstanceName, i)
 		}
 		operators = append(operators, &operator)
