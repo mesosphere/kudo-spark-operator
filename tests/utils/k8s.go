@@ -139,6 +139,8 @@ func waitForPodStatusPhase(clientSet *kubernetes.Clientset, podName string, name
 		pod, err := clientSet.CoreV1().Pods(namespace).Get(podName, metav1.GetOptions{})
 		if err == nil && string(pod.Status.Phase) != status {
 			err = errors.New("Expected pod status to be " + status + ", but it's " + string(pod.Status.Phase))
+		} else if string(pod.Status.Phase) == status {
+			log.Infof("\"%s\" completed successfully.", podName)
 		}
 		return err
 	})
