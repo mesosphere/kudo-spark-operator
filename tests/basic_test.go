@@ -83,17 +83,14 @@ func TestJobSubmission(t *testing.T) {
 }
 
 func TestSparkHistoryServerInstallation(t *testing.T) {
-	// Read AWS Credentials
-	credValue, err := utils.ReadAwsCredentials()
-	if err != nil {
-		t.Fatal(err.Error())
-	}
-
+	awsAccessKey := utils.GetenvOr("AWS_ACCESS_KEY_ID", "")
+	awsAccessSecret := utils.GetenvOr("AWS_SECRET_ACCESS_KEY", "")
+	awsSessionToken := utils.GetenvOr("AWS_SESSION_TOKEN", "")
 	awsBucketName := utils.GetenvOr("AWS_BUCKET_NAME", "infinity-artifacts-ci")
 	awsFolderPath := "/autodelete7d/spark-operator-history-server-test/"
 
 	// Make sure folder is deleted
-	err = utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
+	err := utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -109,15 +106,15 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	historyParams["enableHistoryServer"] = "true"
 	historyParams["historyServerFsLogDirectory"] = awsBucketPath
 
-	if len(credValue.SessionToken) > 0 {
-		historyParams["historyServerOpts"] = "-Dspark.hadoop.fs.s3a.access.key=" + credValue.AccessKeyID +
-			" -Dspark.hadoop.fs.s3a.secret.key=" + credValue.SecretAccessKey +
-			" -Dspark.hadoop.fs.s3a.session.token=" + credValue.SessionToken +
+	if len(awsSessionToken) > 0 {
+		historyParams["historyServerOpts"] = "-Dspark.hadoop.fs.s3a.access.key=" + awsAccessKey +
+			" -Dspark.hadoop.fs.s3a.secret.key=" + awsAccessSecret +
+			" -Dspark.hadoop.fs.s3a.session.token=" + awsSessionToken +
 			" -Dspark.hadoop.fs.s3a.aws.credentials.provider=org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider" +
 			" -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem"
 	} else {
-		historyParams["historyServerOpts"] = "-Dspark.hadoop.fs.s3a.access.key=" + credValue.AccessKeyID +
-			" -Dspark.hadoop.fs.s3a.secret.key=" + credValue.SecretAccessKey +
+		historyParams["historyServerOpts"] = "-Dspark.hadoop.fs.s3a.access.key=" + awsAccessKey +
+			" -Dspark.hadoop.fs.s3a.secret.key=" + awsAccessSecret +
 			" -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem"
 	}
 
@@ -133,9 +130,9 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 
 	awsParams := map[string]interface{}{
 		"AwsBucketPath":   awsBucketPath,
-		"AwsAccessKey":    credValue.AccessKeyID,
-		"AwsAccessSecret": credValue.SecretAccessKey,
-		"AwsSessionToken": credValue.SessionToken,
+		"AwsAccessKey":    awsAccessKey,
+		"AwsAccessSecret": awsAccessSecret,
+		"AwsSessionToken": awsSessionToken,
 	}
 	job := utils.SparkJob{
 		Name:     "history-server-linear-regression",

@@ -116,14 +116,15 @@ test:
 	docker run -i --rm \
 		-v $(ROOT_DIR):/kudo-spark-operator \
 		-v $(KUBECONFIG):/root/.kube/config \
-		-v $(HOME)/.aws/credentials:/root/.aws/credentials \
 		-e TEST_DIR=/kudo-spark-operator/tests \
 		-e KUBECONFIG=/root/.kube/config \
 		-e SPARK_IMAGE=$(SPARK_IMAGE_FULL_NAME) \
 		-e OPERATOR_IMAGE=$(OPERATOR_IMAGE_FULL_NAME) \
 		-e TEAMCITY_VERSION="$(TEAMCITY_VERSION)" \
-		-e AWS_PROFILE="$(AWS_PROFILE)" \
-		-e AWS_BUCKET_NAME=$(AWS_BUCKET_NAME) \
+		-e AWS_ACCESS_KEY_ID="$(AWS_ACCESS_KEY_ID)" \
+		-e AWS_SECRET_ACCESS_KEY="$(AWS_SECRET_ACCESS_KEY) \
+		-e AWS_SESSION_TOKEN="$(AWS_SESSION_TOKEN) \
+		-e AWS_BUCKET_NAME="$(AWS_BUCKET_NAME)" \
 		$(shell cat $(ROOT_DIR)/docker-builder) \
 		/kudo-spark-operator/tests/run.sh
 

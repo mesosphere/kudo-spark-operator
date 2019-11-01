@@ -5,20 +5,11 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 
 	log "github.com/sirupsen/logrus"
 )
-
-// ReadAwsCredentials will read from ~/.aws/credentials file
-func ReadAwsCredentials() (credentials.Value, error) {
-	creds := credentials.NewSharedCredentials("", "")
-
-	// Retrive the credential values
-	return creds.Get()
-}
 
 // AwsS3CreateFolder will create a object in bucketName with folderPath as Key
 func AwsS3CreateFolder(bucketName string, folderPath string) error {
