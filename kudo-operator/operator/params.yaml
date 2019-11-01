@@ -51,11 +51,6 @@ operatorMetricsPort:
   default: 10254
   displayName: "Spark Operator Metrics port"
 
-appMetricsPort:
-  description: "Spark Application Metrics port"
-  default: 8090
-  displayName: "Spark Application Metrics port"
-
 metricsEndpoint:
   description: "Metrics endpoint"
   default: "/metrics"
@@ -65,11 +60,6 @@ metricsPrefix:
   description: "Metrics prefix"
   default: ""
   displayName: "Metrics prefix"
-
-metricsPollingInterval:
-  description: "The time interval after which the metrics endpoint will be polled"
-  default: "5s"
-  displayName: "Metrics polling interval"
 
 resyncIntervalSeconds:
   description: "Informer resync interval in seconds"
