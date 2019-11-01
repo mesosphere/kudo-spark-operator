@@ -110,6 +110,7 @@ docker-push:
 
 # Testing
 .PHONY: test
+test: aws_credentials
 test: docker-builder
 test: docker-push
 test:
@@ -122,8 +123,8 @@ test:
 		-e OPERATOR_IMAGE=$(OPERATOR_IMAGE_FULL_NAME) \
 		-e TEAMCITY_VERSION="$(TEAMCITY_VERSION)" \
 		-e AWS_ACCESS_KEY_ID="$(AWS_ACCESS_KEY_ID)" \
-		-e AWS_SECRET_ACCESS_KEY="$(AWS_SECRET_ACCESS_KEY) \
-		-e AWS_SESSION_TOKEN="$(AWS_SESSION_TOKEN) \
+		-e AWS_SECRET_ACCESS_KEY="$(AWS_SECRET_ACCESS_KEY)" \
+		-e AWS_SESSION_TOKEN="$(AWS_SESSION_TOKEN)" \
 		-e AWS_BUCKET_NAME="$(AWS_BUCKET_NAME)" \
 		$(shell cat $(ROOT_DIR)/docker-builder) \
 		/kudo-spark-operator/tests/run.sh
