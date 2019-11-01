@@ -83,20 +83,24 @@ func TestJobSubmission(t *testing.T) {
 }
 
 func TestSparkHistoryServerInstallation(t *testing.T) {
-	awsAccessKey := utils.GetenvOr("AWS_ACCESS_KEY_ID", "")
-	awsAccessSecret := utils.GetenvOr("AWS_SECRET_ACCESS_KEY", "")
+	// Read AWS Credentials
+	credValue, err := utils.ReadAwsCredentials()
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
 	awsBucketName := utils.GetenvOr("AWS_BUCKET_NAME", "infinity-artifacts-ci")
 	awsFolderPath := "/autodelete7d/spark-operator-history-server-test/"
 
 	// Make sure folder is deleted
-	success := utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
-	if !success {
-		t.Fatal("Unable to Delete S3 object")
+	err = utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
+	if err != nil {
+		t.Fatal(err.Error())
 	}
 	// Make sure folder is created
-	success = utils.AwsS3CreateFolder(awsBucketName, awsFolderPath)
-	if !success {
-		t.Fatal("Unable to Create S3 object")
+	err = utils.AwsS3CreateFolder(awsBucketName, awsFolderPath)
+	if err != nil {
+		t.Fatal(err.Error())
 	}
 
 	awsBucketPath := "s3a://" + awsBucketName + awsFolderPath
@@ -104,14 +108,23 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	historyParams := make(map[string]string)
 	historyParams["enableHistoryServer"] = "true"
 	historyParams["historyServerFsLogDirectory"] = awsBucketPath
-	historyParams["historyServerOpts"] = "-Dspark.hadoop.fs.s3a.access.key=" + awsAccessKey +
-		" -Dspark.hadoop.fs.s3a.secret.key=" + awsAccessSecret +
-		" -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem"
+
+	if len(credValue.SessionToken) > 0 {
+		historyParams["historyServerOpts"] = "-Dspark.hadoop.fs.s3a.access.key=" + credValue.AccessKeyID +
+			" -Dspark.hadoop.fs.s3a.secret.key=" + credValue.SecretAccessKey +
+			" -Dspark.hadoop.fs.s3a.session.token=" + credValue.SessionToken +
+			" -Dspark.hadoop.fs.s3a.aws.credentials.provider=org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider" +
+			" -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem"
+	} else {
+		historyParams["historyServerOpts"] = "-Dspark.hadoop.fs.s3a.access.key=" + credValue.AccessKeyID +
+			" -Dspark.hadoop.fs.s3a.secret.key=" + credValue.SecretAccessKey +
+			" -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem"
+	}
 
 	spark := utils.SparkOperatorInstallation{
 		Params: historyParams,
 	}
-	err := spark.InstallSparkOperator()
+	err = spark.InstallSparkOperator()
 	defer spark.CleanUp()
 
 	if err != nil {
@@ -120,8 +133,9 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 
 	awsParams := map[string]interface{}{
 		"AwsBucketPath":   awsBucketPath,
-		"AwsAccessKey":    awsAccessKey,
-		"AwsAccessSecret": awsAccessSecret,
+		"AwsAccessKey":    credValue.AccessKeyID,
+		"AwsAccessSecret": credValue.SecretAccessKey,
+		"AwsSessionToken": credValue.SessionToken,
 	}
 	job := utils.SparkJob{
 		Name:     "history-server-linear-regression",
@@ -152,7 +166,7 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	}
 
 	// Find out the Job ID for the submitted SparkApplication
-	jobId, err := utils.Kubectl(
+	jobID, err := utils.Kubectl(
 		"get",
 		"pods",
 		"--namespace="+spark.Namespace,
@@ -170,7 +184,7 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 			"--namespace="+spark.Namespace,
 			"--",
 			"/usr/bin/curl",
-			"http://localhost:18080/api/v1/applications/"+jobId+"/jobs",
+			"http://localhost:18080/api/v1/applications/"+jobID+"/jobs",
 		)
 		if err != nil {
 			return err
@@ -178,15 +192,15 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 
 		if len(historyServerResponse) > 0 &&
 			!strings.Contains(historyServerResponse, "no such app") {
-			log.Infof("Job Id '%s' is successfully recorded in History Server", jobId)
+			log.Infof("Job Id '%s' is successfully recorded in History Server", jobID)
 			return nil
 		} else {
-			return errors.New("Expecting Job Id '" + jobId + "' to be recorded in History Server")
+			return errors.New("Expecting Job Id '" + jobID + "' to be recorded in History Server")
 		}
 	})
 
 	if err != nil {
-		t.Errorf("The Job Id '%s' haven't appeared in History Server", jobId)
+		t.Errorf("The Job Id '%s' haven't appeared in History Server", jobID)
 	}
 	utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
 }

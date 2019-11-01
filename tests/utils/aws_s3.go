@@ -1,52 +1,68 @@
 package utils
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 
 	log "github.com/sirupsen/logrus"
 )
 
-func AwsS3CreateFolder(bucketName string, folderPath string) bool {
-	file := strings.NewReader("")
-	// Make sure escape('/') is at both ends of the path
-	folderPath = "/" + strings.TrimPrefix(folderPath, "/")
-	folderPath = strings.TrimSuffix(folderPath, "/") + "/"
-	filePath := folderPath + ".tmp"
+// ReadAwsCredentials will read from ~/.aws/credentials file
+func ReadAwsCredentials() (credentials.Value, error) {
+	creds := credentials.NewSharedCredentials("", "")
 
-	sess, _ := session.NewSession(&aws.Config{
+	// Retrive the credential values
+	return creds.Get()
+}
+
+// AwsS3CreateFolder will create a object in bucketName with folderPath as Key
+func AwsS3CreateFolder(bucketName string, folderPath string) error {
+	file := strings.NewReader("")
+	folderPath = strings.Trim(folderPath, "/")
+	filePath := fmt.Sprintf("/%s/.tmp", folderPath)
+
+	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-west-2"),
 	})
 
-	// Setup the S3 Upload Manager.
-	uploader := s3manager.NewUploader(sess)
+	if err != nil {
+		return err
+	}
 
-	// Upload the demo file to S3 bucket which will create a folder
-	_, err := uploader.Upload(&s3manager.UploadInput{
+	// Create S3 Service Client
+	svcClient := s3.New(sess)
+
+	// Put a tmp file to S3 bucket
+	_, err = svcClient.PutObject(&s3.PutObjectInput{
 		Bucket: aws.String(bucketName),
 		Key:    aws.String(filePath),
 		Body:   file,
 	})
 	if err != nil {
-		log.Errorf("Unable to create folder '%s' in bucket '%s', %v", folderPath, bucketName, err)
-		return false
+		log.Errorf("Unable to put Key '%s' in bucket '%s', %v", filePath, bucketName, err)
+		return err
 	}
 	log.Infof("Successfully created folder '%s' in bucket '%s'", folderPath, bucketName)
-	return true
+	return nil
 }
 
-func AwsS3DeleteFolder(bucketName string, folderPath string) bool {
-	// Make sure escape('/') is at only right end of the path
-	folderPath = strings.TrimPrefix(folderPath, "/")
-	folderPath = strings.TrimSuffix(folderPath, "/") + "/"
+// AwsS3DeleteFolder deletes all objects at folderPath in bucketName
+func AwsS3DeleteFolder(bucketName string, folderPath string) error {
+	folderPath = strings.Trim(folderPath, "/")
+	folderPath = folderPath + "/"
 
-	sess, _ := session.NewSession(&aws.Config{
+	sess, err := session.NewSession(&aws.Config{
 		Region: aws.String("us-west-2"),
 	})
+
+	if err != nil {
+		return err
+	}
 
 	// Create S3 Service Client
 	svcClient := s3.New(sess)
@@ -58,7 +74,7 @@ func AwsS3DeleteFolder(bucketName string, folderPath string) bool {
 	})
 	if err != nil {
 		log.Errorf("Unable to list items in bucket '%s' at key '%s', %v", bucketName, folderPath, err)
-		return false
+		return err
 	}
 
 	for _, item := range response.Contents {
@@ -71,7 +87,7 @@ func AwsS3DeleteFolder(bucketName string, folderPath string) bool {
 
 		if err != nil {
 			log.Errorf("Unable to delete key '%s' in bucket '%s', %v", itemKey, bucketName, err)
-			return false
+			return err
 		}
 
 		err = svcClient.WaitUntilObjectNotExists(&s3.HeadObjectInput{
@@ -81,10 +97,10 @@ func AwsS3DeleteFolder(bucketName string, folderPath string) bool {
 
 		if err != nil {
 			log.Errorf("Error occurred while waiting for object '%s' to be deleted, %v", itemKey, err)
-			return false
+			return err
 		}
 
 		log.Infof("Object '%s' successfully deleted\n", itemKey)
 	}
-	return true
+	return nil
 }

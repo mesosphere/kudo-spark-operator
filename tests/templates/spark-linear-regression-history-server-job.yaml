@@ -23,8 +23,15 @@ spec:
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
     "spark.eventLog.enabled": "true"
     "spark.eventLog.dir": "{{ .Params.AwsBucketPath }}"
+    {{- if .Params.AwsSessionToken }}
     "spark.hadoop.fs.s3a.access.key": "{{ .Params.AwsAccessKey }}"
     "spark.hadoop.fs.s3a.secret.key": "{{ .Params.AwsAccessSecret }}"
+    "spark.hadoop.fs.s3a.session.token": "{{ .Params.AwsSessionToken }}"
+    "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider"
+    {{- else }}
+    "spark.hadoop.fs.s3a.access.key": "{{ .Params.AwsAccessKey }}"
+    "spark.hadoop.fs.s3a.secret.key": "{{ .Params.AwsAccessSecret }}"
+    {{- end }}
   deps:
     jars:
       - http://central.maven.org/maven2/com/github/scopt/scopt_2.11/3.7.0/scopt_2.11-3.7.0.jar
