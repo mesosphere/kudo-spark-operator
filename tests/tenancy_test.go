@@ -11,7 +11,7 @@ import (
 )
 
 func TestTenancyTwoOperatorsDifferentNamespaces(t *testing.T) {
-	operators := operatorBuilder(1, true, true)
+	operators := operatorBuilder(2, true, true)
 	for _, operator := range operators {
 		err := operator.InstallSparkOperator()
 		assert.NilError(t, err)
