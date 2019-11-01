@@ -15,11 +15,12 @@ import (
 const operatorDir = "../kudo-operator/operator"
 
 type SparkOperatorInstallation struct {
-	Namespace    string
-	InstanceName string
-	K8sClients   *kubernetes.Clientset
-	SparkClients *operator.Clientset
-	Params       map[string]string
+	Namespace            string
+	InstanceName         string
+	SkipNamespaceCleanUp bool
+	K8sClients           *kubernetes.Clientset
+	SparkClients         *operator.Clientset
+	Params               map[string]string
 }
 
 func (spark *SparkOperatorInstallation) InstallSparkOperator() error {
@@ -49,14 +50,16 @@ func (spark *SparkOperatorInstallation) InstallSparkOperator() error {
 		spark.InstanceName = DefaultInstanceName
 	}
 
-	spark.CleanUp()
+	if !spark.SkipNamespaceCleanUp {
+		spark.CleanUp()
+
+		_, err = CreateNamespace(spark.K8sClients, spark.Namespace)
+		if err != nil {
+			return err
+		}
+	}
 
 	log.Infof("Installing KUDO spark operator in %s", spark.Namespace)
-
-	_, err = CreateNamespace(spark.K8sClients, spark.Namespace)
-	if err != nil {
-		return err
-	}
 
 	// Handle parameters
 	if spark.Params == nil {
@@ -71,11 +74,6 @@ func (spark *SparkOperatorInstallation) InstallSparkOperator() error {
 	}
 
 	err = installKudoPackage(spark.Namespace, operatorDir, spark.InstanceName, spark.Params)
-	if err != nil {
-		return err
-	}
-
-	err = KubectlApply(spark.Namespace, "../specs/spark-driver-rbac.yaml")
 	if err != nil {
 		return err
 	}

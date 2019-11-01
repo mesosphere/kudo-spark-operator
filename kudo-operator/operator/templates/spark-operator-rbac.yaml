@@ -2,7 +2,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ .OperatorName }}-cr
+  name: {{ .Namespace }}-cr
   labels:
     app.kubernetes.io/name: {{ .OperatorName }}
     app.kubernetes.io/instance: {{ .Name }}
@@ -42,7 +42,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ .OperatorName }}-crb
+  name: {{ .Namespace }}-crb
   labels:
     app.kubernetes.io/name: {{ .OperatorName }}
     app.kubernetes.io/instance: {{ .Name }}
@@ -56,6 +56,6 @@ subjects:
     namespace: {{ .Namespace }}
 roleRef:
   kind: ClusterRole
-  name: {{ .OperatorName }}-cr
+  name: {{ .Namespace }}-cr
   apiGroup: rbac.authorization.k8s.io
 {{- end }}

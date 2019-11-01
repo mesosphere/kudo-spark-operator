@@ -17,4 +17,8 @@ else
   go test -v -count=1 -timeout 30m .
 fi
 
+EXIT_CODE=$?
+
 popd
+
+exit $EXIT_CODE

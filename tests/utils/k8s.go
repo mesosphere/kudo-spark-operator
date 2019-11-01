@@ -14,18 +14,15 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"os/exec"
 	"strings"
-	"time"
 )
-
-const namespaceDeletionTimeout = 5 * time.Minute
-const namespaceDeletionCheckInterval = 3 * time.Second
 
 /* client-go util methods */
 
 func GetK8sClientSet() (*kubernetes.Clientset, error) {
 	config, err := clientcmd.BuildConfigFromFlags("", KubeConfig)
 	if err != nil {
-		panic(err.Error())
+		log.Errorf("Can't build config [kubeconfig = %s]: %s", KubeConfig, err)
+		return nil, err
 	}
 
 	return kubernetes.NewForConfig(config)
@@ -53,6 +50,7 @@ func DropNamespace(clientSet *kubernetes.Clientset, name string) error {
 
 	err := clientSet.CoreV1().Namespaces().Delete(name, &options)
 	if err != nil {
+		log.Errorf("Can't delete namespace '%s':%s", name, err)
 		return err
 	}
 
@@ -67,6 +65,17 @@ func DropNamespace(clientSet *kubernetes.Clientset, name string) error {
 			return nil
 		}
 	})
+}
+
+func CreateServiceAccount(clientSet *kubernetes.Clientset, name string, namespace string) error {
+	log.Infof("Creating a service account %s/%s", namespace, name)
+	sa := v1.ServiceAccount{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+	}
+	_, err := clientSet.CoreV1().ServiceAccounts(namespace).Create(&sa)
+	return err
 }
 
 func getPodLog(clientSet *kubernetes.Clientset, namespace string, pod string, tailLines int64) (string, error) {
@@ -130,6 +139,8 @@ func waitForPodStatusPhase(clientSet *kubernetes.Clientset, podName string, name
 		pod, err := clientSet.CoreV1().Pods(namespace).Get(podName, metav1.GetOptions{})
 		if err == nil && string(pod.Status.Phase) != status {
 			err = errors.New("Expected pod status to be " + status + ", but it's " + string(pod.Status.Phase))
+		} else if string(pod.Status.Phase) == status {
+			log.Infof("\"%s\" completed successfully.", podName)
 		}
 		return err
 	})
