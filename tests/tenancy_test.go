@@ -76,50 +76,40 @@ func verifyComponents(t *testing.T, operators []*utils.SparkOperatorInstallation
 	services := []string{"spark-webhook", "spark-operator-metrics"}
 
 	for _, operator := range operators {
-		t.Run("TestServices", func(t *testing.T) {
-			for _, service := range services {
-				serviceName := fmt.Sprint(operator.InstanceName, "-", service)
-				log.Infof("Checking Service \"%s\" is created in namespace \"%s\" for \"%s\"", serviceName,
-					operator.Namespace, operator.InstanceName)
-				result, err := operator.K8sClients.CoreV1().Services(operator.Namespace).Get(
-					fmt.Sprint(serviceName), v1.GetOptions{})
-				assert.NilError(t, err)
-				assert.Equal(t, result.Labels["kudo.dev/instance"], operator.InstanceName)
-			}
-		})
-
-		t.Run("TestServiceAccounts", func(t *testing.T) {
-			for _, sa := range serviceAccounts {
-				serviceAccount := fmt.Sprint(operator.InstanceName, "-", sa)
-				log.Infof("Checking ServiceAccount \"%s\" is created in namespace \"%s\" for \"%s\"", serviceAccount,
-					operator.Namespace, operator.InstanceName)
-				result, err := operator.K8sClients.CoreV1().ServiceAccounts(operator.Namespace).Get(
-					serviceAccount, v1.GetOptions{})
-				assert.NilError(t, err)
-				assert.Equal(t, result.Labels["kudo.dev/instance"], operator.InstanceName)
-			}
-		})
-
-		t.Run("TestRoles", func(t *testing.T) {
-			role := fmt.Sprintf("%s-spark-role", operator.InstanceName)
-			log.Infof("Checking Role \"%s\" is created in namespace \"%s\" for \"%s\"", role,
+		for _, service := range services {
+			serviceName := fmt.Sprint(operator.InstanceName, "-", service)
+			log.Infof("Checking Service \"%s\" is created in namespace \"%s\" for \"%s\"", serviceName,
 				operator.Namespace, operator.InstanceName)
-			result, err := operator.K8sClients.RbacV1().Roles(operator.Namespace).Get(role, v1.GetOptions{})
+			result, err := operator.K8sClients.CoreV1().Services(operator.Namespace).Get(
+				fmt.Sprint(serviceName), v1.GetOptions{})
 			assert.NilError(t, err)
 			assert.Equal(t, result.Labels["kudo.dev/instance"], operator.InstanceName)
-		})
+		}
 
-		t.Run("TestClusterRole", func(t *testing.T) {
-			clusterRole := fmt.Sprintf("%s-%s-cr", operator.InstanceName, operator.Namespace)
-			_, err := operator.K8sClients.RbacV1().ClusterRoles().Get(clusterRole, v1.GetOptions{})
+		for _, sa := range serviceAccounts {
+			serviceAccount := fmt.Sprint(operator.InstanceName, "-", sa)
+			log.Infof("Checking ServiceAccount \"%s\" is created in namespace \"%s\" for \"%s\"", serviceAccount,
+				operator.Namespace, operator.InstanceName)
+			result, err := operator.K8sClients.CoreV1().ServiceAccounts(operator.Namespace).Get(
+				serviceAccount, v1.GetOptions{})
 			assert.NilError(t, err)
-		})
+			assert.Equal(t, result.Labels["kudo.dev/instance"], operator.InstanceName)
+		}
 
-		t.Run("TestClusterRoleBinding", func(t *testing.T) {
-			clusterRoleBinding := fmt.Sprintf("%s-%s-crb", operator.InstanceName, operator.Namespace)
-			_, err := operator.K8sClients.RbacV1().ClusterRoleBindings().Get(clusterRoleBinding, v1.GetOptions{})
-			assert.NilError(t, err)
-		})
+		role := fmt.Sprintf("%s-spark-role", operator.InstanceName)
+		log.Infof("Checking Role \"%s\" is created in namespace \"%s\" for \"%s\"", role,
+			operator.Namespace, operator.InstanceName)
+		result, err := operator.K8sClients.RbacV1().Roles(operator.Namespace).Get(role, v1.GetOptions{})
+		assert.NilError(t, err)
+		assert.Equal(t, result.Labels["kudo.dev/instance"], operator.InstanceName)
+
+		clusterRole := fmt.Sprintf("%s-%s-cr", operator.InstanceName, operator.Namespace)
+		_, err = operator.K8sClients.RbacV1().ClusterRoles().Get(clusterRole, v1.GetOptions{})
+		assert.NilError(t, err)
+
+		clusterRoleBinding := fmt.Sprintf("%s-%s-crb", operator.InstanceName, operator.Namespace)
+		_, err = operator.K8sClients.RbacV1().ClusterRoleBindings().Get(clusterRoleBinding, v1.GetOptions{})
+		assert.NilError(t, err)
 
 	}
 }
