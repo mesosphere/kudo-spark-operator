@@ -110,7 +110,6 @@ docker-push:
 
 # Testing
 .PHONY: test
-test: aws_credentials
 test: docker-builder
 test: docker-push
 test:
