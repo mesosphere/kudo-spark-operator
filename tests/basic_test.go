@@ -1,7 +1,7 @@
 package tests
 
 import (
-	"errors"
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -106,16 +106,14 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	historyParams["enableHistoryServer"] = "true"
 	historyParams["historyServerFsLogDirectory"] = awsBucketPath
 
+	historyParams["historyServerOpts"] = "-Dspark.hadoop.fs.s3a.access.key=" + awsAccessKey +
+		" -Dspark.hadoop.fs.s3a.secret.key=" + awsAccessSecret +
+		" -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem"
+
 	if len(awsSessionToken) > 0 {
-		historyParams["historyServerOpts"] = "-Dspark.hadoop.fs.s3a.access.key=" + awsAccessKey +
-			" -Dspark.hadoop.fs.s3a.secret.key=" + awsAccessSecret +
+		historyParams["historyServerOpts"] = historyParams["historyServerOpts"] +
 			" -Dspark.hadoop.fs.s3a.session.token=" + awsSessionToken +
-			" -Dspark.hadoop.fs.s3a.aws.credentials.provider=org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider" +
-			" -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem"
-	} else {
-		historyParams["historyServerOpts"] = "-Dspark.hadoop.fs.s3a.access.key=" + awsAccessKey +
-			" -Dspark.hadoop.fs.s3a.secret.key=" + awsAccessSecret +
-			" -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem"
+			" -Dspark.hadoop.fs.s3a.aws.credentials.provider=org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider"
 	}
 
 	spark := utils.SparkOperatorInstallation{
@@ -191,9 +189,8 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 			!strings.Contains(historyServerResponse, "no such app") {
 			log.Infof("Job Id '%s' is successfully recorded in History Server", jobID)
 			return nil
-		} else {
-			return errors.New("Expecting Job Id '" + jobID + "' to be recorded in History Server")
 		}
+		return fmt.Errorf("Expecting Job Id '%s' to be recorded in History Server", jobID)
 	})
 
 	if err != nil {
