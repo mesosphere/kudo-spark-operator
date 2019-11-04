@@ -1,4 +1,3 @@
-{{- if eq .Params.enableMetrics "true" }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -7,9 +6,8 @@ metadata:
     "spark/servicemonitor": "true"
 spec:
   ports:
-    - port: {{ .Params.operatorMetricsPort }}
+    - port: 10254
       name: metrics
   clusterIP: None
   selector:
     "app.kubernetes.io/name": spark
-{{- end }}

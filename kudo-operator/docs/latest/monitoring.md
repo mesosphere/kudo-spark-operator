@@ -101,7 +101,10 @@ the metrics on other one and see further instructions in next step.
      ```
      kubectl apply -f <path_to_the_application_yaml>   
      ```
-   Full configuration example is available in [spark-application-with-metrics.yaml](./resources/spark-application-with-metrics.yaml).
+   Full application configuration example is available in [spark-application-with-metrics.yaml](./resources/monitoring/spark-application-with-metrics.yaml),
+   the ServiceMonitor - [spark-service-monitor.yaml](./resources/monitoring/spark-service-monitor.yaml), 
+   Kubernetes Services - [spark-application-metrics-service.yaml](./resources/monitoring/spark-application-metrics-service.yaml), 
+   [spark-operator-metrics-service.yaml](./resources/monitoring/spark-operator-metrics-service.yaml).
 1) Now, go to the prometheus dashboard (e.g. `<kubernetes_endpoint_url>/ops/portal/prometheus/graph`) and search for metrics 
 starting with 'spark'. The Prometheus URI might be different depending on how you configured and installed the `prometheus-operator`. 
 
