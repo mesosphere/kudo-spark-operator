@@ -73,7 +73,7 @@ func TestTenancyTwoOperatorsSameNameDifferentNamespaces(t *testing.T) {
 
 func verifyComponents(t *testing.T, operators []*utils.SparkOperatorInstallation) {
 	serviceAccounts := []string{"spark-operator-service-account", "spark-service-account"}
-	services := []string{"spark-webhook", "spark-operator-metrics"}
+	services := []string{"spark-webhook"}
 
 	for _, operator := range operators {
 		for _, service := range services {
