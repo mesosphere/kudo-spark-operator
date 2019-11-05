@@ -1,5 +1,7 @@
 .idea/
 *.iml
+.DS_Store
+
 *.pem
 *.pub
 *cluster.yaml

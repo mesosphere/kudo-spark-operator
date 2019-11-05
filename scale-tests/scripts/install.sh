@@ -7,7 +7,8 @@ PROJECT_ROOT_DIR="$(dirname "${SCALE_TESTS_DIR}")"
 
 TEMPLATES_DIR="${SCALE_TESTS_DIR}/templates"
 SPECS_DIR="${PROJECT_ROOT_DIR}/specs"
-OPERATOR_DIR="${PROJECT_ROOT_DIR}/kudo-operator"
+OPERATOR_DIR="${PROJECT_ROOT_DIR}/kudo-operator/operator"
+SERVICE_ACCOUNT_NAME=${SERVICE_ACCOUNT_NAME:-spark-service-account}
 
 NAMESPACE_PREFIX=${NAMESPACE_PREFIX:-spark}
 INSTANCE_NAME_PREFIX=${INSTANCE_NAME_PREFIX:-spark-operator}
@@ -23,9 +24,14 @@ for i in $(seq ${1}); do
     NAMESPACE="${NAMESPACE_PREFIX}-${i}"
     echo "Creating namespace $NAMESPACE"
     sed 's|SPARK_NAMESPACE|'"${NAMESPACE}"'|g' ${TEMPLATES_DIR}/namespace.tmpl | kubectl apply -f -
+    sed 's|SERVICE_ACCOUNT_NAME|'"${SERVICE_ACCOUNT_NAME}"'|g' ${TEMPLATES_DIR}/service-account.tmpl | kubectl apply --namespace "${NAMESPACE}" -f -
 
-    kubectl kudo --namespace "${NAMESPACE}" install --instance "${INSTANCE_NAME_PREFIX}-${i}" "${OPERATOR_DIR}" -p operatorVersion="${OPERATOR_VERSION}"
-    kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-driver-rbac.yaml
-    # Metrics
-    kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-application-metrics-service.yaml
+    kubectl kudo --namespace "${NAMESPACE}" install --instance "${INSTANCE_NAME_PREFIX}-${i}" "${OPERATOR_DIR}" \
+            -p operatorVersion="${OPERATOR_VERSION}" \
+            -p sparkServiceAccountName="${SERVICE_ACCOUNT_NAME}" \
+            -p createSparkServiceAccount=false
+
+    # Monitoring
+    echo "Installing services and service monitors"
+    cat ${TEMPLATES_DIR}/monitoring.tmpl | kubectl apply -f -
 done

@@ -1,6 +1,7 @@
 #!/bin/bash
 #
-# This script runs a dataset generator for sorting benchmark and requires Spark Operator to be installed
+# This script submits a sorting application and requires Spark Operator to be installed.
+# Dataset should be generated upfront.
 
 set -ex
 SCRIPT_DIR="$(realpath "$(dirname "$0")")"
@@ -14,7 +15,7 @@ SERVICE_ACCOUNT_NAME=${SERVICE_ACCOUNT_NAME:-spark-service-account}
 
 if [[ $# -lt 2 ]]; then
   echo "Usage:" >&2
-  echo "  $0 <namespace> <target s3 path>" >&2
+  echo "  $0 <namespace> <S3 source path> <S3 target path>" >&2
   exit 1
 fi
 
@@ -23,12 +24,13 @@ NUM_EXECUTORS=${NUM_EXECUTORS:-100}
 
 . ${SCRIPT_DIR}/aws_credentials.sh
 
-cat ${TEMPLATES_DIR}/gensort-application.tmpl \
+cat ${TEMPLATES_DIR}/sort-application.tmpl \
   | sed "s|AWS_ACCESS_KEY_ID|${AWS_ACCESS_KEY_ID:-}|" \
   | sed "s|AWS_SECRET_ACCESS_KEY|${AWS_SECRET_ACCESS_KEY:-}|" \
   | sed "s|AWS_SESSION_TOKEN|${AWS_SESSION_TOKEN:-}|" \
   | sed "s|S3_ENDPOINT|${S3_ENDPOINT}|" \
   | sed "s|SERVICE_ACCOUNT_NAME|${SERVICE_ACCOUNT_NAME}|" \
   | sed "s|NUM_EXECUTORS|${NUM_EXECUTORS}|" \
-  | sed "s|TARGET_S3_PATH|${2:-}|" \
+  | sed "s|SOURCE_PATH|${2:-}|" \
+  | sed "s|TARGET_PATH|${3:-}|" \
   | kubectl --namespace "${NAMESPACE}" apply -f -

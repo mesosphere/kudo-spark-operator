@@ -15,20 +15,34 @@ Scale Tests Tooling
 ## Scripts
 Scripts rely on the naming conventions to deploy and remove the resources:
 - [install.sh](scripts/install.sh) creates N namespaces and installs an operator instance in each
-- [run.sh](scripts/run.sh) generates specs for M SparkApplication per namespace and submits them to N namespaces
+- [scale_test.sh](scripts/scale_test.sh) generates specs for M scale-test SparkApplications per namespace and submits them to N namespaces
+- [terasort.sh](scripts/terasort.sh) runs a single TeraSort SparkApplication in a specified namespace
 - [uninstall.sh](scripts/uninstall.sh) deletes N namespaces
 
-Example:
+Scale test example:
 ```bash
 # Deploy CRDs, create 2 namespaces and create an operator instance in each
 ./scripts/install.sh 2
 
 # Submit 2 applications to 2 operator instances
-./scripts/run.sh 2 2
+./scripts/scale_test.sh 2 2
 
 # Observe metrics and alerts and uninstall operators
 # Delete operator instances, namespaces, and CRDs
 ./scripts/uninstall.sh 2
+```
+
+TeraSort example:
+```bash
+# Deploy CRDs, create 1 namespaces and create an operator instance
+./scripts/install.sh 1
+
+# Submit TeraSort benchmark to the Operator instance
+./scripts/terasort.sh spark-1 s3a://bucket/input s3a://bucket/output
+
+# Observe metrics and alerts and uninstall operators
+# Delete operator instances, namespaces, and CRDs
+./scripts/uninstall.sh 1
 ```
 
 ## Dashboards
