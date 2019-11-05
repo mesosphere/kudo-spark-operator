@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	log "github.com/sirupsen/logrus"
+	"os"
 )
 
 type SparkJob struct {
@@ -28,10 +29,11 @@ func (spark *SparkOperatorInstallation) SubmitJob(job *SparkJob) error {
 		job.SparkVersion = SparkVersion
 	}
 	if job.ServiceAccount == "" {
-		job.ServiceAccount = spark.InstanceName + "-spark-service-account"
+		job.ServiceAccount = spark.InstanceName + DefaultServiceAccountSuffix
 	}
 
 	yamlFile := createSparkJob(*job)
+	defer os.Remove(yamlFile)
 	log.Infof("Submitting the job")
 	err := KubectlApply(job.Namespace, yamlFile)
 
