@@ -15,9 +15,9 @@ spec:
     - "--num-records"
     - "1000000"
     - "--static-prefix-length"
-    - "120"
+    - "128"
     - "--random-suffix-length"
-    - "8"
+    - "128"
     - "--value-size-bytes"
     - "1000000"
     - "--output-path"
@@ -27,6 +27,7 @@ spec:
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
     "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
     "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider"
+    "spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version": "2"
     "spark.hadoop.fs.s3a.endpoint": "S3_ENDPOINT"
     "spark.hadoop.fs.s3a.access.key": "AWS_ACCESS_KEY_ID"
     "spark.hadoop.fs.s3a.secret.key": "AWS_SECRET_ACCESS_KEY"
@@ -39,7 +40,7 @@ spec:
     memory: "1g"
     labels:
       version: 2.4.3
-    serviceAccount: spark-driver
+    serviceAccount: SERVICE_ACCOUNT_NAME
   executor:
     cores: 1
     instances: NUM_EXECUTORS
