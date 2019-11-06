@@ -7,17 +7,17 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .OperatorName }}
+  name: {{ .Name }}
   namespace: {{ .Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .OperatorName }}
+    app.kubernetes.io/name: {{ .Name }}
     app.kubernetes.io/instance: {{ .Name }}
     app.kubernetes.io/version: {{ .Params.operatorVersion }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/name: {{ .OperatorName }}
+      app.kubernetes.io/name: {{ .Name }}
       app.kubernetes.io/instance: {{ .Name }}
       app.kubernetes.io/version: {{ .Params.operatorVersion }}
   strategy:
@@ -31,7 +31,7 @@ spec:
         prometheus.io/path: {{ .Params.metricsEndpoint }}
     {{- end }}
       labels:
-        app.kubernetes.io/name: {{ .OperatorName }}
+        app.kubernetes.io/name: {{ .Name }}
         app.kubernetes.io/instance: {{ .Name }}
         app.kubernetes.io/version: {{ .Params.operatorVersion }}
       initializers:

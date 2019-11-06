@@ -2,10 +2,10 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ .OperatorName }}-init
+  name: {{ .Name }}-init
   namespace: {{ .Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .OperatorName }}
+    app.kubernetes.io/name: {{ .Name }}-init
     app.kubernetes.io/instance: {{ .Name }}
 spec:
   template:
@@ -20,5 +20,5 @@ spec:
       - name: main
         image: {{ .Params.operatorImageName }}:{{ .Params.operatorVersion }}
         imagePullPolicy: {{ .Params.imagePullPolicy }}
-        command: ["/usr/bin/gencerts.sh", "-n", "{{ .Namespace }}", "-s", "{{ .OperatorName }}-webhook", "-p"]
+        command: ["/usr/bin/gencerts.sh", "-n", "{{ .Namespace }}", "-s", "{{ .Name }}-webhook", "-p"]
 {{- end }}

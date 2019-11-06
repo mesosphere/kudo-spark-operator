@@ -2,10 +2,10 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: {{ .OperatorName }}-webhook
+  name: {{ .Name }}-webhook
   namespace: {{ .Namespace }}
   labels:
-    app.kubernetes.io/name: {{ .OperatorName }}
+    app.kubernetes.io/name: {{ .Name }}-webhook
     app.kubernetes.io/instance: {{ .Name }}
 spec:
   ports:
@@ -13,7 +13,7 @@ spec:
     targetPort: {{ .Params.webhookPort }}
     name: webhook
   selector:
-    app.kubernetes.io/name: {{ .OperatorName }}
+    app.kubernetes.io/name: {{ .Name }}
     app.kubernetes.io/instance: {{ .Name }}
     app.kubernetes.io/version: {{ .Params.operatorVersion }}
 {{- end }}
