@@ -150,7 +150,7 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	}
 
 	// Find out History Server POD name
-	instanceName := fmt.Sprint(utils.DefaultInstanceName, "-history-server")
+	instanceName := fmt.Sprint(utils.OperatorName, "-history-server")
 	historyServerPodName, err := utils.Kubectl(
 		"get",
 		"pods",
