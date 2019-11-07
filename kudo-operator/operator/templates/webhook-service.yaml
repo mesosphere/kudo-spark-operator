@@ -2,7 +2,7 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: {{ .OperatorName }}-webhook
+  name: {{ .Name }}-webhook
   namespace: {{ .Namespace }}
   labels:
     app.kubernetes.io/name: {{ .OperatorName }}

@@ -1,6 +1,7 @@
+apiVersion: kudo.dev/v1beta1
 name: "spark"
-version: "0.0.1"
-kudoVersion: 0.7.5
+version: "beta1"
+kudoVersion: 0.8.0
 kubernetesVersion: 1.15.0
 appVersion: "2.4.3"
 maintainers:
@@ -10,18 +11,20 @@ maintainers:
     email: ukrautsou.c@d2iq.com
 url: https://spark.apache.org/
 tasks:
-  deploy:
-    resources:
-      - spark-operator-crds.yaml
-      - spark-operator-rbac.yaml
-      - spark-operator-serviceaccount.yaml
-      - spark-rbac.yaml
-      - spark-serviceaccount.yaml
-      - webhook-init-job.yaml
-      - spark-operator-deployment.yaml
-      - webhook-service.yaml
-      - spark-history-server-deployment.yaml
-      - spark-history-server-service.yaml
+  - name: deploy
+    kind: Apply
+    spec:
+      resources:
+        - spark-operator-crds.yaml
+        - spark-operator-rbac.yaml
+        - spark-operator-serviceaccount.yaml
+        - spark-rbac.yaml
+        - spark-serviceaccount.yaml
+        - webhook-init-job.yaml
+        - spark-operator-deployment.yaml
+        - webhook-service.yaml
+        - spark-history-server-deployment.yaml
+        - spark-history-server-service.yaml
 
 plans:
   deploy:
