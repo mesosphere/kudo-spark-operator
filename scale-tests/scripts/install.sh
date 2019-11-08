@@ -7,7 +7,7 @@ PROJECT_ROOT_DIR="$(dirname "${SCALE_TESTS_DIR}")"
 
 TEMPLATES_DIR="${SCALE_TESTS_DIR}/templates"
 SPECS_DIR="${PROJECT_ROOT_DIR}/specs"
-OPERATOR_DIR="${PROJECT_ROOT_DIR}/kudo-operator/operator"
+OPERATOR_DIR="${PROJECT_ROOT_DIR}/operators/repository/spark/operator"
 SERVICE_ACCOUNT_NAME=${SERVICE_ACCOUNT_NAME:-spark-service-account}
 
 NAMESPACE_PREFIX=${NAMESPACE_PREFIX:-spark}

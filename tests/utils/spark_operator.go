@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-const operatorDir = "../kudo-operator/operator"
+const operatorDir = "../operators/repository/spark/operator"
 
 type SparkOperatorInstallation struct {
 	Namespace            string
