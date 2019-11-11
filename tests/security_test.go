@@ -301,17 +301,16 @@ func runTestCase(tc securityTestCase) error {
 func TestEnvBasedSecret(t *testing.T) {
 	secretName := "env-based-secret"
 	secretKey := "secretKey"
-	secretEnv := "SECRET_ENV"
 	jobDescription, err := runSecretTest(secretName, "", secretKey)
 
 	if err != nil {
 		t.Error(err.Error())
 	}
 
-	if strings.Contains(jobDescription, fmt.Sprintf("%s from %s-volume", secretKey, secretName)) {
-		log.Infof("Successfully exported environment variable '%s' from secret '%s'", secretEnv, secretName)
+	if strings.Contains(jobDescription, fmt.Sprintf("set to the key '%s' in secret '%s'", secretKey, secretName)) {
+		log.Infof("Successfully set environment variable to the key '%s' in secret '%s'", secretKey, secretName)
 	} else {
-		t.Errorf("Unnable to export environment variable '%s' from secret '%s'", secretEnv, secretName)
+		t.Errorf("Unnable to set environment variable to the key '%s' in secret '%s'", secretKey, secretName)
 	}
 }
 
