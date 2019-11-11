@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ index . "service-account" }}
+  labels:
+    app.kubernetes.io/name: spark
+    app.kubernetes.io/instance: {{ index . "instance-name" }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: spark-driver-test-role
+  labels:
+    app.kubernetes.io/name: spark
+    app.kubernetes.io/instance: {{ index . "instance-name" }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: spark-driver-role-test-binding
+subjects:
+  - kind: ServiceAccount
+    name: {{ index . "service-account" }}
+roleRef:
+  kind: Role
+  name: spark-driver-test-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ index . "operator-service-account" }}
+  labels:
+    app.kubernetes.io/name: spark
+    app.kubernetes.io/instance: {{ index . "instance-name" }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: spark-operator-test-cluster-role
+  labels:
+    app.kubernetes.io/name: spark
+    app.kubernetes.io/instance: {{ index . "instance-name" }}
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources: ["services", "configmaps", "secrets"]
+    verbs: ["create", "get", "delete", "update"]
+  - apiGroups: ["extensions"]
+    resources: ["ingresses"]
+    verbs: ["create", "get", "delete"]
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "update", "patch"]
+  - apiGroups: ["apiextensions.k8s.io"]
+    resources: ["customresourcedefinitions"]
+    verbs: ["create", "get", "update", "delete"]
+  - apiGroups: ["admissionregistration.k8s.io"]
+    resources: ["mutatingwebhookconfigurations"]
+    verbs: ["create", "get", "update", "delete"]
+  - apiGroups: ["sparkoperator.k8s.io"]
+    resources: ["sparkapplications", "scheduledsparkapplications", "sparkapplications/status", "scheduledsparkapplications/status"]
+    verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: spark-operator-test-cluster-role-binding
+  labels:
+    app.kubernetes.io/name: spark
+    app.kubernetes.io/instance: {{ index . "instance-name" }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ index . "operator-service-account" }}
+    namespace: {{ index . "service-account-namespace" }}
+roleRef:
+  kind: ClusterRole
+  name: spark-operator-test-cluster-role
+  apiGroup: rbac.authorization.k8s.io

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
 
@@ -176,6 +177,16 @@ func DeleteResource(namespace string, resource string, name string) error {
 func KubectlApply(namespace string, filename string) error {
 	log.Infof("Applying file %s with kubectl", filename)
 	return kubectlRunFile("apply", namespace, filename)
+}
+
+func KubectlApplyTemplate(namespace string, template string, params map[string]interface{}) error {
+	file, err := populateYamlTemplate(template, params)
+	defer os.Remove(file)
+	if err != nil {
+		return err
+	}
+
+	return KubectlApply(namespace, file)
 }
 
 func KubectlDelete(namespace string, filename string) error {
