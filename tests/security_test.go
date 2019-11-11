@@ -344,8 +344,11 @@ func runSecretTest(secretName string, secretPath string, secretKey string) (stri
 		return "", err
 	}
 
-	secretData := map[string]string{
-		secretKey: "secretValue",
+	secretData := make(map[string]string)
+	if secretKey != "" {
+		secretData[secretKey] = "secretValue"
+	} else {
+		secretData["secretKey"] = "secretValue"
 	}
 
 	err = utils.CreateSecret(client, secretName, spark.Namespace, secretData)
