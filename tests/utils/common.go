@@ -12,6 +12,7 @@ import (
 )
 
 const DefaultNamespace = "kudo-spark-operator-testing"
+const OperatorName = "spark"
 const DefaultInstanceName = "test-instance"
 const DefaultServiceAccountSuffix = "-spark-service-account"
 const rootDirName = "tests"

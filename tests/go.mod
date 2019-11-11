@@ -11,7 +11,7 @@ require (
 	golang.org/x/crypto v0.0.0-20190911031432-227b76d455e7 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
-	gotest.tools v2.2.0+incompatible // indirect
+	gotest.tools v2.2.0+incompatible
 	k8s.io/api v0.0.0-20190819141258-3544db3b9e44
 	k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
 	k8s.io/client-go v0.0.0-20190819141724-e14f31a72a77

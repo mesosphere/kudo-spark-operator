@@ -2,9 +2,9 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ .Namespace }}-cr
+  name: {{ .Name }}-{{ .Namespace }}-cr
   labels:
-    app.kubernetes.io/name: {{ .OperatorName }}
+    app.kubernetes.io/name: {{ .Name }}-{{ .Namespace }}-cr
     app.kubernetes.io/instance: {{ .Name }}
 rules:
 - apiGroups: [""]
@@ -42,9 +42,9 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ .Namespace }}-crb
+  name: {{ .Name }}-{{ .Namespace }}-crb
   labels:
-    app.kubernetes.io/name: {{ .OperatorName }}
+    app.kubernetes.io/name: {{ .Name }}-{{ .Namespace }}-crb
     app.kubernetes.io/instance: {{ .Name }}
 subjects:
   - kind: ServiceAccount
@@ -56,6 +56,6 @@ subjects:
     namespace: {{ .Namespace }}
 roleRef:
   kind: ClusterRole
-  name: {{ .Namespace }}-cr
+  name: {{ .Name }}-{{ .Namespace }}-cr
   apiGroup: rbac.authorization.k8s.io
 {{- end }}
