@@ -8,4 +8,4 @@ Versions
 * Prometheus Java agent 0.11.0
 
 ## KUDO Version Requirement
-* KUDO version 0.7.5 or later
+* KUDO version 0.8.0 or later

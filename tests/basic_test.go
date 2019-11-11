@@ -150,11 +150,12 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	}
 
 	// Find out History Server POD name
+	instanceName := fmt.Sprint(utils.OperatorName, "-history-server")
 	historyServerPodName, err := utils.Kubectl(
 		"get",
 		"pods",
 		"--namespace="+spark.Namespace,
-		"--output=jsonpath={.items[?(@.metadata.labels.app\\.kubernetes\\.io/name==\"history-server\")].metadata.name}",
+		"--output=jsonpath={.items[?(@.metadata.labels.app\\.kubernetes\\.io/name==\""+instanceName+"\")].metadata.name}",
 	)
 	if err != nil {
 		t.Error(err.Error())

@@ -7,9 +7,9 @@ metadata:
   {{- else }}
   namespace: {{ .Namespace }}
   {{- end }}
-  name: spark-role
+  name: {{ .Name }}-spark-role
   labels:
-    app.kubernetes.io/name: {{ .OperatorName }}
+    app.kubernetes.io/name: {{ .Name }}-spark-role
     app.kubernetes.io/instance: {{ .Name }}
 rules:
   - apiGroups: [""]
@@ -22,14 +22,14 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: spark-role-binding
+  name: {{ .Name }}-spark-rb
   {{- if (ne .Params.sparkJobNamespace "") }}
   namespace: {{ .Params.sparkJobNamespace }}
   {{- else }}
   namespace: {{ .Namespace }}
   {{- end }}
   labels:
-    app.kubernetes.io/name: {{ .OperatorName }}
+    app.kubernetes.io/name: {{ .Name }}-spark-rb
     app.kubernetes.io/instance: {{ .Name }}
 subjects:
 - kind: ServiceAccount
@@ -45,6 +45,6 @@ subjects:
   {{- end }}
 roleRef:
   kind: Role
-  name: spark-role
+  name: {{ .Name }}-spark-role
   apiGroup: rbac.authorization.k8s.io
 {{- end }}
