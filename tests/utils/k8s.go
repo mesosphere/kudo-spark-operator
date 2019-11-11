@@ -5,15 +5,16 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"io"
+	"os/exec"
+	"strings"
+
+	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/api/core/v1"
 	apiErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
-	"os/exec"
-	"strings"
 )
 
 /* client-go util methods */
@@ -75,6 +76,19 @@ func CreateServiceAccount(clientSet *kubernetes.Clientset, name string, namespac
 		},
 	}
 	_, err := clientSet.CoreV1().ServiceAccounts(namespace).Create(&sa)
+	return err
+}
+
+func CreateSecret(clientSet *kubernetes.Clientset, name string, namespace string, secretData map[string]string) error {
+	log.Infof("Creating a secret %s/%s with Secret Data: %q", namespace, name, secretData)
+	secret := v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		StringData: secretData,
+	}
+
+	_, err := clientSet.CoreV1().Secrets(namespace).Create(&secret)
 	return err
 }
 

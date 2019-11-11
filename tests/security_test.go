@@ -1,10 +1,13 @@
 package tests
 
 import (
+	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/mesosphere/kudo-spark-operator/tests/utils"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"testing"
 )
 
 type serviceAccountTestCase struct {
@@ -140,4 +143,95 @@ func runServiceAccountTestCase(tc serviceAccountTestCase) error {
 	}
 
 	return err
+}
+
+func TestEnvBasedSecret(t *testing.T) {
+	secretName := "env-based-secret"
+	secretKey := "secretKey"
+	secretEnv := "SECRET_ENV"
+	jobDescription, err := runSecretTest(secretName, "", secretKey)
+
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if strings.Contains(jobDescription, fmt.Sprintf("%s from %s-volume", secretKey, secretName)) {
+		log.Infof("Successfully exported environment variable '%s' from secret '%s'", secretEnv, secretName)
+	} else {
+		t.Errorf("Unnable to export environment variable '%s' from secret '%s'", secretEnv, secretName)
+	}
+}
+
+func TestFileBasedSecrets(t *testing.T) {
+	secretName := "file-based-secret"
+	secretPath := "/mnt/secrets"
+	jobDescription, err := runSecretTest(secretName, secretPath, "")
+
+	if err != nil {
+		t.Error(err.Error())
+	}
+
+	if strings.Contains(jobDescription, fmt.Sprintf("%s from %s-volume", secretPath, secretName)) {
+		log.Infof("Successfully mounted secret path '%s' from '%s-volume'", secretPath, secretName)
+	} else {
+		t.Errorf("Unnable to mount secret path '%s' from '%s-volume'", secretPath, secretName)
+	}
+}
+
+func runSecretTest(secretName string, secretPath string, secretKey string) (string, error) {
+	spark := utils.SparkOperatorInstallation{}
+	err := spark.InstallSparkOperator()
+	defer spark.CleanUp()
+
+	if err != nil {
+		return "", err
+	}
+
+	client, err := utils.GetK8sClientSet()
+	if err != nil {
+		return "", err
+	}
+
+	secretData := map[string]string{
+		secretKey: "secretValue",
+	}
+
+	err = utils.CreateSecret(client, secretName, spark.Namespace, secretData)
+	if err != nil {
+		return "", err
+	}
+
+	jobName := "mock-task-runner"
+	job := utils.SparkJob{
+		Name:     jobName,
+		Template: "spark-mock-task-runner-job.yaml",
+		Params: map[string]interface{}{
+			"args":       []string{"1", "15"},
+			"SecretName": secretName,
+			"SecretPath": secretPath,
+			"SecretKey":  secretKey,
+		},
+	}
+
+	err = spark.SubmitJob(&job)
+	if err != nil {
+		return "", err
+	}
+
+	err = spark.WaitUntilSucceeded(job)
+	if err != nil {
+		return "", err
+	}
+
+	jobDescription, err := utils.Kubectl(
+		"describe",
+		"pod",
+		"--namespace="+spark.Namespace,
+		jobName+"-driver",
+	)
+	if err != nil {
+		return "", err
+	}
+
+	return jobDescription, nil
 }
