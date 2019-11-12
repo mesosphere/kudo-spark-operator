@@ -298,50 +298,34 @@ func runTestCase(tc securityTestCase) error {
 	return err
 }
 
-func TestEnvBasedSecret(t *testing.T) {
-	secretName := "env-based-secret"
-	secretKey := "secretKey"
-	jobDescription, err := runSecretTest(secretName, "", secretKey)
+func TestEnvBasedSecrets(t *testing.T) {
+	err := runSecretTest("env-based-secret", "", "secretKey", "set to the key 'secretKey' in secret 'env-based-secret'")
 
 	if err != nil {
 		t.Error(err.Error())
-	}
-
-	if strings.Contains(jobDescription, fmt.Sprintf("set to the key '%s' in secret '%s'", secretKey, secretName)) {
-		log.Infof("Successfully set environment variable to the key '%s' in secret '%s'", secretKey, secretName)
-	} else {
-		t.Errorf("Unnable to set environment variable to the key '%s' in secret '%s'", secretKey, secretName)
 	}
 }
 
 func TestFileBasedSecrets(t *testing.T) {
-	secretName := "file-based-secret"
-	secretPath := "/mnt/secrets"
-	jobDescription, err := runSecretTest(secretName, secretPath, "")
+	err := runSecretTest("file-based-secret", "/mnt/secrets", "", "/mnt/secrets from file-based-secret-volume")
 
 	if err != nil {
 		t.Error(err.Error())
 	}
-
-	if strings.Contains(jobDescription, fmt.Sprintf("%s from %s-volume", secretPath, secretName)) {
-		log.Infof("Successfully mounted secret path '%s' from '%s-volume'", secretPath, secretName)
-	} else {
-		t.Errorf("Unnable to mount secret path '%s' from '%s-volume'", secretPath, secretName)
-	}
 }
 
-func runSecretTest(secretName string, secretPath string, secretKey string) (string, error) {
+func runSecretTest(secretName string, secretPath string, secretKey string, expectedSecret string) error {
 	spark := utils.SparkOperatorInstallation{}
 	err := spark.InstallSparkOperator()
 	defer spark.CleanUp()
 
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	client, err := utils.GetK8sClientSet()
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	secretData := make(map[string]string)
@@ -353,7 +337,7 @@ func runSecretTest(secretName string, secretPath string, secretKey string) (stri
 
 	err = utils.CreateSecret(client, secretName, spark.Namespace, secretData)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	jobName := "mock-task-runner"
@@ -370,12 +354,12 @@ func runSecretTest(secretName string, secretPath string, secretKey string) (stri
 
 	err = spark.SubmitJob(&job)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	err = spark.WaitUntilSucceeded(job)
 	if err != nil {
-		return "", err
+		return err
 	}
 
 	jobDescription, err := utils.Kubectl(
@@ -385,8 +369,21 @@ func runSecretTest(secretName string, secretPath string, secretKey string) (stri
 		jobName+"-driver",
 	)
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return jobDescription, nil
+	if strings.Contains(jobDescription, expectedSecret) {
+		if secretKey != "" {
+			log.Infof("Successfully set environment variable to the key '%s' in secret '%s'", secretKey, secretName)
+		} else {
+			log.Infof("Successfully mounted secret path '%s' from '%s-volume'", secretPath, secretName)
+		}
+	} else {
+		if secretKey != "" {
+			return fmt.Errorf("Unnable to set environment variable to the key '%s' in secret '%s'", secretKey, secretName)
+		}
+		return fmt.Errorf("Unnable to mount secret path '%s' from '%s-volume'", secretPath, secretName)
+	}
+
+	return nil
 }
