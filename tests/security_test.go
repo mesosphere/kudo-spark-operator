@@ -3,11 +3,13 @@ package tests
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/mesosphere/kudo-spark-operator/tests/utils"
 	log "github.com/sirupsen/logrus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"testing"
 )
 
 type securityTestCase interface {
@@ -294,4 +296,89 @@ func runTestCase(tc securityTestCase) error {
 	}
 
 	return err
+}
+
+func TestEnvBasedSecrets(t *testing.T) {
+	err := runSecretTest("env-based-secret", "", "secretKey", "set to the key 'secretKey' in secret 'env-based-secret'")
+
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func TestFileBasedSecrets(t *testing.T) {
+	err := runSecretTest("file-based-secret", "/mnt/secrets", "", "/mnt/secrets from file-based-secret-volume")
+
+	if err != nil {
+		t.Error(err.Error())
+	}
+}
+
+func runSecretTest(secretName string, secretPath string, secretKey string, expectedSecret string) error {
+	spark := utils.SparkOperatorInstallation{}
+	err := spark.InstallSparkOperator()
+	defer spark.CleanUp()
+
+	if err != nil {
+		return err
+	}
+
+	secretData := make(map[string]string)
+	if secretKey != "" {
+		secretData[secretKey] = "secretValue"
+	} else {
+		secretData["secretKey"] = "secretValue"
+	}
+
+	err = utils.CreateSecret(spark.K8sClients, secretName, spark.Namespace, secretData)
+	if err != nil {
+		return err
+	}
+
+	jobName := "mock-task-runner"
+	job := utils.SparkJob{
+		Name:     jobName,
+		Template: "spark-mock-task-runner-job.yaml",
+		Params: map[string]interface{}{
+			"args":       []string{"1", "15"},
+			"SecretName": secretName,
+			"SecretPath": secretPath,
+			"SecretKey":  secretKey,
+		},
+	}
+
+	err = spark.SubmitJob(&job)
+	if err != nil {
+		return err
+	}
+
+	err = spark.WaitUntilSucceeded(job)
+	if err != nil {
+		return err
+	}
+
+	jobDescription, err := utils.Kubectl(
+		"describe",
+		"pod",
+		"--namespace="+spark.Namespace,
+		utils.DriverPodName(jobName),
+	)
+	if err != nil {
+		return err
+	}
+
+	if strings.Contains(jobDescription, expectedSecret) {
+		if secretKey != "" {
+			log.Infof("Successfully set environment variable to the key '%s' in secret '%s'", secretKey, secretName)
+		} else {
+			log.Infof("Successfully mounted secret path '%s' from '%s-volume'", secretPath, secretName)
+		}
+	} else {
+		if secretKey != "" {
+			return fmt.Errorf("Unnable to set environment variable to the key '%s' in secret '%s'", secretKey, secretName)
+		}
+		return fmt.Errorf("Unnable to mount secret path '%s' from '%s-volume'", secretPath, secretName)
+	}
+
+	return nil
 }

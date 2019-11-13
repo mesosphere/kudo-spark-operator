@@ -2,8 +2,9 @@ package utils
 
 import (
 	"errors"
-	log "github.com/sirupsen/logrus"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type SparkJob struct {
@@ -41,12 +42,12 @@ func (spark *SparkOperatorInstallation) SubmitJob(job *SparkJob) error {
 }
 
 func (spark *SparkOperatorInstallation) DriverLog(job SparkJob) (string, error) {
-	driverPodName := driverPodName(job.Name)
+	driverPodName := DriverPodName(job.Name)
 	return getPodLog(spark.K8sClients, job.Namespace, driverPodName, 0)
 }
 
 func (spark *SparkOperatorInstallation) DriverLogContains(job SparkJob, text string) (bool, error) {
-	driverPodName := driverPodName(job.Name)
+	driverPodName := DriverPodName(job.Name)
 	return podLogContains(spark.K8sClients, job.Namespace, driverPodName, text)
 }
 
@@ -67,16 +68,16 @@ func (spark *SparkOperatorInstallation) WaitForOutput(job SparkJob, text string)
 
 	if err != nil {
 		log.Errorf("The text '%s' haven't appeared in the log in %s", text, defaultRetryTimeout.String())
-		logPodLogTail(spark.K8sClients, job.Namespace, driverPodName(job.Name), 10)
+		logPodLogTail(spark.K8sClients, job.Namespace, DriverPodName(job.Name), 10)
 	}
 	return err
 }
 
 func (spark *SparkOperatorInstallation) WaitUntilSucceeded(job SparkJob) error {
-	driverPodName := driverPodName(job.Name)
+	driverPodName := DriverPodName(job.Name)
 	return waitForPodStatusPhase(spark.K8sClients, driverPodName, job.Namespace, "Succeeded")
 }
 
-func driverPodName(jobName string) string {
+func DriverPodName(jobName string) string {
 	return jobName + "-driver"
 }
