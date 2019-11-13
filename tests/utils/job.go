@@ -2,8 +2,10 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"os"
-
+	v12 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -39,6 +41,23 @@ func (spark *SparkOperatorInstallation) SubmitJob(job *SparkJob) error {
 	err := KubectlApply(job.Namespace, yamlFile)
 
 	return err
+}
+
+func (spark *SparkOperatorInstallation) DriverPod(job SparkJob) (*v12.Pod, error) {
+	pod, err := spark.K8sClients.CoreV1().Pods(job.Namespace).Get(DriverPodName(job.Name), v1.GetOptions{})
+	return pod, err
+}
+
+func (spark *SparkOperatorInstallation) ExecutorPods(job SparkJob) ([]v12.Pod, error) {
+	pods, err := spark.K8sClients.CoreV1().Pods(job.Namespace).List(v1.ListOptions{
+		LabelSelector: fmt.Sprintf("spark-role=executor,sparkoperator.k8s.io/app-name=%s", job.Name),
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	return pods.Items, nil
 }
 
 func (spark *SparkOperatorInstallation) DriverLog(job SparkJob) (string, error) {
