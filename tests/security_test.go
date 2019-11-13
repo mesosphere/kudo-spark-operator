@@ -323,11 +323,6 @@ func runSecretTest(secretName string, secretPath string, secretKey string, expec
 		return err
 	}
 
-	client, err := utils.GetK8sClientSet()
-	if err != nil {
-		return err
-	}
-
 	secretData := make(map[string]string)
 	if secretKey != "" {
 		secretData[secretKey] = "secretValue"
@@ -335,7 +330,7 @@ func runSecretTest(secretName string, secretPath string, secretKey string, expec
 		secretData["secretKey"] = "secretValue"
 	}
 
-	err = utils.CreateSecret(client, secretName, spark.Namespace, secretData)
+	err = utils.CreateSecret(spark.K8sClients, secretName, spark.Namespace, secretData)
 	if err != nil {
 		return err
 	}
@@ -366,7 +361,7 @@ func runSecretTest(secretName string, secretPath string, secretKey string, expec
 		"describe",
 		"pod",
 		"--namespace="+spark.Namespace,
-		jobName+"-driver",
+		utils.DriverPodName(jobName),
 	)
 	if err != nil {
 		return err
