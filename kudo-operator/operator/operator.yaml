@@ -21,8 +21,8 @@ tasks:
         - spark-rbac.yaml
         - spark-serviceaccount.yaml
         - webhook-init-job.yaml
-        - spark-operator-deployment.yaml
         - webhook-service.yaml
+        - spark-operator-deployment.yaml
         - spark-history-server-deployment.yaml
         - spark-history-server-service.yaml
 
