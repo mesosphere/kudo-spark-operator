@@ -25,6 +25,17 @@ spec:
       version: {{ .SparkVersion }}
       metrics-exposed: "true"
     serviceAccount: {{ .ServiceAccount }}
+    {{- if and .Params.SecretName .Params.SecretPath }}
+    secrets:
+    - name: {{ .Params.SecretName }}
+      path: {{ .Params.SecretPath }}
+      secretType: Opaque
+    {{- else if and .Params.SecretName .Params.SecretKey }}
+    envSecretKeyRefs:
+      SECRET_ENV:
+        name: {{ .Params.SecretName }}
+        key: {{ .Params.SecretKey }}
+    {{- end }}
   executor:
     cores: 1
     instances: 1
@@ -32,3 +43,14 @@ spec:
     labels:
       version: {{ .SparkVersion }}
       metrics-exposed: "true"
+    {{- if and .Params.SecretName .Params.SecretPath }}
+    secrets:
+    - name: {{ .Params.SecretName }}
+      path: {{ .Params.SecretPath }}
+      secretType: Opaque
+    {{- else if and .Params.SecretName .Params.SecretKey }}
+    envSecretKeyRefs:
+      SECRET_ENV:
+        name: {{ .Params.SecretName }}
+        key: {{ .Params.SecretKey }}
+    {{- end }}
