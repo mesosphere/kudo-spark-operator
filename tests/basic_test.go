@@ -199,3 +199,71 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	}
 	utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
 }
+
+func TestVolumeMounts(t *testing.T) {
+	spark := utils.SparkOperatorInstallation{}
+	err := spark.InstallSparkOperator()
+	defer spark.CleanUp()
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	jobName := "mock-task-runner"
+	volumeName := "test-volume"
+	mountPath := "/mnt/data"
+	job := utils.SparkJob{
+		Name:     jobName,
+		Template: "spark-mock-task-runner-job.yaml",
+		Params: map[string]interface{}{
+			"args":       []string{"1", "100"},
+			"VolumeName": volumeName,
+			"MountPath":  mountPath,
+		},
+	}
+
+	err = spark.SubmitJob(&job)
+	if err != nil {
+		t.Fatal(err.Error())
+	}
+
+	err = utils.RetryWithTimeout(2*time.Minute, 5*time.Second, func() error {
+		_, err := utils.Kubectl(
+			"exec",
+			utils.DriverPodName(jobName),
+			"--namespace="+spark.Namespace,
+			"--",
+			"touch",
+			mountPath+"/test",
+		)
+		if err != nil {
+			return err
+		}
+
+		lsCmdResponse, err := utils.Kubectl(
+			"exec",
+			utils.DriverPodName(jobName),
+			"--namespace="+spark.Namespace,
+			"--",
+			"ls",
+			"-ltr",
+			mountPath,
+		)
+
+		if len(lsCmdResponse) > 0 &&
+			strings.Contains(lsCmdResponse, "test") {
+			log.Infof("Successfully mounted '%s' and volume is writable", volumeName)
+			return nil
+		}
+		return fmt.Errorf("Expecting '%s' to be mounted", volumeName)
+	})
+
+	if err != nil {
+		t.Errorf("Unable to mount volume '%s'", volumeName)
+	}
+
+	err = spark.WaitUntilSucceeded(job)
+	if err != nil {
+		t.Error(err.Error())
+	}
+}

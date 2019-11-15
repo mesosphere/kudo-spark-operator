@@ -18,6 +18,12 @@ spec:
   sparkVersion: {{ .SparkVersion }}
   restartPolicy:
     type: Never
+  {{- if .Params.VolumeName }}
+  volumes:
+  - name: {{ .Params.VolumeName }}
+    hostPath: "/data"
+    type: DirectoryOrCreate
+  {{- end }}
   driver:
     cores: 1
     memory: "512m"
@@ -25,6 +31,11 @@ spec:
       version: {{ .SparkVersion }}
       metrics-exposed: "true"
     serviceAccount: {{ .ServiceAccount }}
+    {{- if .Params.VolumeName }}
+    volumeMounts:
+    - name: {{ .Params.VolumeName }}
+      mountPath: {{ .Params.MountPath }}
+    {{- end }}
     {{- if and .Params.SecretName .Params.SecretPath }}
     secrets:
     - name: {{ .Params.SecretName }}
@@ -43,6 +54,11 @@ spec:
     labels:
       version: {{ .SparkVersion }}
       metrics-exposed: "true"
+    {{- if .Params.VolumeName }}
+    volumeMounts:
+    - name: {{ .Params.VolumeName }}
+      mountPath: {{ .Params.MountPath }}
+    {{- end }}
     {{- if and .Params.SecretName .Params.SecretPath }}
     secrets:
     - name: {{ .Params.SecretName }}
