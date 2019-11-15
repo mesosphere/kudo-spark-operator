@@ -36,6 +36,28 @@ spec:
         name: {{ .Params.SecretName }}
         key: {{ .Params.SecretKey }}
     {{- end }}
+    {{- if .Params.DriverAffinity }}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: {{ .Params.Label }}
+                  operator: DoesNotExist
+      podAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: {{ .Params.Label }}
+                  operator: DoesNotExist
+            topologyKey: kubernetes.io/hostname
+    {{- end }}
+    {{- if .Params.DriverTolerations }}
+    tolerations:
+      - key: {{ .Params.Label }}
+        operator: Exists
+        effect: NoSchedule
+    {{- end }}
   executor:
     cores: 1
     instances: {{ .ExecutorsCount }}
@@ -53,4 +75,26 @@ spec:
       SECRET_ENV:
         name: {{ .Params.SecretName }}
         key: {{ .Params.SecretKey }}
+    {{- end }}
+    {{- if .Params.ExecutorAffinity }}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: {{ .Params.Label }}
+                  operator: DoesNotExist
+      podAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: {{ .Params.Label }}
+                  operator: DoesNotExist
+            topologyKey: kubernetes.io/hostname
+    {{- end }}
+    {{- if .Params.ExecutorTolerations }}
+    tolerations:
+      - key: {{ .Params.Label }}
+        operator: Exists
+        effect: NoSchedule
     {{- end }}
