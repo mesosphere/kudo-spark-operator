@@ -33,5 +33,5 @@ for i in $(seq ${1}); do
 
     # Monitoring
     echo "Installing services and service monitors"
-    cat ${TEMPLATES_DIR}/monitoring.tmpl | kubectl apply -f -
+    cat ${TEMPLATES_DIR}/monitoring.tmpl | kubectl apply --namespace "${NAMESPACE}" -f -
 done

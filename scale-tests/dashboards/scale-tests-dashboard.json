@@ -16,8 +16,7 @@
   "editable": true,
   "gnetId": 315,
   "graphTooltip": 0,
-  "id": 28,
-  "iteration": 1573071089441,
+  "id": 29,
   "links": [],
   "panels": [
     {
@@ -1070,6 +1069,7 @@
         {
           "expr": "sum(spark_app_submit_count)",
           "format": "time_series",
+          "instant": true,
           "intervalFactor": 1,
           "legendFormat": "{{pod}}",
           "refId": "A"
@@ -1153,6 +1153,7 @@
         {
           "expr": "sum(spark_app_success_count)",
           "format": "time_series",
+          "instant": true,
           "intervalFactor": 1,
           "legendFormat": "{{pod}}",
           "refId": "A"
@@ -1236,6 +1237,7 @@
         {
           "expr": "spark_app_failure_count{pod=\"$Spark_Operator_Instance\"}",
           "format": "time_series",
+          "instant": true,
           "intervalFactor": 1,
           "refId": "A"
         }
@@ -1318,6 +1320,7 @@
         {
           "expr": "sum(spark_app_executor_running_count)",
           "format": "time_series",
+          "instant": true,
           "intervalFactor": 1,
           "refId": "A"
         }
@@ -1400,6 +1403,7 @@
         {
           "expr": "sum(spark_app_executor_success_count)",
           "format": "time_series",
+          "instant": true,
           "intervalFactor": 1,
           "refId": "A"
         }
@@ -1482,8 +1486,9 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "spark_app_executor_failure_count",
+          "expr": "sum(spark_app_executor_failure_count)",
           "format": "time_series",
+          "instant": true,
           "intervalFactor": 1,
           "legendFormat": "{{pod}}",
           "refId": "A"
@@ -2766,7 +2771,7 @@
     "list": []
   },
   "time": {
-    "from": "now-1h",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {
@@ -2797,5 +2802,5 @@
   "timezone": "browser",
   "title": "Spark MWT Dashboard",
   "uid": "WgrNoB0Wk",
-  "version": 6
+  "version": 7
 }

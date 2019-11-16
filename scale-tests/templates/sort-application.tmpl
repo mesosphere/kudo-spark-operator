@@ -8,12 +8,13 @@ spec:
   image: mesosphere/spark:2.4.3-bin-hadoop2.9-k8s
   imagePullPolicy: Always
   mainClass: sorting.SortingApp
-  mainApplicationFile: "https://infinity-artifacts.s3-us-west-2.amazonaws.com/spark/scale-tests-spark-2.4.3-20191104-sorting.jar"
+  mainApplicationFile: "https://infinity-artifacts.s3-us-west-2.amazonaws.com/spark/scale-tests-spark-2.4.3-20191106-sorting.jar"
   arguments:
     - "SOURCE_PATH"
     - "TARGET_PATH"
   sparkConf:
-    "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
+    "spark.kubernetes.allocation.batch.size": "NUM_EXECUTORS"
+    "spark.scheduler.maxRegisteredResourcesWaitingTime": "3600s"
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
     "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
     "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider"
@@ -23,13 +24,16 @@ spec:
     "spark.hadoop.fs.s3a.secret.key": "AWS_SECRET_ACCESS_KEY"
     "spark.hadoop.fs.s3a.session.token": "AWS_SESSION_TOKEN"
     "spark.kubernetes.memoryOverheadFactor": "0.5"
-    "spark.driver.maxResultSize": "4g"
+    "spark.driver.maxResultSize": "30g"
+    "spark.memory.fraction": "0.1"
+    "spark.kubernetes.executor.request.cores": "1"
+    "spark.kubernetes.executor.limit.cores": "1"
   sparkVersion: "2.4.3"
   restartPolicy:
     type: Never
   driver:
     cores: 2
-    memory: "6g"
+    memory: "32g"
     labels:
       version: 2.4.3
       metrics-exposed: "true"

@@ -23,7 +23,7 @@ spec:
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
   deps:
     jars:
-      - http://central.maven.org/maven2/com/github/scopt/scopt_2.11/3.7.0/scopt_2.11-3.7.0.jar
+      - local:///opt/spark/examples/jars/scopt_2.11-3.7.0.jar
   sparkVersion: {{ .SparkVersion }}
   restartPolicy:
     type: Never

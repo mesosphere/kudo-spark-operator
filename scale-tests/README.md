@@ -21,15 +21,15 @@ Scripts rely on the naming conventions to deploy and remove the resources:
 
 Scale test example:
 ```bash
-# Deploy CRDs, create 2 namespaces and create an operator instance in each
-./scripts/install.sh 2
+# Deploy CRDs, create 50 namespaces and create an operator instance in each
+./scripts/install.sh 50
 
-# Submit 2 applications to 2 operator instances
-./scripts/scale_test.sh 2 2
+# Submit 20 applications to each of 50 operator instances (1000 total)
+./scripts/scale_test.sh 20 50
 
 # Observe metrics and alerts and uninstall operators
 # Delete operator instances, namespaces, and CRDs
-./scripts/uninstall.sh 2
+./scripts/uninstall.sh 50
 ```
 
 TeraSort example:

@@ -20,7 +20,7 @@ if [[ $# -lt 2 ]]; then
 fi
 
 NAMESPACE=${1:-spark}
-NUM_EXECUTORS=${NUM_EXECUTORS:-100}
+NUM_EXECUTORS=${NUM_EXECUTORS:-1000}
 
 . ${SCRIPT_DIR}/aws_credentials.sh
 
