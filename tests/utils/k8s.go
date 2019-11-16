@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -159,6 +160,45 @@ func waitForPodStatusPhase(clientSet *kubernetes.Clientset, podName string, name
 		}
 		return err
 	})
+}
+
+/* ConfigMap */
+
+func CreateConfigMap(clientSet *kubernetes.Clientset, name string, namespace string) error {
+	log.Infof("Creating ConfigMap %s/%s", namespace, name)
+	_, err := clientSet.CoreV1().ConfigMaps(namespace).Create(&v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{Name: name},
+	})
+	return err
+}
+
+func AddFileToConfigMap(clientSet *kubernetes.Clientset, cmName string, namespace string, key string, filepath string) error {
+	log.Infof("Adding %s to the ConfigMap %s/%s under key %s", filepath, namespace, cmName, key)
+	cm, err := clientSet.CoreV1().ConfigMaps(namespace).Get(cmName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	b, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		return err
+	}
+
+	cm.Data[key] = string(b)
+	cm, err = clientSet.CoreV1().ConfigMaps(namespace).Update(cm)
+
+	return err
+}
+
+func DropConfigMap(clientSet *kubernetes.Clientset, name string, namespace string) error {
+	log.Infof("Deleting ConfigMap %s/%s", namespace, name)
+	gracePeriod := int64(0)
+	propagationPolicy := metav1.DeletePropagationForeground
+	options := metav1.DeleteOptions{
+		GracePeriodSeconds: &gracePeriod,
+		PropagationPolicy:  &propagationPolicy,
+	}
+	return clientSet.CoreV1().ConfigMaps(namespace).Delete(name, &options)
 }
 
 /* kubectl helpers */
