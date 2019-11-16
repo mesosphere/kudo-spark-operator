@@ -36,6 +36,12 @@ spec:
         name: {{ .Params.SecretName }}
         key: {{ .Params.SecretKey }}
     {{- end }}
+    {{- if and .Params.RunAsUser .Params.RunAsGroup }}
+    securityContext:
+      runAsUser: {{ .Params.RunAsUser }}
+      runAsGroup: {{ .Params.RunAsGroup }}
+      runAsNonRoot: true
+    {{- end }}
   executor:
     cores: 1
     instances: {{ .ExecutorsCount }}
@@ -53,4 +59,10 @@ spec:
       SECRET_ENV:
         name: {{ .Params.SecretName }}
         key: {{ .Params.SecretKey }}
+    {{- end }}
+    {{- if and .Params.RunAsUser .Params.RunAsGroup }}
+    securityContext:
+      runAsUser: {{ .Params.RunAsUser }}
+      runAsGroup: {{ .Params.RunAsGroup }}
+      runAsNonRoot: true
     {{- end }}
