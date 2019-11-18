@@ -3,7 +3,6 @@ package tests
 import (
 	"errors"
 	"fmt"
-	"github.com/GoogleCloudPlatform/spark-on-k8s-operator/pkg/apis/sparkoperator.k8s.io/v1beta2"
 	"github.com/mesosphere/kudo-spark-operator/tests/utils"
 	log "github.com/sirupsen/logrus"
 	v12 "k8s.io/api/core/v1"
@@ -45,30 +44,10 @@ func TestHostNetworkPropagation(t *testing.T) {
 			},
 		}
 
-		expectedExecutorCount := 1
-
 		// Submit the job and wait for it to start
-		err = spark.SubmitJob(&job)
+		err = spark.SubmitAndWaitForExecutors(&job)
 		if err != nil {
 			t.Fatal(err)
-		}
-		err = spark.WaitForJobState(job, v1beta2.RunningState)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		// Wait for correct number of executors to show up
-		err = utils.Retry(func() error {
-			executors, err := spark.GetExecutorState(job)
-			if err != nil {
-				return err
-			} else if len(executors) != expectedExecutorCount {
-				return errors.New(fmt.Sprintf("The number of executors is %d, but %d is expected", len(executors), expectedExecutorCount))
-			}
-			return nil
-		})
-		if err != nil {
-			t.Error(err)
 		}
 
 		// Verify driver pod hostNetwork and dnsPolicy values
@@ -76,12 +55,10 @@ func TestHostNetworkPropagation(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		log.Infof("Driver spec.hostNetwork: %v", driver.Spec.HostNetwork)
-		log.Infof("Driver spec.dnspolicy: %v", driver.Spec.DNSPolicy)
-		if driver.Spec.HostNetwork != tc.driverHN {
-			t.Fatal(fmt.Sprintf("Unexpected hostNetwork value for driver %v: %s. Should be %v", driver.Spec.HostNetwork, driver.Name, tc.driverHN))
-		} else if tc.driverHN && driver.Spec.DNSPolicy != v12.DNSClusterFirstWithHostNet {
-			t.Fatal(fmt.Sprintf("Expected driver pod DNS policy to be \"dnsClusterFirstWithHostNet\", but it's %s", driver.Spec.DNSPolicy))
+		err = verifyPodHostNetwork(driver, tc.driverHN)
+		log.Infof("Verifying driver %s spec values", driver.Name)
+		if err != nil {
+			t.Fatal(err)
 		}
 
 		// Verify executor pods hostNetwork and dnsPolicy values
@@ -90,16 +67,37 @@ func TestHostNetworkPropagation(t *testing.T) {
 			t.Fatal(err)
 		}
 		for _, executor := range executors {
-			log.Infof("Executor %s spec.hostNetwork: %v", executor.Name, executor.Spec.HostNetwork)
-			log.Infof("Executor %s spec.dnsPolicy: %v", executor.Name, executor.Spec.DNSPolicy)
-			if executor.Spec.HostNetwork != tc.executorHN {
-				t.Fatal(fmt.Sprintf("Unexpected hostNetwork value for driver %v: %s. Should be %v", executor.Spec.HostNetwork, executor.Name, tc.executorHN))
-			} else if tc.executorHN && executor.Spec.DNSPolicy != v12.DNSClusterFirstWithHostNet {
-				t.Fatal(fmt.Sprintf("Expected executor pod DNS policy to be \"dnsClusterFirstWithHostNet\", but it's %s", executor.Spec.DNSPolicy))
+			log.Infof("Verifying executor %s spec values", executor.Name)
+			err = verifyPodHostNetwork(&executor, tc.executorHN)
+			if err != nil {
+				t.Fatal(err)
 			}
 		}
 
 		// Terminate the job while it's running
 		spark.DeleteJob(job)
 	}
+}
+
+func verifyPodHostNetwork(pod *v12.Pod, expectedHostNetwork bool) error {
+	log.Infof("Pod spec.hostNetwork: %v", pod.Spec.HostNetwork)
+	log.Infof("Pod spec.dnspolicy: %v", pod.Spec.DNSPolicy)
+
+	// Check spec values
+	if pod.Spec.HostNetwork != expectedHostNetwork {
+		return errors.New(fmt.Sprintf("Unexpected hostNetwork value for pod %v: %s. Should be %v", pod.Spec.HostNetwork, pod.Name, expectedHostNetwork))
+	} else if expectedHostNetwork && pod.Spec.DNSPolicy != v12.DNSClusterFirstWithHostNet {
+		return errors.New(fmt.Sprintf("Expected pod pod DNS policy to be \"dnsClusterFirstWithHostNet\", but it's %s", pod.Spec.DNSPolicy))
+	}
+
+	// Check pod IP
+	log.Infof("Pod status.podIP: %v", pod.Status.PodIP)
+	log.Infof("Pod status.hostIP: %v", pod.Status.HostIP)
+	if expectedHostNetwork && pod.Status.PodIP != pod.Status.HostIP {
+		return errors.New(fmt.Sprintf("Pod %s IP doesn't match the host IP", pod.Name))
+	} else if !expectedHostNetwork && pod.Status.PodIP == pod.Status.HostIP {
+		return errors.New(fmt.Sprintf("Pod %s IP matches the host IP", pod.Name))
+	}
+
+	return nil
 }

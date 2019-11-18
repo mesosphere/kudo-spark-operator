@@ -3,10 +3,11 @@ package utils
 import (
 	"errors"
 	"fmt"
-	"os"
+	"github.com/GoogleCloudPlatform/spark-on-k8s-operator/pkg/apis/sparkoperator.k8s.io/v1beta2"
+	log "github.com/sirupsen/logrus"
 	v12 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
-	log "github.com/sirupsen/logrus"
+	"os"
 )
 
 type SparkJob struct {
@@ -17,6 +18,8 @@ type SparkJob struct {
 	Template       string
 	ServiceAccount string
 	Params         map[string]interface{}
+	Drivers        int
+	ExecutorsCount int
 }
 
 func (spark *SparkOperatorInstallation) SubmitJob(job *SparkJob) error {
@@ -33,6 +36,9 @@ func (spark *SparkOperatorInstallation) SubmitJob(job *SparkJob) error {
 	}
 	if job.ServiceAccount == "" {
 		job.ServiceAccount = spark.InstanceName + DefaultServiceAccountSuffix
+	}
+	if job.ExecutorsCount == 0 {
+		job.ExecutorsCount = 1
 	}
 
 	yamlFile := createSparkJob(*job)
@@ -68,6 +74,31 @@ func (spark *SparkOperatorInstallation) DriverLog(job SparkJob) (string, error) 
 func (spark *SparkOperatorInstallation) DriverLogContains(job SparkJob, text string) (bool, error) {
 	driverPodName := DriverPodName(job.Name)
 	return podLogContains(spark.K8sClients, job.Namespace, driverPodName, text)
+}
+
+func (spark *SparkOperatorInstallation) SubmitAndWaitForExecutors(job *SparkJob) error {
+	// Submit the job and wait for it to start
+	err := spark.SubmitJob(job)
+	if err != nil {
+		return err
+	}
+
+	err = spark.WaitForJobState(*job, v1beta2.RunningState)
+	if err != nil {
+		return err
+	}
+
+	// Wait for correct number of executors to show up
+	err = Retry(func() error {
+		executors, err := spark.GetExecutorState(*job)
+		if err != nil {
+			return err
+		} else if len(executors) != job.ExecutorsCount {
+			return errors.New(fmt.Sprintf("The number of executors is %d, but %d is expected", len(executors), job.ExecutorsCount))
+		}
+		return nil
+	})
+	return err
 }
 
 func (spark *SparkOperatorInstallation) WaitForOutput(job SparkJob, text string) error {
