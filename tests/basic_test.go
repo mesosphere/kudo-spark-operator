@@ -216,7 +216,7 @@ func TestVolumeMounts(t *testing.T) {
 		Name:     jobName,
 		Template: "spark-mock-task-runner-job.yaml",
 		Params: map[string]interface{}{
-			"args":       []string{"1", "100"},
+			"args":       []string{"1", "60"},
 			"VolumeName": volumeName,
 			"MountPath":  mountPath,
 		},

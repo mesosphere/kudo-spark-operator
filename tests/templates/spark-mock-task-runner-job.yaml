@@ -21,8 +21,9 @@ spec:
   {{- if .Params.VolumeName }}
   volumes:
   - name: {{ .Params.VolumeName }}
-    hostPath: "/data"
-    type: DirectoryOrCreate
+    hostPath:
+      path: /data
+      type: DirectoryOrCreate
   {{- end }}
   driver:
     cores: 1
