@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"gotest.tools/assert"
+	v1 "k8s.io/api/core/v1"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -407,15 +409,33 @@ func TestPodSecurityContext(t *testing.T) {
 		},
 	}
 
-	err = spark.SubmitJob(&job)
+	err = spark.SubmitAndWaitForExecutors(&job)
 	assert.NilError(t, err)
 
-	// verify job completed successfully
-	err = spark.WaitUntilSucceeded(job)
-	assert.NilError(t, err)
+	executorPods, err := spark.ExecutorPods(job)
 
-	// verify uid propagated to the pod
+	// verify uid propagated to the driver
 	logContains, err := spark.DriverLogContains(job, fmt.Sprintf("myuid=%s", uid))
 	assert.NilError(t, err)
 	assert.Assert(t, logContains, "uid \"%s\" not found in log.")
+
+	driver, err := spark.DriverPod(job)
+	assert.NilError(t, err)
+
+	uidInt, _ := strconv.ParseInt(uid, 10, 64)
+	gidInt, _ := strconv.ParseInt(gid, 10, 64)
+
+	verifyPodSecurityContext := func(pod v1.Pod) {
+		securityContext := pod.Spec.SecurityContext
+		assert.Check(t, *securityContext.RunAsUser == uidInt,
+			fmt.Sprintf("uids don't match! %d != %d", *securityContext.RunAsUser, uidInt))
+		assert.Check(t, *securityContext.RunAsGroup == gidInt,
+			fmt.Sprintf("gids don't match! %d != %d", *securityContext.RunAsGroup, gidInt))
+	}
+
+	verifyPodSecurityContext(*driver)
+	verifyPodSecurityContext(executorPods[0])
+
+	err = spark.WaitUntilSucceeded(job)
+	assert.NilError(t, err)
 }
