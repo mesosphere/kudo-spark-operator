@@ -3,62 +3,119 @@ package tests
 import (
 	"errors"
 	"fmt"
-	"github.com/GoogleCloudPlatform/spark-on-k8s-operator/pkg/apis/sparkoperator.k8s.io/v1beta2"
 	"github.com/mesosphere/kudo-spark-operator/tests/utils"
+	log "github.com/sirupsen/logrus"
+	"io/ioutil"
+	v1 "k8s.io/api/core/v1"
+	"path"
+	"strings"
 	"testing"
 )
 
 func TestMountSparkConfigMap(t *testing.T) {
-	const sparkConfFile = "resource/config/spark-defaults.conf"
-	const cmName = "spark-conf"
+	err := testMountedConfigMap(
+		"sparkConfigMap",
+		"resources/test-mount-config-map/spark-defaults.conf",
+		"spark-test-configmap",
+		"/etc/spark/conf",
+		"SPARK_CONF_DIR")
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestMountHadoopConfigMap(t *testing.T) {
+	err := testMountedConfigMap(
+		"hadoopConfigMap",
+		"resources/test-mount-config-map/core-site.xml",
+		"hadoop-test-configmap",
+		"/etc/hadoop/conf",
+		"HADOOP_CONF_DIR")
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func testMountedConfigMap(sparkAppConfigParam string, confFilepath string, configMapName string, remoteConfDir string, confDirEnvVarName string) error {
+
+	_, confFilename := path.Split(confFilepath)
 
 	spark := utils.SparkOperatorInstallation{}
 	err := spark.InstallSparkOperator()
 	defer spark.CleanUp()
 
 	if err != nil {
-		t.Fatal(err)
+		return err
 	}
 
-	utils.CreateConfigMap(spark.K8sClients, spark.Namespace, cmName)
-	defer utils.DropConfigMap(spark.K8sClients, spark.Namespace, cmName)
-	utils.AddFileToConfigMap(spark.K8sClients, cmName, spark.Namespace, "spark-defaults.com", sparkConfFile)
+	// Create a configmap for spark-defaults.com
+	utils.CreateConfigMap(spark.K8sClients, configMapName, spark.Namespace)
+	defer utils.DropConfigMap(spark.K8sClients, configMapName, spark.Namespace)
+	utils.AddFileToConfigMap(spark.K8sClients, configMapName, spark.Namespace, confFilename, confFilepath)
 
 	job := utils.SparkJob{
 		Name:     "mount-spark-configmap-test",
-		Template: "spark-mock-task-runner-job.yaml",
+		Template: "spark-mock-task-runner-job-mount-config.yaml",
 		Params: map[string]interface{}{
-			"args": []string{"1", "600"},
+			"args":              []string{"1", "600"},
+			sparkAppConfigParam: configMapName,
 		},
 	}
-	expectedExecutorCount := 1
 
-	// Submit the job and wait for it to start
-	err = spark.SubmitJob(&job)
+	err = spark.SubmitAndWaitForExecutors(&job)
 	if err != nil {
-		t.Fatal(err)
-	}
-	err = spark.WaitForJobState(job, v1beta2.RunningState)
-	if err != nil {
-		t.Fatal(err)
+		return err
 	}
 
-	// Wait for correct number of executors to show up
-	err = utils.Retry(func() error {
-		executors, err := spark.GetExecutorState(job)
-		if err != nil {
-			return err
-		} else if len(executors) != expectedExecutorCount {
-			return errors.New(fmt.Sprintf("The number of executors is %d, but %d is expected", len(executors), expectedExecutorCount))
+	// Making sure driver and executor pods have correct volume mounted
+	executors, _ := spark.ExecutorPods(job)
+	driver, _ := spark.DriverPod(job)
+
+	for _, pod := range append(executors, driver) {
+		if !lookupMountedConfigSet(pod, configMapName) {
+			return errors.New(fmt.Sprintf("Couldn't find volume %s mounted on pod %s", configMapName, pod.Name))
 		}
-		return nil
-	})
-	if err != nil {
-		t.Error(err)
+
+		// Check that *_CONF_DIR is set correctly
+		if !utils.EnvVarInPod(v1.EnvVar{Name: confDirEnvVarName, Value: remoteConfDir}, pod) {
+			return errors.New(fmt.Sprintf("%s is not set to %s on pod %s", confDirEnvVarName, remoteConfDir, pod.Name))
+		}
+
+		// Check that the config file is available in the container
+		same, err := comparePodFileWithLocal(pod, path.Join(remoteConfDir, confFilename), confFilepath)
+		if err != nil {
+			return errors.New(fmt.Sprintf("Couldn't compare spark configuration file: %v", err))
+		}
+		if !same {
+			return errors.New(fmt.Sprintf("The content of %s differs locally and in pod %s/%s", confFilename, pod.Namespace, pod.Name))
+		} else {
+			log.Infof("%s was mounted correctly!", confFilename)
+		}
 	}
 
+	return nil
 }
 
-func TestMountHadoopConfigMap(t *testing.T) {
+func lookupMountedConfigSet(pod v1.Pod, name string) bool {
+	for _, v := range pod.Spec.Volumes {
+		if v.ConfigMap != nil && v.ConfigMap.Name == name {
+			log.Infof("Found volume %s: %s in pod %s/%s", v.Name, v.ConfigMap.Name, pod.Namespace, pod.Name)
+			return true
+		}
+	}
+	return false
+}
 
+func comparePodFileWithLocal(pod v1.Pod, remotePath string, localPath string) (bool, error) {
+	local, err := ioutil.ReadFile(localPath)
+	if err != nil {
+		return false, err
+	}
+
+	remote, err := utils.Kubectl("exec", "-n", pod.Namespace, pod.Name, "--", "cat", remotePath)
+	if err != nil {
+		return false, err
+	}
+
+	return strings.Compare(string(local), remote) == 0, nil
 }
