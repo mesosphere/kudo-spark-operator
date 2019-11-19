@@ -74,11 +74,11 @@ func TestPodAffinityAndToleration(t *testing.T) {
 }
 
 func verifyPodSpec(t *testing.T, pod v12.Pod) {
-	testAffinityRules(t, pod, testLabelName)
+	testAffinityRulesWithKeyPresent(t, pod, testLabelName)
 	testTolerationWithKeyPresent(t, pod, testLabelName)
 }
 
-func testAffinityRules(t *testing.T, pod v12.Pod, label string) {
+func testAffinityRulesWithKeyPresent(t *testing.T, pod v12.Pod, label string) {
 	assert.Assert(t, pod.Spec.Affinity != nil, "Pod affinity is nil")
 	var nodeAffinityRulePresent bool
 	var podAffinityRulePresent bool
