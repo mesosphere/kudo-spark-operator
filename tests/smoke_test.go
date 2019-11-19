@@ -3,7 +3,6 @@ package tests
 import (
 	"errors"
 	"fmt"
-	"github.com/GoogleCloudPlatform/spark-on-k8s-operator/pkg/apis/sparkoperator.k8s.io/v1beta2"
 	"github.com/mesosphere/kudo-spark-operator/tests/utils"
 	log "github.com/sirupsen/logrus"
 	v12 "k8s.io/api/core/v1"
@@ -27,33 +26,16 @@ func TestShuffleAppDriverOutput(t *testing.T) {
 
 	jobName := "shuffle-app"
 	job := utils.SparkJob{
-		Name:     jobName,
-		Template: "spark-shuffle-job.yaml",
+		Name:           jobName,
+		Template:       "spark-shuffle-job.yaml",
+		ExecutorsCount: expectedExecutorCount,
 		Params: map[string]interface{}{
-			"executor_count": expectedExecutorCount,
-			"args":           []string{"4", strconv.Itoa(expectedGroupCount), "100", "4", "1500"},
+			"args": []string{"4", strconv.Itoa(expectedGroupCount), "100", "4", "1500"},
 		},
 	}
 
-	err = spark.SubmitJob(&job)
-	if err != nil {
-		t.Fatal(err)
-	}
-	err = spark.WaitForJobState(job, v1beta2.RunningState)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Wait for correct number of executors to show up
-	err = utils.Retry(func() error {
-		executors, err := spark.GetExecutorState(job)
-		if err != nil {
-			return err
-		} else if len(executors) != expectedExecutorCount {
-			return errors.New(fmt.Sprintf("The number of executors is %d, but %d is expected", len(executors), expectedExecutorCount))
-		}
-		return nil
-	})
+	// Submit the job and wait for it to start
+	err = spark.SubmitAndWaitForExecutors(&job)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -81,31 +63,11 @@ func TestRunningAppDeletion(t *testing.T) {
 			"args": []string{"1", "600"},
 		},
 	}
-	expectedExecutorCount := 1
 
 	// Submit the job and wait for it to start
-	err = spark.SubmitJob(&job)
+	err = spark.SubmitAndWaitForExecutors(&job)
 	if err != nil {
 		t.Fatal(err)
-	}
-	err = spark.WaitForJobState(job, v1beta2.RunningState)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// Wait for correct number of executors to show up
-
-	err = utils.Retry(func() error {
-		executors, err := spark.GetExecutorState(job)
-		if err != nil {
-			return err
-		} else if len(executors) != expectedExecutorCount {
-			return errors.New(fmt.Sprintf("The number of executors is %d, but %d is expected", len(executors), expectedExecutorCount))
-		}
-		return nil
-	})
-	if err != nil {
-		t.Error(err)
 	}
 
 	// Terminate the job while it's running
