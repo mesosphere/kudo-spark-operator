@@ -162,6 +162,16 @@ func waitForPodStatusPhase(clientSet *kubernetes.Clientset, podName string, name
 	})
 }
 
+func EnvVarInPod(envVar v1.EnvVar, pod v1.Pod) bool {
+	for _, e := range pod.Spec.Containers[0].Env {
+		if e.Name == envVar.Name && e.Value == envVar.Value {
+			log.Infof("Found %s=%s environment variable in first container of pod %s/%s", e.Name, e.Value, pod.Namespace, pod.Name)
+			return true
+		}
+	}
+	return false
+}
+
 /* ConfigMap */
 
 func CreateConfigMap(clientSet *kubernetes.Clientset, name string, namespace string) error {
@@ -182,6 +192,10 @@ func AddFileToConfigMap(clientSet *kubernetes.Clientset, cmName string, namespac
 	b, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		return err
+	}
+
+	if cm.Data == nil {
+		cm.Data = make(map[string]string)
 	}
 
 	cm.Data[key] = string(b)

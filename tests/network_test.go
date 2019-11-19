@@ -55,7 +55,7 @@ func TestHostNetworkPropagation(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		err = verifyPodHostNetwork(driver, tc.driverHN)
+		err = verifyPodHostNetwork(&driver, tc.driverHN)
 		log.Infof("Verifying driver %s spec values", driver.Name)
 		if err != nil {
 			t.Fatal(err)
