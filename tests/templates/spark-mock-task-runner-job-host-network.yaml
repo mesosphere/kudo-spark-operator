@@ -8,8 +8,10 @@ spec:
   mode: cluster
   image: {{ .Image }}
   imagePullPolicy: Always
-  mainClass: org.apache.spark.examples.SparkPi
-  mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.11-{{ .SparkVersion }}.jar"
+  mainClass: MockTaskRunner
+  mainApplicationFile: "https://infinity-artifacts.s3.amazonaws.com/scale-tests/dcos-spark-scala-tests-assembly-2.4.0-20190325.jar"
+  arguments: {{ range $i, $arg := index .Params "args" }}
+  - "{{ $arg }}"{{ end }}
   sparkConf:
     "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
@@ -19,12 +21,16 @@ spec:
   driver:
     cores: 1
     memory: "512m"
+    hostNetwork: {{ index .Params "driverHostNetwork" }}
     labels:
       version: {{ .SparkVersion }}
+      metrics-exposed: "true"
     serviceAccount: {{ .ServiceAccount }}
   executor:
     cores: 1
     instances: {{ .ExecutorsCount }}
     memory: "512m"
+    hostNetwork: {{ index .Params "executorHostNetwork" }}
     labels:
       version: {{ .SparkVersion }}
+      metrics-exposed: "true"
