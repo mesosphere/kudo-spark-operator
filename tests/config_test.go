@@ -119,5 +119,5 @@ func comparePodFileWithLocal(pod v1.Pod, remotePath string, localPath string) (b
 		return err
 	})
 
-	return strings.Compare(string(local), remote) == 0, nil
+	return strings.Compare(strings.TrimSpace(string(local)), strings.TrimSpace(remote)) == 0, nil
 }
