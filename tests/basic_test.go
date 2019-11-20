@@ -211,7 +211,7 @@ func TestVolumeMounts(t *testing.T) {
 
 	jobName := "mock-task-runner"
 	volumeName := "test-volume"
-	mountPath := "/mnt/data"
+	mountPath := "/opt/spark/work-dir"
 	job := utils.SparkJob{
 		Name:     jobName,
 		Template: "spark-mock-task-runner-job.yaml",
@@ -228,18 +228,6 @@ func TestVolumeMounts(t *testing.T) {
 	}
 
 	err = utils.RetryWithTimeout(2*time.Minute, 5*time.Second, func() error {
-		_, err := utils.Kubectl(
-			"exec",
-			utils.DriverPodName(jobName),
-			"--namespace="+spark.Namespace,
-			"--",
-			"touch",
-			mountPath+"/test",
-		)
-		if err != nil {
-			return err
-		}
-
 		lsCmdResponse, err := utils.Kubectl(
 			"exec",
 			utils.DriverPodName(jobName),
@@ -247,11 +235,14 @@ func TestVolumeMounts(t *testing.T) {
 			"--",
 			"ls",
 			"-ltr",
-			mountPath,
+			mountPath+"/tmp",
 		)
+		if err != nil {
+			return err
+		}
 
 		if len(lsCmdResponse) > 0 &&
-			strings.Contains(lsCmdResponse, "test") {
+			strings.Contains(lsCmdResponse, "spark") {
 			log.Infof("Successfully mounted '%s' and volume is writable", volumeName)
 			return nil
 		}

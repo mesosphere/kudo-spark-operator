@@ -15,6 +15,9 @@ spec:
   sparkConf:
     "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
+    {{- if .Params.VolumeName }}
+    "spark.local.dir": "{{ .Params.MountPath }}/tmp"
+    {{- end }}
   sparkVersion: {{ .SparkVersion }}
   restartPolicy:
     type: Never
