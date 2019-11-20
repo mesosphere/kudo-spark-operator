@@ -112,10 +112,12 @@ func comparePodFileWithLocal(pod v1.Pod, remotePath string, localPath string) (b
 		return false, err
 	}
 
-	remote, err := utils.Kubectl("exec", "-n", pod.Namespace, pod.Name, "--", "cat", remotePath)
-	if err != nil {
-		return false, err
-	}
+	var remote string
+
+	err = utils.Retry(func() error {
+		remote, err = utils.Kubectl("exec", "-n", pod.Namespace, pod.Name, "--", "cat", remotePath)
+		return err
+	})
 
 	return strings.Compare(string(local), remote) == 0, nil
 }
