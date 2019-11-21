@@ -15,9 +15,19 @@ spec:
   sparkConf:
     "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
+    {{- if .Params.VolumeName }}
+    "spark.local.dir": "{{ .Params.MountPath }}/tmp"
+    {{- end }}
   sparkVersion: {{ .SparkVersion }}
   restartPolicy:
     type: Never
+  {{- if .Params.VolumeName }}
+  volumes:
+  - name: {{ .Params.VolumeName }}
+    hostPath:
+      path: /data
+      type: DirectoryOrCreate
+  {{- end }}
   driver:
     cores: 1
     memory: "512m"
@@ -25,6 +35,11 @@ spec:
       version: {{ .SparkVersion }}
       metrics-exposed: "true"
     serviceAccount: {{ .ServiceAccount }}
+    {{- if .Params.VolumeName }}
+    volumeMounts:
+    - name: {{ .Params.VolumeName }}
+      mountPath: {{ .Params.MountPath }}
+    {{- end }}
     {{- if and .Params.SecretName .Params.SecretPath }}
     secrets:
     - name: {{ .Params.SecretName }}
@@ -71,6 +86,11 @@ spec:
     labels:
       version: {{ .SparkVersion }}
       metrics-exposed: "true"
+    {{- if .Params.VolumeName }}
+    volumeMounts:
+    - name: {{ .Params.VolumeName }}
+      mountPath: {{ .Params.MountPath }}
+    {{- end }}
     {{- if and .Params.SecretName .Params.SecretPath }}
     secrets:
     - name: {{ .Params.SecretName }}
