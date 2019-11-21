@@ -11,6 +11,7 @@ RUN set -ex && \
     ln -s /lib /lib64 && \
     apk add --no-cache bash tini libc6-compat linux-pam nss gnupg procps && \
     mkdir -p ${SPARK_HOME}/work-dir && \
+    chmod ugo+rw ${SPARK_HOME}/work-dir && \
     touch ${SPARK_HOME}/RELEASE && \
     rm /bin/sh && \
     ln -sv /bin/bash /bin/sh && \
@@ -31,8 +32,8 @@ RUN mkdir -p ${SPARK_DIST} && \
 WORKDIR ${SPARK_HOME}
 
 # https://github.com/GoogleCloudPlatform/spark-on-k8s-operator/issues/591
-RUN rm jars/kubernetes-client-4.1.2.jar
 ADD https://repo1.maven.org/maven2/io/fabric8/kubernetes-client/4.4.2/kubernetes-client-4.4.2.jar jars
+RUN rm jars/kubernetes-client-4.1.2.jar && chmod go+r jars/kubernetes-client-4.4.2.jar
 
 # Setup for the Prometheus JMX exporter.
 RUN mkdir -p /etc/metrics/conf
