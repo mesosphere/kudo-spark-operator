@@ -36,6 +36,12 @@ spec:
         name: {{ .Params.SecretName }}
         key: {{ .Params.SecretKey }}
     {{- end }}
+    {{- if and .Params.RunAsUser .Params.RunAsGroup }}
+    securityContext:
+      runAsUser: {{ .Params.RunAsUser }}
+      runAsGroup: {{ .Params.RunAsGroup }}
+      runAsNonRoot: true
+    {{- end }}
     {{- if .Params.DriverAffinity }}
     affinity:
       nodeAffinity:
@@ -75,6 +81,12 @@ spec:
       SECRET_ENV:
         name: {{ .Params.SecretName }}
         key: {{ .Params.SecretKey }}
+    {{- end }}
+    {{- if and .Params.RunAsUser .Params.RunAsGroup }}
+    securityContext:
+      runAsUser: {{ .Params.RunAsUser }}
+      runAsGroup: {{ .Params.RunAsGroup }}
+      runAsNonRoot: true
     {{- end }}
     {{- if .Params.ExecutorAffinity }}
     affinity:

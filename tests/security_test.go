@@ -3,6 +3,9 @@ package tests
 import (
 	"errors"
 	"fmt"
+	"gotest.tools/assert"
+	v1 "k8s.io/api/core/v1"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -381,4 +384,58 @@ func runSecretTest(secretName string, secretPath string, secretKey string, expec
 	}
 
 	return nil
+}
+
+func TestPodSecurityContext(t *testing.T) {
+
+	// run driver and executor as user "nobody"
+	const uid = "65534"
+	const gid = "65534"
+
+	spark := utils.SparkOperatorInstallation{}
+	err := spark.InstallSparkOperator()
+	defer spark.CleanUp()
+
+	assert.NilError(t, err)
+
+	jobName := "mock-task-runner"
+	job := utils.SparkJob{
+		Name:     jobName,
+		Template: "spark-mock-task-runner-job.yaml",
+		Params: map[string]interface{}{
+			"args":       []string{"1", "10"},
+			"RunAsUser":  uid,
+			"RunAsGroup": gid,
+		},
+	}
+
+	err = spark.SubmitAndWaitForExecutors(&job)
+	assert.NilError(t, err)
+
+	executorPods, err := spark.ExecutorPods(job)
+
+	// verify uid propagated to the driver
+	logContains, err := spark.DriverLogContains(job, fmt.Sprintf("myuid=%s", uid))
+	assert.NilError(t, err)
+	assert.Assert(t, logContains, "uid \"%s\" not found in log.")
+
+	driver, err := spark.DriverPod(job)
+	assert.NilError(t, err)
+
+	uidInt, _ := strconv.ParseInt(uid, 10, 64)
+	gidInt, _ := strconv.ParseInt(gid, 10, 64)
+
+	verifyPodSecurityContext := func(pod v1.Pod) {
+		securityContext := pod.Spec.SecurityContext
+		assert.Check(t, *securityContext.RunAsUser == uidInt,
+			fmt.Sprintf("uids don't match! %d != %d", *securityContext.RunAsUser, uidInt))
+		assert.Check(t, *securityContext.RunAsGroup == gidInt,
+			fmt.Sprintf("gids don't match! %d != %d", *securityContext.RunAsGroup, gidInt))
+	}
+
+	verifyPodSecurityContext(*driver)
+	verifyPodSecurityContext(executorPods[0])
+
+	err = spark.WaitUntilSucceeded(job)
+	assert.NilError(t, err)
 }
