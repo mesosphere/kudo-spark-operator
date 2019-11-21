@@ -42,6 +42,28 @@ spec:
       runAsGroup: {{ .Params.RunAsGroup }}
       runAsNonRoot: true
     {{- end }}
+    {{- if .Params.DriverAffinity }}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: {{ .Params.Label }}
+                  operator: DoesNotExist
+      podAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: {{ .Params.Label }}
+                  operator: DoesNotExist
+            topologyKey: kubernetes.io/hostname
+    {{- end }}
+    {{- if .Params.DriverTolerations }}
+    tolerations:
+      - key: {{ .Params.Label }}
+        operator: Exists
+        effect: NoSchedule
+    {{- end }}
   executor:
     cores: 1
     instances: {{ .ExecutorsCount }}
@@ -65,4 +87,26 @@ spec:
       runAsUser: {{ .Params.RunAsUser }}
       runAsGroup: {{ .Params.RunAsGroup }}
       runAsNonRoot: true
+    {{- end }}
+    {{- if .Params.ExecutorAffinity }}
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: {{ .Params.Label }}
+                  operator: DoesNotExist
+      podAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+                - key: {{ .Params.Label }}
+                  operator: DoesNotExist
+            topologyKey: kubernetes.io/hostname
+    {{- end }}
+    {{- if .Params.ExecutorTolerations }}
+    tolerations:
+      - key: {{ .Params.Label }}
+        operator: Exists
+        effect: NoSchedule
     {{- end }}
