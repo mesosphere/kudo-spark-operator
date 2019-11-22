@@ -72,7 +72,7 @@ func testMountedConfigMap(sparkAppConfigParam string, confFilepath string, confi
 	driver, _ := spark.DriverPod(job)
 
 	for _, pod := range append(executors, driver) {
-		if !lookupMountedConfigSet(pod, configMapName) {
+		if !hasConfigMap(pod, configMapName) {
 			return errors.New(fmt.Sprintf("Couldn't find volume %s mounted on pod %s", configMapName, pod.Name))
 		}
 
@@ -82,11 +82,11 @@ func testMountedConfigMap(sparkAppConfigParam string, confFilepath string, confi
 		}
 
 		// Check that the config file is available in the container
-		same, err := comparePodFileWithLocal(pod, path.Join(remoteConfDir, confFilename), confFilepath)
+		sameContent, err := hasSimilarContents(pod, path.Join(remoteConfDir, confFilename), confFilepath)
 		if err != nil {
 			return errors.New(fmt.Sprintf("Couldn't compare spark configuration file: %v", err))
 		}
-		if !same {
+		if !sameContent {
 			return errors.New(fmt.Sprintf("The content of %s differs locally and in pod %s/%s", confFilename, pod.Namespace, pod.Name))
 		} else {
 			log.Infof("%s was mounted correctly!", confFilename)
@@ -96,9 +96,9 @@ func testMountedConfigMap(sparkAppConfigParam string, confFilepath string, confi
 	return nil
 }
 
-func lookupMountedConfigSet(pod v1.Pod, name string) bool {
+func hasConfigMap(pod v1.Pod, configMapName string) bool {
 	for _, v := range pod.Spec.Volumes {
-		if v.ConfigMap != nil && v.ConfigMap.Name == name {
+		if v.ConfigMap != nil && v.ConfigMap.Name == configMapName {
 			log.Infof("Found volume %s: %s in pod %s/%s", v.Name, v.ConfigMap.Name, pod.Namespace, pod.Name)
 			return true
 		}
@@ -106,18 +106,18 @@ func lookupMountedConfigSet(pod v1.Pod, name string) bool {
 	return false
 }
 
-func comparePodFileWithLocal(pod v1.Pod, remotePath string, localPath string) (bool, error) {
-	local, err := ioutil.ReadFile(localPath)
+func hasSimilarContents(pod v1.Pod, remotePath string, localPath string) (bool, error) {
+	localContent, err := ioutil.ReadFile(localPath)
 	if err != nil {
 		return false, err
 	}
 
-	var remote string
+	var remoteContent string
 
 	err = utils.Retry(func() error {
-		remote, err = utils.Kubectl("exec", "-n", pod.Namespace, pod.Name, "--", "cat", remotePath)
+		remoteContent, err = utils.Kubectl("exec", "-n", pod.Namespace, pod.Name, "--", "cat", remotePath)
 		return err
 	})
 
-	return strings.Compare(strings.TrimSpace(string(local)), strings.TrimSpace(remote)) == 0, nil
+	return strings.Compare(strings.TrimSpace(string(localContent)), strings.TrimSpace(remoteContent)) == 0, nil
 }

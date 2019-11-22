@@ -182,24 +182,24 @@ func CreateConfigMap(clientSet *kubernetes.Clientset, name string, namespace str
 	return err
 }
 
-func AddFileToConfigMap(clientSet *kubernetes.Clientset, cmName string, namespace string, key string, filepath string) error {
-	log.Infof("Adding %s to the ConfigMap %s/%s under key %s", filepath, namespace, cmName, key)
-	cm, err := clientSet.CoreV1().ConfigMaps(namespace).Get(cmName, metav1.GetOptions{})
+func AddFileToConfigMap(clientSet *kubernetes.Clientset, configMapName string, namespace string, key string, filepath string) error {
+	log.Infof("Adding %s to the ConfigMap %s/%s under key %s", filepath, namespace, configMapName, key)
+	configMap, err := clientSet.CoreV1().ConfigMaps(namespace).Get(configMapName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	b, err := ioutil.ReadFile(filepath)
+	fileContent, err := ioutil.ReadFile(filepath)
 	if err != nil {
 		return err
 	}
 
-	if cm.Data == nil {
-		cm.Data = make(map[string]string)
+	if configMap.Data == nil {
+		configMap.Data = make(map[string]string)
 	}
 
-	cm.Data[key] = string(b)
-	cm, err = clientSet.CoreV1().ConfigMaps(namespace).Update(cm)
+	configMap.Data[key] = string(fileContent)
+	configMap, err = clientSet.CoreV1().ConfigMaps(namespace).Update(configMap)
 
 	return err
 }
