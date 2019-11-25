@@ -49,9 +49,16 @@ func testMountedConfigMap(sparkAppConfigParam string, confFilepath string, confi
 	}
 
 	// Create a configmap for spark-defaults.com
-	utils.CreateConfigMap(spark.K8sClients, configMapName, spark.Namespace)
-	defer utils.DropConfigMap(spark.K8sClients, configMapName, spark.Namespace)
-	utils.AddFileToConfigMap(spark.K8sClients, configMapName, spark.Namespace, confFilename, confFilepath)
+	err = utils.CreateConfigMap(spark.K8sClients, configMapName, spark.Namespace)
+	if err != nil {
+		return err
+	}
+	defer utils.DeleteConfigName(spark.K8sClients, configMapName, spark.Namespace)
+
+	err = utils.AddFileToConfigMap(spark.K8sClients, configMapName, spark.Namespace, confFilename, confFilepath)
+	if err != nil {
+		return err
+	}
 
 	job := utils.SparkJob{
 		Name:     "mount-spark-configmap-test",
@@ -77,7 +84,7 @@ func testMountedConfigMap(sparkAppConfigParam string, confFilepath string, confi
 		}
 
 		// Check that *_CONF_DIR is set correctly
-		if !utils.EnvVarInPod(v1.EnvVar{Name: confDirEnvVarName, Value: remoteConfDir}, pod) {
+		if !utils.IsEnvVarPresentInPod(v1.EnvVar{Name: confDirEnvVarName, Value: remoteConfDir}, pod) {
 			return errors.New(fmt.Sprintf("%s is not set to %s on pod %s", confDirEnvVarName, remoteConfDir, pod.Name))
 		}
 
