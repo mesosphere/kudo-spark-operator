@@ -49,9 +49,9 @@ func (spark *SparkOperatorInstallation) SubmitJob(job *SparkJob) error {
 	return err
 }
 
-func (spark *SparkOperatorInstallation) DriverPod(job SparkJob) (*v12.Pod, error) {
+func (spark *SparkOperatorInstallation) DriverPod(job SparkJob) (v12.Pod, error) {
 	pod, err := spark.K8sClients.CoreV1().Pods(job.Namespace).Get(DriverPodName(job.Name), v1.GetOptions{})
-	return pod, err
+	return *pod, err
 }
 
 func (spark *SparkOperatorInstallation) ExecutorPods(job SparkJob) ([]v12.Pod, error) {

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"strings"
@@ -159,6 +160,59 @@ func waitForPodStatusPhase(clientSet *kubernetes.Clientset, podName string, name
 		}
 		return err
 	})
+}
+
+func IsEnvVarPresentInPod(envVar v1.EnvVar, pod v1.Pod) bool {
+	for _, e := range pod.Spec.Containers[0].Env {
+		if e.Name == envVar.Name && e.Value == envVar.Value {
+			log.Infof("Found %s=%s environment variable in first container of pod %s/%s", e.Name, e.Value, pod.Namespace, pod.Name)
+			return true
+		}
+	}
+	return false
+}
+
+/* ConfigMap */
+
+func CreateConfigMap(clientSet *kubernetes.Clientset, name string, namespace string) error {
+	log.Infof("Creating ConfigMap %s/%s", namespace, name)
+	_, err := clientSet.CoreV1().ConfigMaps(namespace).Create(&v1.ConfigMap{
+		ObjectMeta: metav1.ObjectMeta{Name: name},
+	})
+	return err
+}
+
+func AddFileToConfigMap(clientSet *kubernetes.Clientset, configMapName string, namespace string, key string, filepath string) error {
+	log.Infof("Adding %s to the ConfigMap %s/%s under key %s", filepath, namespace, configMapName, key)
+	configMap, err := clientSet.CoreV1().ConfigMaps(namespace).Get(configMapName, metav1.GetOptions{})
+	if err != nil {
+		return err
+	}
+
+	fileContent, err := ioutil.ReadFile(filepath)
+	if err != nil {
+		return err
+	}
+
+	if configMap.Data == nil {
+		configMap.Data = make(map[string]string)
+	}
+
+	configMap.Data[key] = string(fileContent)
+	configMap, err = clientSet.CoreV1().ConfigMaps(namespace).Update(configMap)
+
+	return err
+}
+
+func DeleteConfigName(clientSet *kubernetes.Clientset, name string, namespace string) error {
+	log.Infof("Deleting ConfigMap %s/%s", namespace, name)
+	gracePeriod := int64(0)
+	propagationPolicy := metav1.DeletePropagationForeground
+	options := metav1.DeleteOptions{
+		GracePeriodSeconds: &gracePeriod,
+		PropagationPolicy:  &propagationPolicy,
+	}
+	return clientSet.CoreV1().ConfigMaps(namespace).Delete(name, &options)
 }
 
 /* kubectl helpers */
