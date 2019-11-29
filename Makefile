@@ -19,12 +19,12 @@ KUBECONFIG ?= $(ROOT_DIR)/admin.conf
 
 DOCKER_REPO_NAME ?= mesosphere
 
-SPARK_IMAGE_NAME ?= spark
+SPARK_IMAGE_NAME ?= spark-dev
 SPARK_IMAGE_DIR ?= $(ROOT_DIR)/images/spark
 SPARK_IMAGE_TAG ?= $(call files_checksum,$(SPARK_IMAGE_DIR))
 SPARK_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(SPARK_IMAGE_NAME):$(SPARK_IMAGE_TAG)
 
-export OPERATOR_IMAGE_NAME ?= kudo-spark-operator
+export OPERATOR_IMAGE_NAME ?= kudo-spark-operator-dev
 export OPERATOR_VERSION ?= $(call files_checksum,$(SPARK_IMAGE_DIR) $(OPERATOR_IMAGE_DIR) $(SPARK_OPERATOR_DIR))
 OPERATOR_IMAGE_DIR ?= $(ROOT_DIR)/images/operator
 OPERATOR_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(OPERATOR_IMAGE_NAME):$(OPERATOR_VERSION)
@@ -33,6 +33,9 @@ DOCKER_BUILDER_IMAGE_NAME ?= spark-operator-docker-builder
 DOCKER_BUILDER_IMAGE_DIR ?= $(ROOT_DIR)/images/builder
 DOCKER_BUILDER_IMAGE_TAG ?= $(call files_checksum,$(DOCKER_BUILDER_IMAGE_DIR))
 DOCKER_BUILDER_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(DOCKER_BUILDER_IMAGE_NAME):$(DOCKER_BUILDER_IMAGE_TAG)
+
+OPERATOR_IMAGE_RELEASE_NAME ?= kudo-spark-operator
+SPARK_IMAGE_RELEASE_NAME ?= spark
 
 # Cluster provisioining and teardown
 export AWS_PROFILE ?=
@@ -131,6 +134,14 @@ test:
 .PHONY: install
 install:
 	OPERATOR_IMAGE_NAME=$(DOCKER_REPO_NAME)/$(OPERATOR_IMAGE_NAME) OPERATOR_VERSION=$(OPERATOR_VERSION) $(SCRIPTS_DIR)/install_operator.sh
+
+.PHONY: release
+release: SPARK_IMAGE_NAME = $(SPARK_IMAGE_RELEASE_NAME)
+release: OPERATOR_IMAGE_NAME = $(OPERATOR_IMAGE_RELEASE_NAME)
+release: docker-push
+release: test
+release:
+	# this target could be used for new release preparation (versioning/tagging of Docker images, git tag creation etc)
 
 .PHONY: clean-docker
 clean-docker:
