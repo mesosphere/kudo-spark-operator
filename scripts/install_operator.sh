@@ -6,7 +6,7 @@ SPECS_DIR="$(dirname ${SCRIPT_DIR})/specs"
 OPERATOR_DIR="$(dirname ${SCRIPT_DIR})/operators/repository/spark/operator"
 
 NAMESPACE=${NAMESPACE:-spark}
-OPERATOR_IMAGE_NAME=${OPERATOR_IMAGE_NAME:-mesosphere/kudo-spark-operator}
+OPERATOR_DOCKER_REPO=${OPERATOR_DOCKER_REPO:-mesosphere/kudo-spark-operator}
 OPERATOR_VERSION=${OPERATOR_VERSION:-latest}
 
 echo "Using namespace '${NAMESPACE}' for installation"
@@ -26,7 +26,7 @@ else
         name: "${NAMESPACE}"
 EOF
 
-    kubectl kudo --namespace "${NAMESPACE}" install "${OPERATOR_DIR}" -p operatorImageName="${OPERATOR_IMAGE_NAME}" -p operatorVersion="${OPERATOR_VERSION}"
+    kubectl kudo --namespace "${NAMESPACE}" install "${OPERATOR_DIR}" -p operatorImageName="${OPERATOR_DOCKER_REPO}" -p operatorVersion="${OPERATOR_VERSION}"
 fi
 
 kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-driver-rbac.yaml

@@ -17,25 +17,26 @@ MKE_CLUSTER_NAME=kubernetes-cluster1
 CLUSTER_TYPE ?= konvoy
 KUBECONFIG ?= $(ROOT_DIR)/admin.conf
 
-DOCKER_REPO_NAME ?= mesosphere
-
-SPARK_IMAGE_NAME ?= spark-dev
+SPARK_DOCKER_REPO ?= mesosphere/spark-dev
 SPARK_IMAGE_DIR ?= $(ROOT_DIR)/images/spark
 SPARK_IMAGE_TAG ?= $(call files_checksum,$(SPARK_IMAGE_DIR))
-SPARK_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(SPARK_IMAGE_NAME):$(SPARK_IMAGE_TAG)
+SPARK_IMAGE_FULL_NAME ?= $(SPARK_DOCKER_REPO):$(SPARK_IMAGE_TAG)
 
-export OPERATOR_IMAGE_NAME ?= kudo-spark-operator-dev
+SPARK_RELEASE_DOCKER_REPO ?= mesosphere/spark
+SPARK_IMAGE_RELEASE_TAG ?= spark-2.4.3-hadoop-2.9-k8s
+
+export OPERATOR_DOCKER_REPO ?= mesosphere/kudo-spark-operator-dev
 export OPERATOR_VERSION ?= $(call files_checksum,$(SPARK_IMAGE_DIR) $(OPERATOR_IMAGE_DIR) $(SPARK_OPERATOR_DIR))
 OPERATOR_IMAGE_DIR ?= $(ROOT_DIR)/images/operator
-OPERATOR_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(OPERATOR_IMAGE_NAME):$(OPERATOR_VERSION)
+OPERATOR_IMAGE_FULL_NAME ?= $(OPERATOR_DOCKER_REPO):$(OPERATOR_VERSION)
 
-DOCKER_BUILDER_IMAGE_NAME ?= spark-operator-docker-builder
+OPERATOR_RELEASE_DOCKER_REPO ?= mesosphere/kudo-spark-operator
+OPERATOR_IMAGE_RELEASE_TAG ?= latest
+
+DOCKER_BUILDER_REPO ?= mesosphere/spark-operator-docker-builder
 DOCKER_BUILDER_IMAGE_DIR ?= $(ROOT_DIR)/images/builder
 DOCKER_BUILDER_IMAGE_TAG ?= $(call files_checksum,$(DOCKER_BUILDER_IMAGE_DIR))
-DOCKER_BUILDER_IMAGE_FULL_NAME ?= $(DOCKER_REPO_NAME)/$(DOCKER_BUILDER_IMAGE_NAME):$(DOCKER_BUILDER_IMAGE_TAG)
-
-OPERATOR_IMAGE_RELEASE_NAME ?= kudo-spark-operator
-SPARK_IMAGE_RELEASE_NAME ?= spark
+DOCKER_BUILDER_IMAGE_FULL_NAME ?= (DOCKER_BUILDER_REPO):$(DOCKER_BUILDER_IMAGE_TAG)
 
 # Cluster provisioining and teardown
 export AWS_PROFILE ?=
@@ -82,7 +83,7 @@ docker-builder:
 	echo $(DOCKER_BUILDER_IMAGE_FULL_NAME) > $@
 
 docker-spark:
-	if [[ -z "$(call remote_image_exists,$(SPARK_IMAGE_NAME),$(SPARK_IMAGE_TAG))" ]]; then
+	if [[ -z "$(call remote_image_exists,$(SPARK_DOCKER_REPO),$(SPARK_IMAGE_TAG))" ]]; then
 		docker build \
 			-t ${SPARK_IMAGE_FULL_NAME} \
 			-f ${SPARK_IMAGE_DIR}/Dockerfile \
@@ -92,7 +93,7 @@ docker-spark:
 
 docker-operator: docker-spark
 docker-operator:
-	if [[ -z "$(call remote_image_exists,$(OPERATOR_IMAGE_NAME),$(OPERATOR_VERSION))" ]]; then
+	if [[ -z "$(call remote_image_exists,$(OPERATOR_DOCKER_REPO),$(OPERATOR_VERSION))" ]]; then
 		docker build \
 			--build-arg SPARK_IMAGE=$(shell cat docker-spark) \
 			-t ${OPERATOR_IMAGE_FULL_NAME} \
@@ -104,10 +105,10 @@ docker-operator:
 docker-push: docker-spark
 docker-push: docker-operator
 docker-push:
-	if [[ -z "$(call remote_image_exists,$(SPARK_IMAGE_NAME),$(SPARK_IMAGE_TAG))" ]]; then
+	if [[ -z "$(call remote_image_exists,$(SPARK_DOCKER_REPO),$(SPARK_IMAGE_TAG))" ]]; then
 		docker push $(SPARK_IMAGE_FULL_NAME)
 	fi
-	if [[ -z "$(call remote_image_exists,$(OPERATOR_IMAGE_NAME),$(OPERATOR_VERSION))" ]]; then
+	if [[ -z "$(call remote_image_exists,$(OPERATOR_DOCKER_REPO),$(OPERATOR_VERSION))" ]]; then
 		docker push $(OPERATOR_IMAGE_FULL_NAME)
 	fi
 
@@ -133,15 +134,16 @@ test:
 
 .PHONY: install
 install:
-	OPERATOR_IMAGE_NAME=$(DOCKER_REPO_NAME)/$(OPERATOR_IMAGE_NAME) OPERATOR_VERSION=$(OPERATOR_VERSION) $(SCRIPTS_DIR)/install_operator.sh
+	OPERATOR_DOCKER_REPO=$(OPERATOR_DOCKER_REPO) OPERATOR_VERSION=$(OPERATOR_VERSION) $(SCRIPTS_DIR)/install_operator.sh
 
 .PHONY: release
-release: SPARK_IMAGE_NAME = $(SPARK_IMAGE_RELEASE_NAME)
-release: OPERATOR_IMAGE_NAME = $(OPERATOR_IMAGE_RELEASE_NAME)
-release: docker-push
 release: test
 release:
-	# this target could be used for new release preparation (versioning/tagging of Docker images, git tag creation etc)
+	docker tag $(SPARK_IMAGE_FULL_NAME) $(SPARK_RELEASE_DOCKER_REPO):$(SPARK_IMAGE_RELEASE_TAG)
+	docker push $(SPARK_RELEASE_DOCKER_REPO):$(SPARK_IMAGE_RELEASE_TAG)
+
+	docker tag $(OPERATOR_IMAGE_FULL_NAME) $(OPERATOR_RELEASE_DOCKER_REPO):$(OPERATOR_IMAGE_RELEASE_TAG)
+	docker push $(OPERATOR_RELEASE_DOCKER_REPO):$(OPERATOR_IMAGE_RELEASE_TAG)
 
 .PHONY: clean-docker
 clean-docker:
@@ -169,10 +171,10 @@ $(shell find $1 -type f | xargs sha1sum | cut -d ' ' -f1 > tmp.checksum && sort 
 endef
 
 # arguments:
-# $1 - image name without repo e.g. spark
+# $1 - image name with repo e.g. mesosphere/spark
 # $2 - image tag e.g. latest
 define remote_image_exists
-$(shell curl --silent --fail --list-only --location https://index.docker.io/v1/repositories/$(DOCKER_REPO_NAME)/$1/tags/$2 2>/dev/null)
+$(shell curl --silent --fail --list-only --location https://index.docker.io/v1/repositories/$1/tags/$2)
 endef
 
 define local_image_exists
