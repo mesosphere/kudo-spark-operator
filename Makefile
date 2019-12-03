@@ -174,7 +174,7 @@ endef
 # $1 - image name with repo e.g. mesosphere/spark
 # $2 - image tag e.g. latest
 define remote_image_exists
-$(shell curl --silent --fail --list-only --location https://index.docker.io/v1/repositories/$1/tags/$2)
+$(shell curl --silent --fail --list-only --location https://index.docker.io/v1/repositories/$1/tags/$2 2>/dev/null)
 endef
 
 define local_image_exists
