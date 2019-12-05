@@ -23,7 +23,6 @@ SPARK_IMAGE_TAG ?= $(call files_checksum,$(SPARK_IMAGE_DIR))
 SPARK_IMAGE_FULL_NAME ?= $(SPARK_DOCKER_REPO):$(SPARK_IMAGE_TAG)
 
 SPARK_RELEASE_DOCKER_REPO ?= mesosphere/spark
-SPARK_IMAGE_RELEASE_TAG ?= spark-2.4.3-hadoop-2.9-k8s
 
 export OPERATOR_DOCKER_REPO ?= mesosphere/kudo-spark-operator-dev
 export OPERATOR_VERSION ?= $(call files_checksum,$(SPARK_IMAGE_DIR) $(OPERATOR_IMAGE_DIR) $(SPARK_OPERATOR_DIR))
@@ -31,7 +30,6 @@ OPERATOR_IMAGE_DIR ?= $(ROOT_DIR)/images/operator
 OPERATOR_IMAGE_FULL_NAME ?= $(OPERATOR_DOCKER_REPO):$(OPERATOR_VERSION)
 
 OPERATOR_RELEASE_DOCKER_REPO ?= mesosphere/kudo-spark-operator
-OPERATOR_IMAGE_RELEASE_TAG ?= latest
 
 DOCKER_BUILDER_REPO ?= mesosphere/spark-operator-docker-builder
 DOCKER_BUILDER_IMAGE_DIR ?= $(ROOT_DIR)/images/builder
@@ -137,13 +135,26 @@ install:
 	OPERATOR_DOCKER_REPO=$(OPERATOR_DOCKER_REPO) OPERATOR_VERSION=$(OPERATOR_VERSION) $(SCRIPTS_DIR)/install_operator.sh
 
 .PHONY: release
-release: test
+release: docker-spark
+release: docker-operator
 release:
-	docker tag $(SPARK_IMAGE_FULL_NAME) $(SPARK_RELEASE_DOCKER_REPO):$(SPARK_IMAGE_RELEASE_TAG)
-	docker push $(SPARK_RELEASE_DOCKER_REPO):$(SPARK_IMAGE_RELEASE_TAG)
+	$(eval SPARK_RELEASE_IMAGE_FULL_NAME=$(SPARK_RELEASE_DOCKER_REPO):$(SPARK_IMAGE_RELEASE_TAG))
+	$(eval OPERATOR_RELEASE_IMAGE_FULL_NAME=$(OPERATOR_RELEASE_DOCKER_REPO):$(OPERATOR_IMAGE_RELEASE_TAG))
 
-	docker tag $(OPERATOR_IMAGE_FULL_NAME) $(OPERATOR_RELEASE_DOCKER_REPO):$(OPERATOR_IMAGE_RELEASE_TAG)
-	docker push $(OPERATOR_RELEASE_DOCKER_REPO):$(OPERATOR_IMAGE_RELEASE_TAG)
+	if [[ -z "$(call remote_image_exists,$(SPARK_RELEASE_DOCKER_REPO),$(SPARK_IMAGE_RELEASE_TAG))" ]]; then
+		docker tag $(SPARK_IMAGE_FULL_NAME) $(SPARK_RELEASE_IMAGE_FULL_NAME)
+		echo "Pushing $(SPARK_RELEASE_IMAGE_FULL_NAME)"
+		docker push $(SPARK_RELEASE_IMAGE_FULL_NAME)
+	else
+		echo "Warning: image \"$(SPARK_RELEASE_IMAGE_FULL_NAME)\" already exists, skipping overwrite."
+	fi
+	if [[ -z "$(call remote_image_exists,$(OPERATOR_RELEASE_DOCKER_REPO),$(OPERATOR_IMAGE_RELEASE_TAG))" ]]; then
+		docker tag $(OPERATOR_IMAGE_FULL_NAME) $(OPERATOR_RELEASE_IMAGE_FULL_NAME)
+		echo "Pushing image \"$(OPERATOR_RELEASE_IMAGE_FULL_NAME)\""
+		docker push $(OPERATOR_RELEASE_IMAGE_FULL_NAME)
+	else
+		echo "Warning: image \"$(OPERATOR_RELEASE_IMAGE_FULL_NAME)\" already exists, skipping overwrite."
+	fi
 
 .PHONY: clean-docker
 clean-docker:
