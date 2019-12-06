@@ -258,3 +258,25 @@ func TestVolumeMounts(t *testing.T) {
 		t.Error(err.Error())
 	}
 }
+
+func TestPythonSupport(t *testing.T) {
+	spark := utils.SparkOperatorInstallation{}
+	if err := spark.InstallSparkOperator(); err != nil {
+		t.Fatal(err)
+	}
+	defer spark.CleanUp()
+
+	jobName := "spark-pi-python"
+	job := utils.SparkJob{
+		Name:     jobName,
+		Template: fmt.Sprintf("%s.yaml", jobName),
+	}
+
+	if err := spark.SubmitJob(&job); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := spark.WaitForOutput(job, "Pi is roughly 3.14"); err != nil {
+		t.Fatal(err)
+	}
+}
