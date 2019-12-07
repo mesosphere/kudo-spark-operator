@@ -433,7 +433,7 @@ func TestPodSecurityContext(t *testing.T) {
 			fmt.Sprintf("gids don't match! %d != %d", *securityContext.RunAsGroup, gidInt))
 	}
 
-	verifyPodSecurityContext(*driver)
+	verifyPodSecurityContext(driver)
 	verifyPodSecurityContext(executorPods[0])
 
 	err = spark.WaitUntilSucceeded(job)

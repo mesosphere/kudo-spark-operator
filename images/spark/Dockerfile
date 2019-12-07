@@ -3,21 +3,26 @@ FROM openjdk:8-alpine
 ARG SPARK_HOME=/opt/spark
 ARG SPARK_DIST=/dist
 ENV SPARK_HOME ${SPARK_HOME}
+ENV PYTHONPATH ${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip
 ARG SPARK_DIST_NAME="spark-2.4.3-hadoop-2.9-k8s"
 ARG SPARK_DIST_URL="https://downloads.mesosphere.io/spark/assets/${SPARK_DIST_NAME}.tgz"
 
 RUN set -ex && \
     apk upgrade --no-cache && \
     ln -s /lib /lib64 && \
-    apk add --no-cache bash tini libc6-compat linux-pam nss gnupg procps && \
-    mkdir -p ${SPARK_HOME}/work-dir && \
+    apk add --no-cache bash tini libc6-compat linux-pam nss gnupg procps python python3 && \
+    mkdir -p ${SPARK_HOME}/work-dir ${SPARK_HOME}/python && \
     chmod ugo+rw ${SPARK_HOME}/work-dir && \
     touch ${SPARK_HOME}/RELEASE && \
     rm /bin/sh && \
     ln -sv /bin/bash /bin/sh && \
     echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
-    rm -rf /var/cache/apk/*
+    python -m ensurepip && \
+    python3 -m ensurepip && \
+    rm -r /usr/lib/python*/ensurepip && \
+    pip install --upgrade pip setuptools && \
+    rm -rf /var/cache/apk/* /root/.cache
 
 RUN mkdir -p ${SPARK_DIST} && \
     cd ${SPARK_DIST} && \
@@ -25,6 +30,7 @@ RUN mkdir -p ${SPARK_DIST} && \
     gpg --print-md sha512 ${SPARK_DIST_NAME}.tgz | diff - ${SPARK_DIST_NAME}.tgz.sha512 && \
     tar xf ${SPARK_DIST_NAME}.tgz -C ${SPARK_DIST} --strip-components=1 && \
     mv jars bin sbin data examples ${SPARK_HOME} && \
+    mv python/lib ${SPARK_HOME}/python/lib && \
     mv kubernetes/dockerfiles/spark/entrypoint.sh /opt && \
     mv kubernetes/tests ${SPARK_HOME} && \
     rm -rf ${SPARK_DIST}

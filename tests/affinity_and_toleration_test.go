@@ -64,7 +64,7 @@ func TestPodAffinityAndToleration(t *testing.T) {
 	t.Run("TestDriverPod", func(t *testing.T) {
 		driver, err := spark.DriverPod(job)
 		assert.NilError(t, err)
-		verifyPodSpec(t, *driver)
+		verifyPodSpec(t, driver)
 	})
 
 	t.Run("TestExecutorPod", func(t *testing.T) {
