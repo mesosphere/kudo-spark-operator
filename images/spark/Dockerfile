@@ -4,14 +4,15 @@ ARG SPARK_HOME=/opt/spark
 ARG SPARK_DIST=/dist
 ENV SPARK_HOME ${SPARK_HOME}
 ENV PYTHONPATH ${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip
+ENV R_HOME /usr/lib/R
 ARG SPARK_DIST_NAME="spark-2.4.3-hadoop-2.9-k8s"
 ARG SPARK_DIST_URL="https://downloads.mesosphere.io/spark/assets/${SPARK_DIST_NAME}.tgz"
 
 RUN set -ex && \
     apk upgrade --no-cache && \
     ln -s /lib /lib64 && \
-    apk add --no-cache bash tini libc6-compat linux-pam nss gnupg procps python python3 && \
-    mkdir -p ${SPARK_HOME}/work-dir ${SPARK_HOME}/python && \
+    apk add --no-cache bash tini libc6-compat linux-pam nss gnupg procps python python3 R R-dev && \
+    mkdir -p ${SPARK_HOME}/work-dir ${SPARK_HOME}/python ${SPARK_HOME}/R && \
     chmod ugo+rw ${SPARK_HOME}/work-dir && \
     touch ${SPARK_HOME}/RELEASE && \
     rm /bin/sh && \
@@ -29,7 +30,7 @@ RUN mkdir -p ${SPARK_DIST} && \
     wget ${SPARK_DIST_URL} && wget ${SPARK_DIST_URL}.sha512 && \
     gpg --print-md sha512 ${SPARK_DIST_NAME}.tgz | diff - ${SPARK_DIST_NAME}.tgz.sha512 && \
     tar xf ${SPARK_DIST_NAME}.tgz -C ${SPARK_DIST} --strip-components=1 && \
-    mv jars bin sbin data examples ${SPARK_HOME} && \
+    mv jars bin sbin data examples R ${SPARK_HOME} && \
     mv python/lib ${SPARK_HOME}/python/lib && \
     mv kubernetes/dockerfiles/spark/entrypoint.sh /opt && \
     mv kubernetes/tests ${SPARK_HOME} && \
