@@ -280,3 +280,30 @@ func TestPythonSupport(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestRSupport(t *testing.T) {
+	spark := utils.SparkOperatorInstallation{}
+	if err := spark.InstallSparkOperator(); err != nil {
+		t.Fatal(err)
+	}
+	defer spark.CleanUp()
+
+	jobName := "spark-r-als"
+	job := utils.SparkJob{
+		Name:           jobName,
+		Template:       fmt.Sprintf("%s.yaml", jobName),
+		ExecutorsCount: 3,
+	}
+
+	if err := spark.SubmitJob(&job); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := spark.WaitForOutput(job, "3   2.997274"); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := spark.WaitUntilSucceeded(job); err != nil {
+		t.Fatal(err)
+	}
+}
