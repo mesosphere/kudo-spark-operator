@@ -143,7 +143,7 @@ func podLogContains(clientSet *kubernetes.Clientset, namespace string, pod strin
 func logPodLogTail(clientSet *kubernetes.Clientset, namespace string, pod string, lines int64) error {
 	logTail, err := getPodLog(clientSet, namespace, pod, lines)
 	if err == nil {
-		log.Infof("Last %d lines of %s log:\n%s", lines, pod, logTail)
+		log.Infof("pod logs:\n%s", logTail)
 	}
 	return err
 }

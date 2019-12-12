@@ -276,7 +276,7 @@ func TestPythonSupport(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := spark.WaitForOutput(job, "Pi is roughly 3.14"); err != nil {
+	if err := spark.WaitForOutput(job, "Pi is roughly 3.1"); err != nil {
 		t.Fatal(err)
 	}
 }
