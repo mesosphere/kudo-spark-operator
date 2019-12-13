@@ -134,11 +134,14 @@ test:
 install:
 	OPERATOR_DOCKER_REPO=$(OPERATOR_DOCKER_REPO) OPERATOR_VERSION=$(OPERATOR_VERSION) $(SCRIPTS_DIR)/install_operator.sh
 
-.PHONY: release
-release: docker-spark
-release: docker-operator
-release:
+.PHONY: release-spark
+release-spark: docker-spark
+release-spark:
 	$(call tag_and_push_image,$(SPARK_RELEASE_DOCKER_REPO),$(SPARK_IMAGE_RELEASE_TAG),$(SPARK_IMAGE_FULL_NAME))
+
+.PHONY: release-operator
+release-operator: docker-operator
+release-operator:
 	$(call tag_and_push_image,$(OPERATOR_RELEASE_DOCKER_REPO),$(OPERATOR_IMAGE_RELEASE_TAG),$(OPERATOR_IMAGE_FULL_NAME))
 
 .PHONY: clean-docker
@@ -185,13 +188,12 @@ define tag_and_push_image
 	$(eval RELEASE_IMAGE_FULL_NAME=$(1):$(2))
 	# check, if specified image already exists to prevent overwrites
 	if [[ -z "$(call remote_image_exists,$(1),$(2))" ]]; then
-		# check, if dev image is present in local docker registry
-		[[ -z "$(call local_image_exists,$(3))" ]] && docker pull $(3)
+		docker pull $(3)
 		docker tag $(3) $(RELEASE_IMAGE_FULL_NAME)
 		echo "Pushing image \"$(RELEASE_IMAGE_FULL_NAME)\""
 		docker push $(RELEASE_IMAGE_FULL_NAME)
 	else
-		echo "Warning: image \"$(RELEASE_IMAGE_FULL_NAME)\" already exists, skipping overwrite."
+		echo "Error: image \"$(RELEASE_IMAGE_FULL_NAME)\" already exists, will not proceed with overwrite."; false
 	fi
 endef
 
