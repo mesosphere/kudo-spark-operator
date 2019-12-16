@@ -196,6 +196,3 @@ define tag_and_push_image
 		echo "Error: image \"$(RELEASE_IMAGE_FULL_NAME)\" already exists, will not proceed with overwrite."; false
 	fi
 endef
-
-
-
