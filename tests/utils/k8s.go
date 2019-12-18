@@ -140,6 +140,14 @@ func podLogContains(clientSet *kubernetes.Clientset, namespace string, pod strin
 	}
 }
 
+func PodLogContains(namespace string, pod string, text string) (bool, error) {
+	podLog, err := Kubectl("log", pod, "--namespace", namespace)
+	if err != nil {
+		return false, nil
+	}
+	return strings.Contains(podLog, text), nil
+}
+
 func logPodLogTail(clientSet *kubernetes.Clientset, namespace string, pod string, lines int64) error {
 	logTail, err := getPodLog(clientSet, namespace, pod, lines)
 	if err == nil {

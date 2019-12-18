@@ -4,12 +4,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/GoogleCloudPlatform/spark-on-k8s-operator/pkg/apis/sparkoperator.k8s.io/v1beta2"
+	"github.com/fatih/structs"
+	"github.com/iancoleman/strcase"
 	"github.com/mesosphere/kudo-spark-operator/tests/utils"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/suite"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	. "k8s.io/client-go/tools/leaderelection/resourcelock"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -17,9 +20,19 @@ import (
 
 const electionRecordRetryInterval = 2 * time.Second
 const electionRecordRetryTimeout = 30 * time.Second
+const processingKeyLogRecordFormat = "Starting processing key: \"%s/%s\""
+
+type LeaderElectionParameters struct {
+	Replicas                    int
+	EnableLeaderElection        bool
+	LeaderElectionLockName      string
+	LeaderElectionLeaseDuration string
+	LeaderElectionRenewDeadline string
+	LeaderElectionRetryPeriod   string
+}
 
 type HighAvailabilityTestSuite struct {
-	leaderElectionParams map[string]string
+	leaderElectionParams LeaderElectionParameters
 	operator             utils.SparkOperatorInstallation
 	suite.Suite
 }
@@ -29,16 +42,20 @@ func TestHASuite(t *testing.T) {
 }
 
 func (suite *HighAvailabilityTestSuite) SetupSuite() {
-	suite.leaderElectionParams = map[string]string{
-		"replicas":                    "3",
-		"enableLeaderElection":        "true",
-		"leaderElectionLockName":      "lock",
-		"leaderElectionLeaseDuration": "15s",
-		"leaderElectionRenewDeadline": "10s",
-		"leaderElectionRetryPeriod":   "3s",
+	suite.leaderElectionParams = LeaderElectionParameters{
+		Replicas:                    3,
+		EnableLeaderElection:        true,
+		LeaderElectionLockName:      "leader-election-lock",
+		LeaderElectionLeaseDuration: "15s",
+		LeaderElectionRenewDeadline: "10s",
+		LeaderElectionRetryPeriod:   "3s",
 	}
-	suite.operator = utils.SparkOperatorInstallation{
-		Params: suite.leaderElectionParams,
+	if paramsMap, err := convertStructToMap(suite.leaderElectionParams); err != nil {
+		suite.FailNow(err.Error())
+	} else {
+		suite.operator = utils.SparkOperatorInstallation{
+			Params: paramsMap,
+		}
 	}
 
 	if err := suite.operator.InstallSparkOperator(); err != nil {
@@ -59,16 +76,17 @@ func (suite *HighAvailabilityTestSuite) TestParameters() {
 	if err != nil {
 		suite.FailNow(err.Error())
 	}
-	availableReplicas, _ := utils.Kubectl("get", "deployment", operator.InstanceName, "-n", operator.Namespace,
+	availableReplicas, _ := utils.Kubectl("get", "deployment", operator.InstanceName,
+		"-n", operator.Namespace,
 		"-o=jsonpath={.status.availableReplicas}")
 
-	suite.Equal(params["replicas"], availableReplicas)
-	suite.Contains(args, fmt.Sprint("-leader-election=", params["enableLeaderElection"]))
-	suite.Contains(args, fmt.Sprint("-leader-election-lock-name=", params["leaderElectionLockName"]))
+	suite.Equal(strconv.Itoa(params.Replicas), availableReplicas)
+	suite.Contains(args, fmt.Sprint("-leader-election=", params.EnableLeaderElection))
+	suite.Contains(args, fmt.Sprint("-leader-election-lock-name=", params.LeaderElectionLockName))
 	suite.Contains(args, fmt.Sprint("-leader-election-lock-namespace=", operator.Namespace))
-	suite.Contains(args, fmt.Sprint("-leader-election-lease-duration=", params["leaderElectionLeaseDuration"]))
-	suite.Contains(args, fmt.Sprint("-leader-election-renew-deadline=", params["leaderElectionRenewDeadline"]))
-	suite.Contains(args, fmt.Sprint("-leader-election-retry-period=", params["leaderElectionRetryPeriod"]))
+	suite.Contains(args, fmt.Sprint("-leader-election-lease-duration=", params.LeaderElectionLeaseDuration))
+	suite.Contains(args, fmt.Sprint("-leader-election-renew-deadline=", params.LeaderElectionRenewDeadline))
+	suite.Contains(args, fmt.Sprint("-leader-election-retry-period=", params.LeaderElectionRetryPeriod))
 }
 
 func (suite *HighAvailabilityTestSuite) TestLeaderElection() {
@@ -102,9 +120,16 @@ func (suite *HighAvailabilityTestSuite) TestFailover() {
 		suite.FailNow(err.Error())
 	}
 
+	// check leader started processing the application
+	logContains, err := utils.PodLogContains(mockTaskRunner.Namespace, leaderElectionRecord.HolderIdentity,
+		fmt.Sprintf(processingKeyLogRecordFormat, mockTaskRunner.Namespace, mockTaskRunner.Name))
+
+	suite.NoError(err)
+	suite.True(logContains)
+
 	log.Infof("deleting current leader pod \"%s\"", leaderElectionRecord.HolderIdentity)
 	err = utils.DeleteResource(operator.Namespace, "pod", leaderElectionRecord.HolderIdentity)
-
+	var newLeaderPodName string
 	// check re-election
 	if err := utils.RetryWithTimeout(electionRecordRetryTimeout, electionRecordRetryInterval, func() error {
 		if newLeaderElectionRecord, err := getLeaderElectionRecord(operator); err != nil {
@@ -113,6 +138,7 @@ func (suite *HighAvailabilityTestSuite) TestFailover() {
 			return errors.New("Waiting for the new leader to be elected")
 		} else {
 			log.Info("New leader found: ", newLeaderElectionRecord.HolderIdentity)
+			newLeaderPodName = newLeaderElectionRecord.HolderIdentity
 		}
 		return nil
 	}); err != nil {
@@ -120,6 +146,13 @@ func (suite *HighAvailabilityTestSuite) TestFailover() {
 	}
 
 	suite.NoError(operator.WaitForJobState(mockTaskRunner, v1beta2.CompletedState))
+
+	// check the new leader started processing the application
+	logContains, err = utils.PodLogContains(mockTaskRunner.Namespace, newLeaderPodName,
+		fmt.Sprintf(processingKeyLogRecordFormat, mockTaskRunner.Namespace, mockTaskRunner.Name))
+
+	suite.NoError(err)
+	suite.True(logContains)
 }
 
 func getLeaderElectionRecord(operator utils.SparkOperatorInstallation) (*LeaderElectionRecord, error) {
@@ -144,4 +177,32 @@ func getLeaderElectionRecord(operator utils.SparkOperatorInstallation) (*LeaderE
 		return nil
 	})
 	return leaderElectionRecord, err
+}
+
+func convertStructToMap(params interface{}) (map[string]string, error) {
+	paramsMap := make(map[string]string)
+	fields := structs.Fields(params)
+	for _, field := range fields {
+		key := strcase.ToLowerCamel(field.Name())
+		switch v := field.Value().(type) {
+		default:
+			return paramsMap, fmt.Errorf("unexpected type %T", v)
+		case int:
+			paramsMap[key] = strconv.Itoa(field.Value().(int))
+		case string:
+			paramsMap[key] = field.Value().(string)
+		case bool:
+			paramsMap[key] = strconv.FormatBool(field.Value().(bool))
+		}
+	}
+	return paramsMap, nil
+}
+
+func verifyPod(suite *HighAvailabilityTestSuite, podName string, applicationName string, namespace string) {
+	if leaderLog, err := utils.Kubectl("log", podName); err != nil {
+		suite.Contains(leaderLog, fmt.Sprintf("Starting processing key: \"%s/%s\"",
+			applicationName, namespace))
+	} else {
+		suite.FailNow(err.Error())
+	}
 }

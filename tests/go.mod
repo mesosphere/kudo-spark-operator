@@ -5,6 +5,8 @@ go 1.13
 require (
 	github.com/GoogleCloudPlatform/spark-on-k8s-operator v0.0.0-20191015041843-d615901d19b3
 	github.com/aws/aws-sdk-go v1.25.24
+	github.com/fatih/structs v1.1.0 // indirect
+	github.com/iancoleman/strcase v0.0.0-20191112232945-16388991a334 // indirect
 	github.com/imdario/mergo v0.3.7 // indirect
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/sirupsen/logrus v1.4.2
