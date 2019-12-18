@@ -134,27 +134,15 @@ test:
 install:
 	OPERATOR_DOCKER_REPO=$(OPERATOR_DOCKER_REPO) OPERATOR_VERSION=$(OPERATOR_VERSION) $(SCRIPTS_DIR)/install_operator.sh
 
-.PHONY: release
-release: docker-spark
-release: docker-operator
-release:
-	$(eval SPARK_RELEASE_IMAGE_FULL_NAME=$(SPARK_RELEASE_DOCKER_REPO):$(SPARK_IMAGE_RELEASE_TAG))
-	$(eval OPERATOR_RELEASE_IMAGE_FULL_NAME=$(OPERATOR_RELEASE_DOCKER_REPO):$(OPERATOR_IMAGE_RELEASE_TAG))
+.PHONY: release-spark
+release-spark: docker-spark
+release-spark:
+	$(call tag_and_push_image,$(SPARK_RELEASE_DOCKER_REPO),$(SPARK_IMAGE_RELEASE_TAG),$(SPARK_IMAGE_FULL_NAME))
 
-	if [[ -z "$(call remote_image_exists,$(SPARK_RELEASE_DOCKER_REPO),$(SPARK_IMAGE_RELEASE_TAG))" ]]; then
-		docker tag $(SPARK_IMAGE_FULL_NAME) $(SPARK_RELEASE_IMAGE_FULL_NAME)
-		echo "Pushing $(SPARK_RELEASE_IMAGE_FULL_NAME)"
-		docker push $(SPARK_RELEASE_IMAGE_FULL_NAME)
-	else
-		echo "Warning: image \"$(SPARK_RELEASE_IMAGE_FULL_NAME)\" already exists, skipping overwrite."
-	fi
-	if [[ -z "$(call remote_image_exists,$(OPERATOR_RELEASE_DOCKER_REPO),$(OPERATOR_IMAGE_RELEASE_TAG))" ]]; then
-		docker tag $(OPERATOR_IMAGE_FULL_NAME) $(OPERATOR_RELEASE_IMAGE_FULL_NAME)
-		echo "Pushing image \"$(OPERATOR_RELEASE_IMAGE_FULL_NAME)\""
-		docker push $(OPERATOR_RELEASE_IMAGE_FULL_NAME)
-	else
-		echo "Warning: image \"$(OPERATOR_RELEASE_IMAGE_FULL_NAME)\" already exists, skipping overwrite."
-	fi
+.PHONY: release-operator
+release-operator: docker-operator
+release-operator:
+	$(call tag_and_push_image,$(OPERATOR_RELEASE_DOCKER_REPO),$(OPERATOR_IMAGE_RELEASE_TAG),$(OPERATOR_IMAGE_FULL_NAME))
 
 .PHONY: clean-docker
 clean-docker:
@@ -190,4 +178,21 @@ endef
 
 define local_image_exists
 $(shell docker images -q $1 2> /dev/null)
+endef
+
+# arguments:
+# $1 - release image repo, e.g. mesosphere/spark
+# $2 - release image tag, e.g spark-2.4.3-hadoop-2.9-k8s
+# $3 - dev image full name, e.g mesosphere/spark-dev:ab36f1f3691a8be2050f3acb559c34e3e8e5d66e
+define tag_and_push_image
+	$(eval RELEASE_IMAGE_FULL_NAME=$(1):$(2))
+	# check, if specified image already exists to prevent overwrites
+	if [[ -z "$(call remote_image_exists,$(1),$(2))" ]]; then
+		docker pull $(3)
+		docker tag $(3) $(RELEASE_IMAGE_FULL_NAME)
+		echo "Pushing image \"$(RELEASE_IMAGE_FULL_NAME)\""
+		docker push $(RELEASE_IMAGE_FULL_NAME)
+	else
+		echo "Error: image \"$(RELEASE_IMAGE_FULL_NAME)\" already exists, will not proceed with overwrite."; false
+	fi
 endef
