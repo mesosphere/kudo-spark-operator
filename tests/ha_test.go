@@ -197,12 +197,3 @@ func convertStructToMap(params interface{}) (map[string]string, error) {
 	}
 	return paramsMap, nil
 }
-
-func verifyPod(suite *HighAvailabilityTestSuite, podName string, applicationName string, namespace string) {
-	if leaderLog, err := utils.Kubectl("log", podName); err != nil {
-		suite.Contains(leaderLog, fmt.Sprintf("Starting processing key: \"%s/%s\"",
-			applicationName, namespace))
-	} else {
-		suite.FailNow(err.Error())
-	}
-}
