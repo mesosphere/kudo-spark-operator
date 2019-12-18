@@ -43,7 +43,7 @@ export AWS_SECRET_ACCESS_KEY ?=
 export AWS_SESSION_TOKEN ?=
 
 AWS_BUCKET_NAME ?= "kudo-ds-ci-artifacts"
-AWS_BUCKET_PATH ?= "/autodelete7d/spark-operator-history-server-test/"
+AWS_BUCKET_PATH ?= "autodelete7d/spark-operator-history-server-test"
 
 .PHONY: aws_credentials
 aws_credentials:

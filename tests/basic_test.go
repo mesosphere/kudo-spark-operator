@@ -107,7 +107,7 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 
-	awsBucketPath := "s3a://" + awsBucketName + awsFolderPath
+	awsBucketPath := "s3a://" + awsBucketName + "/" + awsFolderPath
 
 	historyParams := make(map[string]string)
 	historyParams["enableHistoryServer"] = "true"
