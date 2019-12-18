@@ -2,6 +2,7 @@ package tests
 
 import (
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -83,11 +84,17 @@ func TestJobSubmission(t *testing.T) {
 }
 
 func TestSparkHistoryServerInstallation(t *testing.T) {
-	awsAccessKey := utils.GetenvOr("AWS_ACCESS_KEY_ID", "")
-	awsAccessSecret := utils.GetenvOr("AWS_SECRET_ACCESS_KEY", "")
-	awsSessionToken := utils.GetenvOr("AWS_SESSION_TOKEN", "")
-	awsBucketName := utils.GetenvOr("AWS_BUCKET_NAME", "infinity-artifacts-ci")
-	awsFolderPath := "/autodelete7d/spark-operator-history-server-test/"
+	awsAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
+	awsAccessSecret := os.Getenv("AWS_SECRET_ACCESS_KEY")
+	awsSessionToken := os.Getenv("AWS_SESSION_TOKEN")
+	awsBucketName, present := os.LookupEnv("AWS_BUCKET_NAME")
+	if !present {
+		t.Fatal("AWS_BUCKET_NAME is not configured")
+	}
+	awsFolderPath, present := os.LookupEnv("AWS_BUCKET_PATH")
+	if !present {
+		t.Fatal("AWS_BUCKET_PATH is not configured")
+	}
 
 	// Make sure folder is deleted
 	err := utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
