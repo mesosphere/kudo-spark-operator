@@ -123,12 +123,14 @@ func (suite *HighAvailabilityTestSuite) TestFailover() {
 	// check leader started processing the application
 	logContains, err := utils.PodLogContains(mockTaskRunner.Namespace, leaderElectionRecord.HolderIdentity,
 		fmt.Sprintf(processingKeyLogRecordFormat, mockTaskRunner.Namespace, mockTaskRunner.Name))
-
-	suite.NoError(err)
-	suite.True(logContains)
+	if suite.NoError(err) {
+		suite.True(logContains)
+	}
 
 	log.Infof("deleting current leader pod \"%s\"", leaderElectionRecord.HolderIdentity)
-	err = utils.DeleteResource(operator.Namespace, "pod", leaderElectionRecord.HolderIdentity)
+	if err := utils.DeleteResource(operator.Namespace, "pod", leaderElectionRecord.HolderIdentity); err != nil {
+		suite.FailNow(err.Error())
+	}
 	var newLeaderPodName string
 	// check re-election
 	if err := utils.RetryWithTimeout(electionRecordRetryTimeout, electionRecordRetryInterval, func() error {
@@ -151,8 +153,9 @@ func (suite *HighAvailabilityTestSuite) TestFailover() {
 	logContains, err = utils.PodLogContains(mockTaskRunner.Namespace, newLeaderPodName,
 		fmt.Sprintf(processingKeyLogRecordFormat, mockTaskRunner.Namespace, mockTaskRunner.Name))
 
-	suite.NoError(err)
-	suite.True(logContains)
+	if suite.NoError(err) {
+		suite.True(logContains)
+	}
 }
 
 func getLeaderElectionRecord(operator utils.SparkOperatorInstallation) (*LeaderElectionRecord, error) {
