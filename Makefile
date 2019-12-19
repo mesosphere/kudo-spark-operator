@@ -42,6 +42,9 @@ export AWS_ACCESS_KEY_ID ?=
 export AWS_SECRET_ACCESS_KEY ?=
 export AWS_SESSION_TOKEN ?=
 
+AWS_BUCKET_NAME ?= "kudo-ds-ci-artifacts"
+AWS_BUCKET_PATH ?= "autodelete7d/spark-operator-history-server-test"
+
 .PHONY: aws_credentials
 aws_credentials:
 	$(eval AWS_ACCESS_KEY_ID := $(if $(AWS_ACCESS_KEY_ID),$(AWS_ACCESS_KEY_ID),$(call get_aws_credential,aws_access_key_id)))
@@ -127,6 +130,7 @@ test:
 		-e AWS_SECRET_ACCESS_KEY="$(AWS_SECRET_ACCESS_KEY)" \
 		-e AWS_SESSION_TOKEN="$(AWS_SESSION_TOKEN)" \
 		-e AWS_BUCKET_NAME="$(AWS_BUCKET_NAME)" \
+		-e AWS_BUCKET_PATH="$(AWS_BUCKET_PATH)" \
 		$(shell cat $(ROOT_DIR)/docker-builder) \
 		/kudo-spark-operator/tests/run.sh
 
