@@ -57,17 +57,21 @@ func (suite *VolcanoIntegrationTestSuite) TestAppRunOnVolcano() {
 		suite.FailNow(err.Error())
 	}
 
-	// assert that the driver pod was scheduled by volcano
+	// assert that the driver pod was scheduled by volcano.
+	//
+	// the code below obtain the first pod's event (which is usually created by a scheduler,
+	// that handles pod assignment to a node in a cluster) and extracts the name of the event producer.
 	driverPodName := utils.DriverPodName(jobName)
 	component, err := utils.Kubectl("get", "events",
 		"--namespace", sparkPi.Namespace,
 		"--field-selector", fmt.Sprint("involvedObject.name=", driverPodName),
 		"-o", "jsonpath={.items[0].source.component}")
+	// assertion verifies the event producer name is equal to 'volcano' instead of 'default-scheduler'.
 	if suite.NoError(err) {
 		suite.Equal("volcano", component)
 	}
 
-	// assert that the pod was successfully assigned to a node
+	// assert that the pod was successfully assigned to a node by checking the event message
 	message, err := utils.Kubectl("get", "events",
 		"--namespace", sparkPi.Namespace,
 		"--field-selector", fmt.Sprint("involvedObject.name=", driverPodName),
