@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-const volcanoInstallerUrl = "https://raw.githubusercontent.com/volcano-sh/volcano/release-0.2/installer/volcano-development.yaml"
+const volcanoInstallerPath = "resources/volcano/volcano-0.2.yaml"
 
 type VolcanoIntegrationTestSuite struct {
 	operator utils.SparkOperatorInstallation
@@ -29,7 +29,7 @@ func (suite *VolcanoIntegrationTestSuite) SetupSuite() {
 		suite.FailNow(err.Error())
 	}
 	// deploy volcano resources
-	_, err := utils.Kubectl("apply", "-f", volcanoInstallerUrl)
+	_, err := utils.Kubectl("apply", "-f", volcanoInstallerPath)
 	suite.NoError(err)
 
 	// wait until all deployments within a namespace are completed
@@ -80,5 +80,5 @@ func (suite *VolcanoIntegrationTestSuite) TestAppRunOnVolcano() {
 func (suite *VolcanoIntegrationTestSuite) TearDownSuite() {
 	suite.operator.CleanUp()
 	// delete blocks until all resources are deleted
-	utils.Kubectl("delete", "-f", volcanoInstallerUrl)
+	utils.Kubectl("delete", "-f", volcanoInstallerPath)
 }
