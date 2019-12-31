@@ -2,19 +2,21 @@ FROM ubuntu:18.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TINI_VERSION=v0.18.0
-ARG SPARK_REPO="mesosphere/spark"
-ARG SPARK_TAG="custom-branch-2.4.3"
-ARG SPARK_BUILD_ARGS="-Pkubernetes \
-                -Phadoop-cloud \
-                -Phadoop-2.9 \
-                -Pnetlib-lgpl \
-                -Psparkr \
-                -Phive \
-                -Phive-thriftserver \
-                -DskipTests \
-                -Dmaven.source.skip=true \
-                -Dmaven.site.skip=true \
-                -Dmaven.javadoc.skip=true"
+ARG SPARK_REPO="apache/spark"
+ARG SPARK_TAG="v2.4.4"
+ARG SPARK_BUILD_ARGS="\
+    -Pkubernetes \
+    -Phadoop-cloud \
+    -Pscala-2.11 \
+    -Dhadoop.version=2.9.2 \
+    -Pnetlib-lgpl \
+    -Psparkr \
+    -Phive \
+    -Phive-thriftserver \
+    -DskipTests \
+    -Dmaven.source.skip=true \
+    -Dmaven.site.skip=true \
+    -Dmaven.javadoc.skip=true"
 
 ENV SPARK_HOME /opt/spark
 ENV PYTHONPATH ${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip
