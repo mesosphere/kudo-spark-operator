@@ -161,9 +161,10 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	historyServerPodName, err := utils.Kubectl(
 		"get",
 		"pods",
-		"--namespace="+spark.Namespace,
-		"--output=jsonpath={.items[?(@.metadata.labels.app\\.kubernetes\\.io/name==\""+instanceName+"\")].metadata.name}",
-	)
+		fmt.Sprintf("--namespace=%s", spark.Namespace),
+		"--field-selector=status.phase=Running",
+		fmt.Sprintf("--selector=app.kubernetes.io/name=%s", instanceName),
+		"--output=jsonpath={.items[*].metadata.name}")
 	if err != nil {
 		t.Error(err.Error())
 	}
@@ -203,6 +204,8 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("The Job Id '%s' haven't appeared in History Server", jobID)
+		log.Infof("Spark History Server logs:")
+		utils.Kubectl("logs", "-n", spark.Namespace, historyServerPodName)
 	}
 	utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
 }
