@@ -131,19 +131,19 @@ func (spark *SparkOperatorInstallation) getInstanceStatus() (string, error) {
 }
 
 func (spark *SparkOperatorInstallation) WaitForJobState(job SparkJob, state v1beta2.ApplicationStateType) error {
-	log.Infof("Waiting for spark application %s to reach %s state", job.Name, state)
+	log.Infof("Waiting for SparkApplication \"%s\" to reach \"%s\" state", job.Name, state)
 	err := Retry(func() error {
 		app, err := spark.SparkClients.SparkoperatorV1beta2().SparkApplications(spark.Namespace).Get(job.Name, v1.GetOptions{})
 		if err != nil {
 			return err
 		} else if app.Status.AppState.State != state {
-			return errors.New(fmt.Sprintf("%s state is %s", job.Name, app.Status.AppState.State))
+			return errors.New(fmt.Sprintf("SparkApplication \"%s\" state is %s", job.Name, app.Status.AppState.State))
 		}
 		return nil
 	})
 
 	if err == nil {
-		log.Infof("Spark application %s is now %s", job.Name, state)
+		log.Infof("SparkApplication \"%s\" is now \"%s\"", job.Name, state)
 	}
 
 	return err
