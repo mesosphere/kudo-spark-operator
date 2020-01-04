@@ -17,8 +17,8 @@ const DefaultInstanceName = "test-instance"
 const DefaultServiceAccountSuffix = "-spark-service-account"
 const rootDirName = "tests"
 const cmdLogFormat = ">%s %v\n%s"
-const defaultRetryInterval = 5 * time.Second
-const defaultRetryTimeout = 10 * time.Minute
+const DefaultRetryInterval = 5 * time.Second
+const DefaultRetryTimeout = 10 * time.Minute
 
 var OperatorImage = GetenvOr("OPERATOR_IMAGE", "mesosphere/kudo-spark-operator:spark-2.4.3-hadoop-2.9-k8s")
 var SparkImage = GetenvOr("SPARK_IMAGE", "mesosphere/spark:spark-2.4.3-hadoop-2.9-k8s")
@@ -60,7 +60,7 @@ func goUpToRootDir() string {
 }
 
 func Retry(fn func() error) error {
-	return RetryWithTimeout(defaultRetryTimeout, defaultRetryInterval, fn)
+	return RetryWithTimeout(DefaultRetryTimeout, DefaultRetryInterval, fn)
 }
 
 func RetryWithTimeout(timeout time.Duration, interval time.Duration, fn func() error) error {

@@ -117,7 +117,7 @@ func (spark *SparkOperatorInstallation) WaitForOutput(job SparkJob, text string)
 	})
 
 	if err != nil {
-		log.Errorf("The text '%s' haven't appeared in the log in %s", text, defaultRetryTimeout.String())
+		log.Errorf("The text '%s' haven't appeared in the log in %s", text, DefaultRetryTimeout.String())
 		logPodLogTail(spark.K8sClients, job.Namespace, DriverPodName(job.Name), 0) // 0 - print logs since pod's creation
 	}
 	return err

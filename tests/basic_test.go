@@ -2,14 +2,12 @@ package tests
 
 import (
 	"fmt"
-	"os"
-	"strings"
-	"testing"
-	"time"
-
 	"github.com/mesosphere/kudo-spark-operator/tests/utils"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"os"
+	"strings"
+	"testing"
 )
 
 func TestMain(m *testing.M) {
@@ -96,13 +94,8 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		t.Fatal("AWS_BUCKET_PATH is not configured")
 	}
 
-	// Make sure folder is deleted
-	err := utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
-	if err != nil {
-		t.Fatal(err.Error())
-	}
 	// Make sure folder is created
-	err = utils.AwsS3CreateFolder(awsBucketName, awsFolderPath)
+	err := utils.AwsS3CreateFolder(awsBucketName, awsFolderPath)
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -181,7 +174,7 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	}
 
 	// Get an application detail from History Server
-	err = utils.RetryWithTimeout(2*time.Minute, 5*time.Second, func() error {
+	err = utils.RetryWithTimeout(utils.DefaultRetryTimeout, utils.DefaultRetryInterval, func() error {
 		historyServerResponse, err := utils.Kubectl(
 			"exec",
 			historyServerPodName,
@@ -207,7 +200,6 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		log.Infof("Spark History Server logs:")
 		utils.Kubectl("logs", "-n", spark.Namespace, historyServerPodName)
 	}
-	utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
 }
 
 func TestVolumeMounts(t *testing.T) {
@@ -237,7 +229,7 @@ func TestVolumeMounts(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 
-	err = utils.RetryWithTimeout(2*time.Minute, 5*time.Second, func() error {
+	err = utils.RetryWithTimeout(utils.DefaultRetryTimeout, utils.DefaultRetryInterval, func() error {
 		lsCmdResponse, err := utils.Kubectl(
 			"exec",
 			utils.DriverPodName(jobName),
