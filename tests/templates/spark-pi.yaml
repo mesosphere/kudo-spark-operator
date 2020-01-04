@@ -10,6 +10,9 @@ spec:
   imagePullPolicy: Always
   mainClass: org.apache.spark.examples.SparkPi
   mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.11-{{ .SparkVersion }}.jar"
+  {{- if .Params.BatchScheduler }}
+  batchScheduler: {{ .Params.BatchScheduler }}
+  {{- end }}
   sparkConf:
     "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
