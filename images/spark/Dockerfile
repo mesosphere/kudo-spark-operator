@@ -9,6 +9,7 @@ ARG SPARK_BUILD_ARGS="\
     -Phadoop-cloud \
     -Pscala-2.11 \
     -Dhadoop.version=2.9.2 \
+    -Dkubernetes.client.version=4.4.2 \
     -Pnetlib-lgpl \
     -Psparkr \
     -Phive \
@@ -50,14 +51,9 @@ RUN git clone https://github.com/${SPARK_REPO}.git && \
     ./dev/make-distribution.sh ${SPARK_BUILD_ARGS} && \
     mv /spark/dist/* ${SPARK_HOME} && \
     mv ${SPARK_HOME}/kubernetes/dockerfiles/spark/entrypoint.sh /opt && \
-    rm ${SPARK_HOME}/jars/kubernetes-client-*.jar && \
     rm -rf /spark /root/.m2/repository/*
 
 WORKDIR ${SPARK_HOME}
-
-# https://github.com/GoogleCloudPlatform/spark-on-k8s-operator/issues/591
-ADD https://repo1.maven.org/maven2/io/fabric8/kubernetes-client/4.4.2/kubernetes-client-4.4.2.jar jars
-RUN chmod go+r jars/kubernetes-client-4.4.2.jar
 
 # Setup for the Prometheus JMX exporter.
 RUN mkdir -p /etc/metrics/conf
