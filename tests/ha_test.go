@@ -102,6 +102,7 @@ func (suite *HighAvailabilityTestSuite) TestFailover() {
 	if err != nil {
 		suite.FailNow(err.Error())
 	}
+	utils.Kubectl("get", "all", "-n", suite.operator.Namespace)
 	fmt.Println("Current leader: ", leaderElectionRecord.HolderIdentity)
 	// deploy workload
 	jobName := "mock-task-runner"
@@ -121,6 +122,7 @@ func (suite *HighAvailabilityTestSuite) TestFailover() {
 	}
 
 	// check leader started processing the application
+	utils.Kubectl("get", "all", "-n", suite.operator.Namespace)
 	logContains, err := utils.PodLogContains(mockTaskRunner.Namespace, leaderElectionRecord.HolderIdentity,
 		fmt.Sprintf(processingKeyLogRecordFormat, mockTaskRunner.Namespace, mockTaskRunner.Name))
 	if suite.NoError(err) {
