@@ -61,14 +61,15 @@ func (suite *HighAvailabilityTestSuite) SetupSuite() {
 	if err := suite.operator.InstallSparkOperator(); err != nil {
 		suite.FailNow(err.Error())
 	}
-
+	utils.Kubectl("wait", "deployment", "--all", "--for", "condition=available",
+		"--namespace", suite.operator.Namespace, "--timeout=60s")
 }
 
 func (suite *HighAvailabilityTestSuite) TearDownSuite() {
 	suite.operator.CleanUp()
 }
 
-func (suite *HighAvailabilityTestSuite) TestParameters() {
+func (suite *HighAvailabilityTestSuite) Test_LeaderElectionConfiguration() {
 	operator := suite.operator
 	params := suite.leaderElectionParams
 	args, err := utils.Kubectl("get", "deployment", operator.InstanceName, "-n", operator.Namespace,
@@ -89,20 +90,24 @@ func (suite *HighAvailabilityTestSuite) TestParameters() {
 	suite.Contains(args, fmt.Sprint("-leader-election-retry-period=", params.LeaderElectionRetryPeriod))
 }
 
-func (suite *HighAvailabilityTestSuite) TestLeaderElection() {
+func (suite *HighAvailabilityTestSuite) Test_LeaderElectionRecord() {
 	leaderElectionRecord, err := getLeaderElectionRecord(suite.operator)
 	if suite.NoError(err) {
 		suite.NotEmpty(leaderElectionRecord.HolderIdentity)
 	}
 }
 
-func (suite *HighAvailabilityTestSuite) TestFailover() {
+func (suite *HighAvailabilityTestSuite) Test_LeaderFailover() {
+	// print the current deployment state
+	utils.Kubectl("describe", "deployment", suite.operator.InstanceName, "-n", suite.operator.Namespace)
+	utils.Kubectl("get", "all", "-n", suite.operator.Namespace)
+
 	operator := suite.operator
 	leaderElectionRecord, err := getLeaderElectionRecord(operator)
 	if err != nil {
 		suite.FailNow(err.Error())
 	}
-	utils.Kubectl("get", "all", "-n", suite.operator.Namespace)
+
 	fmt.Println("Current leader: ", leaderElectionRecord.HolderIdentity)
 	// deploy workload
 	jobName := "mock-task-runner"
@@ -122,7 +127,6 @@ func (suite *HighAvailabilityTestSuite) TestFailover() {
 	}
 
 	// check leader started processing the application
-	utils.Kubectl("get", "all", "-n", suite.operator.Namespace)
 	logContains, err := utils.PodLogContains(mockTaskRunner.Namespace, leaderElectionRecord.HolderIdentity,
 		fmt.Sprintf(processingKeyLogRecordFormat, mockTaskRunner.Namespace, mockTaskRunner.Name))
 	if suite.NoError(err) {
@@ -178,6 +182,10 @@ func getLeaderElectionRecord(operator utils.SparkOperatorInstallation) (*LeaderE
 			return errors.New("No leader is currently elected.")
 		} else {
 			log.Info("LeaderElectionRecord: ", *leaderElectionRecord)
+			// check, that leader pod exists
+			if _, err := operator.K8sClients.CoreV1().Pods(operator.Namespace).Get(leaderElectionRecord.HolderIdentity, v1.GetOptions{}); err != nil {
+				return err
+			}
 		}
 		return nil
 	})
