@@ -31,7 +31,5 @@ for i in $(seq ${1}); do
             -p sparkServiceAccountName="${SERVICE_ACCOUNT_NAME}" \
             -p createSparkServiceAccount=false
 
-    # Monitoring
-    echo "Installing services and service monitors"
-    cat ${TEMPLATES_DIR}/monitoring.tmpl | kubectl apply --namespace "${NAMESPACE}" -f -
+    kubectl wait  --for=condition=Available deployment --all  --namespace "$NAMESPACE" --timeout=120s
 done

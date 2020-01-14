@@ -23,8 +23,8 @@ spec:
     "spark.hadoop.fs.s3a.access.key": "AWS_ACCESS_KEY_ID"
     "spark.hadoop.fs.s3a.secret.key": "AWS_SECRET_ACCESS_KEY"
     "spark.hadoop.fs.s3a.session.token": "AWS_SESSION_TOKEN"
-    "spark.kubernetes.memoryOverheadFactor": "0.5"
-    "spark.driver.maxResultSize": "30g"
+    "spark.kubernetes.memoryOverheadFactor": "0.1"
+    "spark.driver.maxResultSize": "64g"
     "spark.memory.fraction": "0.1"
     "spark.kubernetes.executor.request.cores": "1"
     "spark.kubernetes.executor.limit.cores": "1"
@@ -32,8 +32,13 @@ spec:
   restartPolicy:
     type: Never
   driver:
-    cores: 2
-    memory: "32g"
+    tolerations:
+    - key: "dedicated"
+      operator: "Equal"
+      value: "spark-workload"
+      effect: "NoExecute"
+    cores: 4
+    memory: "96g"
     labels:
       version: 2.4.3
       metrics-exposed: "true"
@@ -41,7 +46,7 @@ spec:
   executor:
     cores: 1
     instances: NUM_EXECUTORS
-    memory: "8g"
+    memory: "16g"
     labels:
       version: 2.4.3
       metrics-exposed: "true"

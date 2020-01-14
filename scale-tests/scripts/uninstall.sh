@@ -18,6 +18,6 @@ fi
 
 for i in $(seq ${1}); do
     NAMESPACE="${NAMESPACE_PREFIX}-${i}"
-    kubectl delete --namespace "${NAMESPACE}" instance "${INSTANCE_NAME_PREFIX}-${i}"
+    kubectl delete --namespace "${NAMESPACE}" instances.kudo.dev "${INSTANCE_NAME_PREFIX}-${i}"
     kubectl delete namespace "${NAMESPACE}"
 done
