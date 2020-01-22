@@ -2,6 +2,7 @@ package tests
 
 import (
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/mesosphere/kudo-spark-operator/tests/utils"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -94,6 +95,7 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		t.Fatal("AWS_BUCKET_PATH is not configured")
 	}
 
+	awsFolderPath = fmt.Sprintf("%s/%s", awsFolderPath, uuid.New().String())
 	// Make sure folder is created
 	err := utils.AwsS3CreateFolder(awsBucketName, awsFolderPath)
 	if err != nil {
@@ -200,6 +202,8 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		log.Infof("Spark History Server logs:")
 		utils.Kubectl("logs", "-n", spark.Namespace, historyServerPodName)
 	}
+
+	utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
 }
 
 func TestVolumeMounts(t *testing.T) {
