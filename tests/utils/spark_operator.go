@@ -212,3 +212,10 @@ func getOperatorVersions(namespace string) ([]string, error) {
 		return nil, nil
 	}
 }
+
+func (spark *SparkOperatorInstallation) GetOperatorPodName() (string, error) {
+	return Kubectl("get", "pod",
+		"--selector", "app.kubernetes.io/name=spark",
+		"--namespace", spark.Namespace,
+		"-o=jsonpath={.items[*].metadata.name}")
+}
