@@ -21,6 +21,7 @@ import (
 const electionRecordRetryInterval = 2 * time.Second
 const electionRecordRetryTimeout = 30 * time.Second
 const processingKeyLogRecordFormat = "Starting processing key: \"%s/%s\""
+const deploymentWaitTimeout = 1 * time.Minute
 
 type LeaderElectionParameters struct {
 	Replicas                    int
@@ -62,7 +63,8 @@ func (suite *HighAvailabilityTestSuite) SetupSuite() {
 		suite.FailNow(err.Error())
 	}
 	utils.Kubectl("wait", "deployment", "--all", "--for", "condition=available",
-		"--namespace", suite.operator.Namespace, "--timeout=60s")
+		"--namespace", suite.operator.Namespace,
+		fmt.Sprintf("--timeout=%v", deploymentWaitTimeout))
 }
 
 func (suite *HighAvailabilityTestSuite) TearDownSuite() {
