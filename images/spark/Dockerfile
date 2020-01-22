@@ -1,46 +1,59 @@
-FROM openjdk:8-alpine
+FROM ubuntu:18.04
 
-ARG SPARK_HOME=/opt/spark
-ARG SPARK_DIST=/dist
-ENV SPARK_HOME ${SPARK_HOME}
+ARG DEBIAN_FRONTEND=noninteractive
+ARG TINI_VERSION=v0.18.0
+ARG SPARK_REPO="apache/spark"
+ARG SPARK_TAG="v2.4.4"
+ARG SPARK_BUILD_ARGS="\
+    -Pkubernetes \
+    -Phadoop-cloud \
+    -Pscala-2.11 \
+    -Dhadoop.version=2.9.2 \
+    -Dkubernetes.client.version=4.4.2 \
+    -Pnetlib-lgpl \
+    -Psparkr \
+    -Phive \
+    -Phive-thriftserver \
+    -DskipTests \
+    -Dmaven.source.skip=true \
+    -Dmaven.site.skip=true \
+    -Dmaven.javadoc.skip=true"
+
+ENV SPARK_HOME /opt/spark
 ENV PYTHONPATH ${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip
 ENV R_HOME /usr/lib/R
-ARG SPARK_DIST_NAME="spark-2.4.3-hadoop-2.9-k8s"
-ARG SPARK_DIST_URL="https://downloads.mesosphere.io/spark/assets/${SPARK_DIST_NAME}.tgz"
+ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64
+ENV PATH $JAVA_HOME/bin:$PATH
 
 RUN set -ex && \
-    apk upgrade --no-cache && \
+    apt-get update && \
     ln -s /lib /lib64 && \
-    apk add --no-cache bash tini libc6-compat linux-pam nss gnupg procps python python3 R R-dev && \
-    mkdir -p ${SPARK_HOME}/work-dir ${SPARK_HOME}/python ${SPARK_HOME}/R && \
+    apt-get install --no-install-recommends -y bash libc6 libpam-modules krb5-user libnss3 git curl openjdk-8-jdk \
+        r-base r-base-dev python python-pip python3 python3-pip && \
+    curl -L https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini -o /usr/bin/tini && \
+    chmod +x /usr/bin/tini && \
+    ln -sv /usr/bin/tini /sbin/tini && \
+    mkdir -p ${SPARK_HOME}/work-dir && \
     chmod ugo+rw ${SPARK_HOME}/work-dir && \
     touch ${SPARK_HOME}/RELEASE && \
     rm /bin/sh && \
     ln -sv /bin/bash /bin/sh && \
     echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \
     chgrp root /etc/passwd && chmod ug+rw /etc/passwd && \
-    python -m ensurepip && \
-    python3 -m ensurepip && \
     rm -r /usr/lib/python*/ensurepip && \
     pip install --upgrade pip setuptools && \
-    rm -rf /var/cache/apk/* /root/.cache
+    rm -rf /var/cache/apt/* /root/.cache
 
-RUN mkdir -p ${SPARK_DIST} && \
-    cd ${SPARK_DIST} && \
-    wget ${SPARK_DIST_URL} && wget ${SPARK_DIST_URL}.sha512 && \
-    gpg --print-md sha512 ${SPARK_DIST_NAME}.tgz | diff - ${SPARK_DIST_NAME}.tgz.sha512 && \
-    tar xf ${SPARK_DIST_NAME}.tgz -C ${SPARK_DIST} --strip-components=1 && \
-    mv jars bin sbin data examples R ${SPARK_HOME} && \
-    mv python/lib ${SPARK_HOME}/python/lib && \
-    mv kubernetes/dockerfiles/spark/entrypoint.sh /opt && \
-    mv kubernetes/tests ${SPARK_HOME} && \
-    rm -rf ${SPARK_DIST}
+RUN git clone https://github.com/${SPARK_REPO}.git && \
+    cd spark && \
+    git fetch --tags && \
+    git checkout ${SPARK_TAG} && \
+    ./dev/make-distribution.sh ${SPARK_BUILD_ARGS} && \
+    mv /spark/dist/* ${SPARK_HOME} && \
+    mv ${SPARK_HOME}/kubernetes/dockerfiles/spark/entrypoint.sh /opt && \
+    rm -rf /spark /root/.m2/repository/*
 
 WORKDIR ${SPARK_HOME}
-
-# https://github.com/GoogleCloudPlatform/spark-on-k8s-operator/issues/591
-ADD https://repo1.maven.org/maven2/io/fabric8/kubernetes-client/4.4.2/kubernetes-client-4.4.2.jar jars
-RUN rm jars/kubernetes-client-4.1.2.jar && chmod go+r jars/kubernetes-client-4.4.2.jar
 
 # Setup for the Prometheus JMX exporter.
 RUN mkdir -p /etc/metrics/conf
