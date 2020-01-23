@@ -101,6 +101,7 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err.Error())
 	}
+	defer utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
 
 	awsBucketPath := "s3a://" + awsBucketName + "/" + awsFolderPath
 
@@ -203,7 +204,6 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		utils.Kubectl("logs", "-n", spark.Namespace, historyServerPodName)
 	}
 
-	utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
 }
 
 func TestVolumeMounts(t *testing.T) {
