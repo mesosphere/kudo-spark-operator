@@ -44,7 +44,7 @@ type PortForwardProps struct {
 	LocalPort   int
 	PodPort     int
 	Out, ErrOut io.Writer
-	// channel is used to stop portforward
+	// StopCh channel is used to stop portforward
 	StopCh <-chan struct{}
 	// ReadyCh channel is updated when portforward is ready
 	ReadyCh chan struct{}
@@ -57,6 +57,9 @@ func TestMetricsSuite(t *testing.T) {
 func (suite *MetricsTestSuite) SetupSuite() {
 	suite.operator = utils.SparkOperatorInstallation{
 		Namespace: "spark-operator-metrics",
+		Params: map[string]string{
+			"enableMetrics": "true",
+		},
 	}
 
 	if err := suite.operator.InstallSparkOperator(); err != nil {
