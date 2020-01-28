@@ -28,7 +28,6 @@ const dashboardsDir = "../operators/repository/spark/docs/latest/resources/dashb
 const jobName = "mock-task-runner"
 const jobTemplate = "spark-mock-task-runner-with-monitoring.yaml"
 const prometheusNamespace = "kubeaddons"
-const prometheusPod = "prometheus-prometheus-kubeaddons-prom-prometheus-0"
 const prometheusPort = 9090
 const queryTimeout = 1 * time.Minute
 const queryRetryDelay = 5 * time.Second
@@ -80,6 +79,16 @@ func (suite *MetricsTestSuite) TestMetricsInPrometheus() {
 		suite.FailNow("Error while submitting a job", err)
 	}
 
+	// get prometheus pod name
+	prometheusPodName, err := utils.Kubectl("get", "pod",
+		"--namespace", prometheusNamespace,
+		"--selector", "app=prometheus",
+		"--output", "jsonpath={.items[*].metadata.name}")
+
+	if err != nil {
+		suite.FailNow("Prometheus pod not found", err)
+	}
+
 	// start a port-forward as a go-routine to directly communicate with Prometheus API
 	stopCh, readyCh := make(chan struct{}, 1), make(chan struct{}, 1)
 	out, errOut := new(bytes.Buffer), new(bytes.Buffer)
@@ -87,7 +96,7 @@ func (suite *MetricsTestSuite) TestMetricsInPrometheus() {
 		err := startPortForward(PortForwardProps{
 			Pod: v12.Pod{
 				ObjectMeta: ObjectMeta{
-					Name:      prometheusPod,
+					Name:      prometheusPodName,
 					Namespace: prometheusNamespace,
 				},
 			},
