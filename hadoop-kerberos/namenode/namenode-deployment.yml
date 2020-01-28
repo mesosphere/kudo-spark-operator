@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: namenode
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: hdfs-namenode
+  template:
+    metadata:
+      annotations:
+        pod.beta.kubernetes.io/hostname: namenode
+      labels:
+        name: hdfs-namenode
+        kerberosService: namenode
+    spec:
+      containers:
+      - command:
+        - start-namenode.sh
+        name: namenode
+        ports:
+        - containerPort: 9000
+        image: registry:5000/hadoop-base:latest
+        imagePullPolicy: Always
+        volumeMounts:
+        - mountPath: /var/keytabs
+          name: namenode-keytab
+        env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+      restartPolicy: Always
+      volumes:
+      - name: namenode-keytab
+        persistentVolumeClaim:
+          claimName: server-keytab
+      - name: namenode-hadoop
+        persistentVolumeClaim:
+          claimName: namenode-hadoop
+---
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+  labels:
+    kerberosService: namenode
+  name: namenode
+spec:
+  clusterIP: None
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
+  selector:
+    kerberosService: namenode

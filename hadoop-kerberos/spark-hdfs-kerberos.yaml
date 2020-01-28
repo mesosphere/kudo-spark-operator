@@ -1,0 +1,74 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: spark-hdfs-kerberos
+  namespace: hdfs-kerberos
+spec:
+  type: Scala
+  mode: cluster
+  image: "mesosphere/spark-dev:6d430eb03c86e762b7696f3a5acbbecb3736f0fb"
+  imagePullPolicy: Always
+  mainClass: org.apache.spark.examples.HdfsTest
+  mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.11-2.4.4.jar"
+  sparkConf:
+    "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
+    "spark.scheduler.minRegisteredResourcesRatio": "1.0"
+    "spark.kubernetes.kerberos.enabled": "true"
+    "spark.kubernetes.kerberos.keytab": "/var/keytabs/hdfs.keytab"
+    "spark.kubernetes.kerberos.principal": "hdfs/namenode.hdfs-kerberos.svc.cluster.local@CLUSTER.LOCAL"
+    "spark.driver.extraClassPath": "/etc/hadoop/conf/core-site.xml:/etc/hadoop/conf/hdfs-site.xml:/etc/hadoop/conf/yarn-site.xml:/etc/krb5.conf"
+  arguments:
+    - "hdfs://namenode.hdfs-kerberos.svc.cluster.local:9000/spark/README.txt"
+  volumes:
+    - name: kerberos-test-keytab
+      persistentVolumeClaim:
+        claimName: server-keytab
+    - name: krb-config
+      configMap:
+        name: krb5
+  hadoopConfigMap: hadoop-conf
+  sparkVersion: 2.4.4
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 1
+    memory: "512m"
+    labels:
+      version: 2.4.4
+    serviceAccount: spark-instance-spark-service-account
+    volumeMounts:
+      - name: kerberos-test-keytab
+        mountPath: /var/keytabs
+      - name: krb-config
+        mountPath: /etc/krb5.conf
+        subPath: krb5.conf
+    initContainers:
+      - name: kinit
+        image: "mesosphere/spark-dev:6d430eb03c86e762b7696f3a5acbbecb3736f0fb"
+        command: ["bash", "-c", "until kinit -kt /var/keytabs/hdfs.keytab hdfs/namenode.hdfs-kerberos.svc.cluster.local; do sleep 15; done"]
+        volumeMounts:
+          - name: kerberos-test-keytab
+            mountPath: /var/keytabs
+          - name: krb-config
+            mountPath: /etc/krb5.conf
+            subPath: krb5.conf
+        volumes:
+          - name: kerberos-test-keytab
+            persistentVolumeClaim:
+              claimName: server-keytab
+          - name: krb-config
+            configMap:
+              name: krb5
+  executor:
+    cores: 1
+    instances: 1
+    memory: "512m"
+    labels:
+      version: 2.4.4
+    volumeMounts:
+      - name: kerberos-test-keytab
+        mountPath: /var/keytabs
+      - name: krb-config
+        mountPath: /etc/krb5.conf
+        subPath: krb5.conf
+
