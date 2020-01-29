@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-init.sh
-
 /usr/sbin/kdb5_util -P changeme create -s
 
 /usr/sbin/kadmin.local -q "addprinc  -randkey spark"

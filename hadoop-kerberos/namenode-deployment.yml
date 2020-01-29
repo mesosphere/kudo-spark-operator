@@ -24,8 +24,23 @@ spec:
         image: registry:5000/hadoop-base:latest
         imagePullPolicy: Always
         volumeMounts:
-        - mountPath: /var/keytabs
-          name: namenode-keytab
+          - name: namenode-keytab
+            mountPath: /var/keytabs
+          - name: hadoop-conf
+            mountPath: /hadoop/etc/hadoop/hdfs-site.xml
+            subPath: hdfs-site.xml
+          - name: hadoop-conf
+            mountPath: /hadoop/etc/hadoop/core-site.xml
+            subPath: core-site.xml
+          - name: hadoop-conf
+            mountPath: /hadoop/etc/hadoop/yarn-site.xml
+            subPath: yarn-site.xml
+          - name: hadoop-conf
+            mountPath: /hadoop/etc/hadoop/ssl-server.xml
+            subPath: ssl-server.xml
+          - name: krb-config
+            mountPath: /etc/krb5.conf
+            subPath: krb5.conf
         env:
           - name: NAMESPACE
             valueFrom:
@@ -39,6 +54,12 @@ spec:
       - name: namenode-hadoop
         persistentVolumeClaim:
           claimName: namenode-hadoop
+      - name: hadoop-conf
+        configMap:
+          name: hadoop-conf
+      - name: krb-config
+        configMap:
+          name: krb5
 ---
 apiVersion: v1
 kind: Service
