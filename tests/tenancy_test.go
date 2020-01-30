@@ -11,7 +11,6 @@ import (
 )
 
 func TestTenancyTwoOperatorsDifferentNamespaces(t *testing.T) {
-	t.Skip("Test is temporarily disabled due to KUDO v0.10.0 incompatibility")
 	operators := operatorBuilder(2, true, true)
 	for _, operator := range operators {
 		err := operator.InstallSparkOperator()
@@ -37,7 +36,6 @@ func TestTenancyTwoOperatorsDifferentNamespaces(t *testing.T) {
 }
 
 func TestTenancyTwoOperatorsSingleNamespace(t *testing.T) {
-	t.Skip("Test is temporarily disabled due to KUDO v0.10.0 incompatibility")
 	operators := operatorBuilder(2, false, true)
 	for i, operator := range operators {
 		if i > 0 {
@@ -57,7 +55,6 @@ func TestTenancyTwoOperatorsSingleNamespace(t *testing.T) {
 }
 
 func TestTenancyTwoOperatorsSameNameDifferentNamespaces(t *testing.T) {
-	t.Skip("Test is temporarily disabled due to KUDO v0.10.0 incompatibility")
 	operators := operatorBuilder(2, true, false)
 	for _, operator := range operators {
 		err := operator.InstallSparkOperator()
