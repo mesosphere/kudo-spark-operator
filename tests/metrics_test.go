@@ -74,7 +74,8 @@ func (suite *MetricsTestSuite) TestMetricsInPrometheus() {
 	// capture test start time for later use in Prometheus queries
 	testStartTime := time.Now()
 
-	// create a workload to produce the metrics
+	// to initiate application-specific metrics generation, we need to create a workload by submitting
+	// two applications with different results (successful and failed).
 	if err := submitJobs(suite); err != nil {
 		suite.FailNow("Error while submitting a job", err)
 	}
@@ -154,7 +155,7 @@ func (suite *MetricsTestSuite) TestMetricsInPrometheus() {
 	}
 	for _, query := range queries {
 		if err := suite.queryPrometheus(query, v1api, timeRange); err != nil {
-			suite.Fail("Error while executing the query \"%s\"", query, err)
+			suite.Failf("Error while executing the query \"%s\"", query, err)
 		}
 	}
 	// stop PortForward connection
@@ -182,6 +183,9 @@ func (suite *MetricsTestSuite) queryPrometheus(query string, v1api v1.API, timeR
 	})
 }
 
+// submitJobs creates two SparkApplications: the first one completes successfully, the second one with mis-configured
+// arguments and should fail. With this approach an operator will generate all the required metrics that used in queries
+// under test
 func submitJobs(suite *MetricsTestSuite) error {
 	job := utils.SparkJob{
 		Name:     fmt.Sprintf("%s-failed", jobName),
@@ -216,6 +220,12 @@ func submitJobs(suite *MetricsTestSuite) error {
 // this method 'grep's all prometheus queries from dashboards files located in 'dashboardsDir'
 // and replaces metric label placeholders with the real data
 func collectQueries(replacements []string) ([]string, error) {
+
+	// define metrics which cannot be verified
+	var excludedMetrics = []string{
+		"spark_app_executor_failure_count",
+	}
+
 	command := exec.Command("grep", "--no-filename", "\"expr\"",
 		fmt.Sprintf("%s/%s", dashboardsDir, "grafana_spark_operator.json"),
 		fmt.Sprintf("%s/%s", dashboardsDir, "grafana_spark_applications.json"))
@@ -232,12 +242,12 @@ func collectQueries(replacements []string) ([]string, error) {
 
 	for _, line := range strings.Split(string(output), "\n") {
 		if len(line) > 0 {
-			// do not include 'spark_app_executor_success_count' query at the moment due to incorrectly reported executors state
-			// TODO: remove the 'if' clause after operator submodule is updated with the fix
-			if !strings.Contains(line, "spark_app_executor_success_count") {
-				query := pattern.FindStringSubmatch(strings.TrimSpace(line))[1]
-				query = replacer.Replace(query)
-				queries = append(queries, query)
+			query := pattern.FindStringSubmatch(strings.TrimSpace(line))[1]
+			query = replacer.Replace(query)
+			for _, metric := range excludedMetrics {
+				if !strings.Contains(query, metric) {
+					queries = append(queries, query)
+				}
 			}
 		}
 	}
