@@ -20,8 +20,8 @@ const cmdLogFormat = ">%s %v\n%s"
 const DefaultRetryInterval = 5 * time.Second
 const DefaultRetryTimeout = 10 * time.Minute
 
-var OperatorImage = GetenvOr("OPERATOR_IMAGE", "mesosphere/kudo-spark-operator:spark-2.4.3-hadoop-2.9-k8s")
-var SparkImage = GetenvOr("SPARK_IMAGE", "mesosphere/spark:spark-2.4.3-hadoop-2.9-k8s")
+var OperatorImage = GetenvOr("OPERATOR_IMAGE", "mesosphere/kudo-spark-operator:2.4.4-0.2.0")
+var SparkImage = GetenvOr("SPARK_IMAGE", "mesosphere/spark:2.4.4-hadoop-2.9-k8s")
 var SparkVersion = GetenvOr("SPARK_VERSION", "2.4.4")
 var TestDir = GetenvOr("TEST_DIR", goUpToRootDir())
 var KubeConfig = GetenvOr("KUBECONFIG", filepath.Join(os.Getenv("HOME"), ".kube", "config"))
