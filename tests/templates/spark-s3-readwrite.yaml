@@ -54,20 +54,3 @@ spec:
     memory: "512m"
     labels:
       version: {{ .SparkVersion }}
-    env:
-      - name: AWS_ACCESS_KEY_ID
-        valueFrom:
-          secretKeyRef:
-            name: {{ .Params.AwsSecretName }}
-            key: AWS_ACCESS_KEY_ID
-      - name: AWS_SECRET_ACCESS_KEY
-        valueFrom:
-          secretKeyRef:
-            name: {{ .Params.AwsSecretName }}
-            key: AWS_SECRET_ACCESS_KEY
-      - name: AWS_SESSION_TOKEN
-        valueFrom:
-          secretKeyRef:
-            name: {{ .Params.AwsSecretName }}
-            key: AWS_SESSION_TOKEN
-            optional: true
