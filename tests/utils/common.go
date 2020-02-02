@@ -15,6 +15,7 @@ const DefaultNamespace = "kudo-spark-operator-testing"
 const OperatorName = "spark"
 const DefaultInstanceName = "test-instance"
 const DefaultServiceAccountSuffix = "-spark-service-account"
+const DefaultAwsSecretName = "aws-credentials"
 const rootDirName = "tests"
 const cmdLogFormat = ">%s %v\n%s"
 const DefaultRetryInterval = 5 * time.Second

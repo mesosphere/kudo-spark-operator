@@ -2,12 +2,11 @@
 
 set -ex
 SCRIPT_DIR=$(dirname "$0")
-SPECS_DIR="$(dirname ${SCRIPT_DIR})/specs"
 OPERATOR_DIR="$(dirname ${SCRIPT_DIR})/operators/repository/spark/operator"
 
 NAMESPACE=${NAMESPACE:-spark}
 OPERATOR_DOCKER_REPO=${OPERATOR_DOCKER_REPO:-mesosphere/kudo-spark-operator}
-OPERATOR_VERSION=${OPERATOR_VERSION:-latest}
+OPERATOR_VERSION=${OPERATOR_VERSION:-2.4.4-0.2.0}
 
 echo "Using namespace '${NAMESPACE}' for installation"
 
@@ -28,10 +27,4 @@ EOF
 
     kubectl kudo --namespace "${NAMESPACE}" install "${OPERATOR_DIR}" -p operatorImageName="${OPERATOR_DOCKER_REPO}" -p operatorVersion="${OPERATOR_VERSION}"
 fi
-
-kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-driver-rbac.yaml
-
-# Create Service to expose Spark Driver's and Executors metrics endpoint.
-# TODO: make the spark-application-metrics-service.yaml manageable by the kudo-spark-operator once the issue https://github.com/kudobuilder/kudo/issues/916 will be fixed.
-kubectl apply --namespace "${NAMESPACE}" -f ${SPECS_DIR}/spark-application-metrics-service.yaml
 

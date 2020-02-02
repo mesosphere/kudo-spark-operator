@@ -8,28 +8,21 @@ spec:
   mode: cluster
   image: {{ .Image }}
   imagePullPolicy: Always
-  mainClass: org.apache.spark.examples.ml.LinearRegressionExample
-  mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.11-{{ .SparkVersion }}.jar"
-  arguments:
-    - "--regParam"
-    - "0.15"
-    - "--elasticNetParam"
-    - "1.0"
-    - "--maxIter"
-    - "1000000"
-    - "/opt/spark/data/mllib/sample_linear_regression_data.txt"
+  mainClass: S3Job
+  mainApplicationFile: "https://infinity-artifacts.s3.amazonaws.com/scale-tests/dcos-spark-scala-tests-assembly-2.4.0-20190325.jar"
   sparkConf:
     "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
-    "spark.eventLog.enabled": "true"
-    "spark.eventLog.dir": "{{ .Params.AwsBucketPath }}"
+    "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
     {{- if .Params.AwsSessionToken }}
     "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider"
     {{- end }}
-  deps:
-    jars:
-      - local:///opt/spark/examples/jars/scopt_2.11-3.7.0.jar
   sparkVersion: {{ .SparkVersion }}
+  arguments:
+    - "--readUrl"
+    - {{ .Params.ReadUrl }}
+    - "--writeUrl"
+    - {{ .Params.WriteUrl }}
   restartPolicy:
     type: Never
   driver:
@@ -57,7 +50,7 @@ spec:
             optional: true
   executor:
     cores: 1
-    instances: {{ .ExecutorsCount }}
+    instances: 1
     memory: "512m"
     labels:
       version: {{ .SparkVersion }}
