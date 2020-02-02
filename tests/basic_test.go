@@ -222,6 +222,8 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		t.Errorf("The Job Id '%s' haven't appeared in History Server", jobID)
 		log.Infof("Spark History Server logs:")
 		utils.Kubectl("logs", "-n", spark.Namespace, historyServerPodName)
+		log.Info("Driver logs:")
+		utils.Kubectl("logs", "-n", spark.Namespace, utils.DriverPodName(job.Name))
 	}
 }
 

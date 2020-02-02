@@ -43,7 +43,7 @@ func GetAwsCredentials() (map[string][]byte, error) {
 	}
 
 	// support for Temporary Security Credentials
-	if awsSessionToken, isPresent := os.LookupEnv(AwsSessionToken); isPresent && len(awsSecretAccessKey) > 0 {
+	if awsSessionToken, isPresent := os.LookupEnv(AwsSessionToken); isPresent && len(awsSessionToken) > 0 {
 		awsEnvVars[AwsSessionToken] = []byte(awsSessionToken)
 	}
 	return awsEnvVars, nil
