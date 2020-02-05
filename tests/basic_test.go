@@ -114,17 +114,34 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// create a Secret with AWS credentials which will be used by Spark History Server and SparkApplication to authenticate with S3
-	if err := utils.CreateSecretEncoded(clientSet, utils.DefaultAwsSecretName, utils.DefaultNamespace, awsCredentials); err != nil {
+	// create a Secret with Spark configuration holding AWS credentials
+	// which will be used by Spark History Server to authenticate with S3
+	var sparkConf = strings.Join(
+		[]string{
+			fmt.Sprintf("spark.hadoop.fs.s3a.access.key %s", awsCredentials[utils.AwsAccessKeyId]),
+			fmt.Sprintf("spark.hadoop.fs.s3a.secret.key %s", awsCredentials[utils.AwsSecretAccessKey]),
+			fmt.Sprintf("spark.hadoop.fs.s3a.session.token %s", awsCredentials[utils.AwsSessionToken]),
+		},
+		"\n",
+	)
+
+	sparkConfSecretName := "spark-conf"
+	sparkConfSecretKey := "spark-defaults.conf"
+	sparkConfSecretData := map[string][]byte{
+		sparkConfSecretKey: []byte(sparkConf),
+	}
+
+	if err := utils.CreateSecretEncoded(clientSet, sparkConfSecretName, utils.DefaultNamespace, sparkConfSecretData); err != nil {
 		t.Fatal("Error while creating a Secret", err)
 	}
 
 	// configure Spark Operator parameters
 	operatorParams := map[string]string{
-		"enableHistoryServer":         "true",
-		"historyServerFsLogDirectory": awsBucketPath,
-		"awsCredentialsSecretName":    utils.DefaultAwsSecretName,
-		"historyServerOpts":           "-Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem",
+		"enableHistoryServer":          "true",
+		"historyServerFsLogDirectory":  awsBucketPath,
+		"historyServerSparkConf":       utils.DefaultAwsSecretName,
+		"historyServerOpts":            "-Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem",
+		"historyServerSparkConfSecret": sparkConfSecretName,
 	}
 
 	// in case we are using temporary security credentials
@@ -149,6 +166,11 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		t.Fatal(err.Error())
 	}
 	defer spark.CleanUp()
+
+	// create a Secret for SparkApplication
+	if err := utils.CreateSecretEncoded(clientSet, utils.DefaultAwsSecretName, utils.DefaultNamespace, awsCredentials); err != nil {
+		t.Fatal("Error while creating a Secret", err)
+	}
 
 	sparkAppParams := map[string]interface{}{
 		"AwsBucketPath": awsBucketPath,
