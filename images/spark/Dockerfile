@@ -33,7 +33,7 @@ RUN set -ex && \
     apt-get update && \
     ln -s /lib /lib64 && \
     apt-get install --no-install-recommends -y bash libc6 libpam-modules krb5-user libnss3 git curl openjdk-8-jdk \
-        r-base r-base-dev python python-pip python3 python3-pip && \
+        r-base r-base-dev python python-pip python3 python3-pip ngrep && \
     curl -L https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini -o /usr/bin/tini && \
     chmod +x /usr/bin/tini && \
     ln -sv /usr/bin/tini /sbin/tini && \
