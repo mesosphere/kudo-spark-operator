@@ -5,9 +5,11 @@ import (
 	"github.com/mesosphere/kudo-spark-operator/tests/utils"
 	"github.com/stretchr/testify/suite"
 	"testing"
+	"time"
 )
 
 const volcanoInstallerPath = "resources/volcano/volcano-0.2.yaml"
+const volcanoDeploymentWaitTimeout = 5 * time.Minute
 
 type VolcanoIntegrationTestSuite struct {
 	operator utils.SparkOperatorInstallation
@@ -37,7 +39,7 @@ func (suite *VolcanoIntegrationTestSuite) SetupSuite() {
 		"--all",
 		"--for", "condition=available",
 		"--namespace", "volcano-system",
-		"--timeout=60s")
+		"--timeout", volcanoDeploymentWaitTimeout.String())
 }
 
 func (suite *VolcanoIntegrationTestSuite) TestAppRunOnVolcano() {
