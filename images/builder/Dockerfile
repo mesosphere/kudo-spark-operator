@@ -14,5 +14,3 @@ RUN curl -LO ${KUBECTL_DOWNLOAD_URL} && \
     go get github.com/2tvenom/go-test-teamcity && \
     mkdir -p /usr/local/java && \
     curl ${JAVA_URL} | tar -xz -C /usr/local/java --strip-components=1
-
-
