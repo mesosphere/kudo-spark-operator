@@ -1,0 +1,67 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+spec:
+  type: Scala
+  mode: cluster
+  image: {{ .Image }}
+  imagePullPolicy: Always
+  mainClass: MockTaskRunner
+  mainApplicationFile: "https://infinity-artifacts.s3.amazonaws.com/scale-tests/dcos-spark-scala-tests-assembly-2.4.0-20190325.jar"
+  sparkConf:
+    "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
+    "spark.scheduler.minRegisteredResourcesRatio": "1.0"
+    {{ range $key, $value := .Params.SparkConf }}
+    "{{ $key }}": "{{ $value }}"{{ end }}
+  sparkVersion: {{ .SparkVersion }}
+  arguments:
+  {{ range $i, $arg := index .Params.Args }}
+  - "{{ $arg }}"
+  {{ end }}
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 1
+    memory: "512m"
+    labels:
+      version: {{ .SparkVersion }}
+    serviceAccount: {{ .ServiceAccount }}
+    secrets:
+      - name: {{ .Params.SslSecrets }}
+        path: "/tmp/spark/ssl"
+        secretType: Generic
+    env:
+      - name: SPARK_AUTHENTICATE_SECRET
+        valueFrom:
+          secretKeyRef:
+            key: auth-secret
+            name: {{ .Params.SparkSecrets }}
+      - name: SPARK_SSL_KEYPASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: key-password
+            name: {{ .Params.SparkSecrets }}
+      - name: SPARK_SSL_KEYSTOREPASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: keystore-password
+            name: {{ .Params.SparkSecrets }}
+      - name: SPARK_SSL_TRUSTSTOREPASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: truststore-password
+            name: {{ .Params.SparkSecrets }}
+  executor:
+    cores: 1
+    instances: {{ .ExecutorsCount }}
+    memory: "512m"
+    labels:
+      version: {{ .SparkVersion }}
+    env:
+      - name: _SPARK_AUTH_SECRET
+        valueFrom:
+          secretKeyRef:
+            key: auth-secret
+            name: {{ .Params.SparkSecrets }}
