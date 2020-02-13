@@ -54,7 +54,6 @@ RUN git clone https://github.com/${SPARK_REPO}.git && \
     git checkout ${SPARK_TAG} && \
     ./dev/make-distribution.sh ${SPARK_BUILD_ARGS} && \
     mv /spark/dist/* ${SPARK_HOME} && \
-    mv ${SPARK_HOME}/kubernetes/dockerfiles/spark/entrypoint.sh /opt && \
     rm -rf /spark /root/.m2/repository/*
 
 WORKDIR ${SPARK_HOME}
