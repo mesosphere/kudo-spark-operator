@@ -6,7 +6,6 @@ import (
 	"github.com/mesosphere/kudo-spark-operator/tests/utils"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"os"
 	"strings"
 	"testing"
 )
@@ -83,80 +82,122 @@ func TestJobSubmission(t *testing.T) {
 }
 
 func TestSparkHistoryServerInstallation(t *testing.T) {
-	awsAccessKey := os.Getenv("AWS_ACCESS_KEY_ID")
-	awsAccessSecret := os.Getenv("AWS_SECRET_ACCESS_KEY")
-	awsSessionToken := os.Getenv("AWS_SESSION_TOKEN")
-	awsBucketName, present := os.LookupEnv("AWS_BUCKET_NAME")
-	if !present {
-		t.Fatal("AWS_BUCKET_NAME is not configured")
+	awsBucketName, err := utils.GetS3BucketName()
+	if err != nil {
+		t.Fatal(err)
 	}
-	awsFolderPath, present := os.LookupEnv("AWS_BUCKET_PATH")
-	if !present {
-		t.Fatal("AWS_BUCKET_PATH is not configured")
+	awsFolderPath, err := utils.GetS3BucketPath()
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	awsFolderPath = fmt.Sprintf("%s/%s", awsFolderPath, uuid.New().String())
+	awsFolderPath = fmt.Sprintf("%s/%s/%s", awsFolderPath, "spark-history-server", uuid.New().String())
 	// Make sure folder is created
-	err := utils.AwsS3CreateFolder(awsBucketName, awsFolderPath)
-	if err != nil {
+	if err := utils.AwsS3CreateFolder(awsBucketName, awsFolderPath); err != nil {
 		t.Fatal(err.Error())
 	}
 	defer utils.AwsS3DeleteFolder(awsBucketName, awsFolderPath)
 
 	awsBucketPath := "s3a://" + awsBucketName + "/" + awsFolderPath
 
-	historyParams := make(map[string]string)
-	historyParams["enableHistoryServer"] = "true"
-	historyParams["historyServerFsLogDirectory"] = awsBucketPath
+	awsCredentials, err := utils.GetAwsCredentials()
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	historyParams["historyServerOpts"] = "-Dspark.hadoop.fs.s3a.access.key=" + awsAccessKey +
-		" -Dspark.hadoop.fs.s3a.secret.key=" + awsAccessSecret +
-		" -Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem"
+	clientSet, err := utils.GetK8sClientSet()
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	if len(awsSessionToken) > 0 {
-		historyParams["historyServerOpts"] = historyParams["historyServerOpts"] +
-			" -Dspark.hadoop.fs.s3a.session.token=" + awsSessionToken +
-			" -Dspark.hadoop.fs.s3a.aws.credentials.provider=org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider"
+	if _, err := utils.CreateNamespace(clientSet, utils.DefaultNamespace); err != nil {
+		t.Fatal(err)
+	}
+
+	// create a Secret with Spark configuration holding AWS credentials
+	// which will be used by Spark History Server to authenticate with S3
+	var sparkConf = strings.Join(
+		[]string{
+			fmt.Sprintf("spark.hadoop.fs.s3a.access.key %s", awsCredentials[utils.AwsAccessKeyId]),
+			fmt.Sprintf("spark.hadoop.fs.s3a.secret.key %s", awsCredentials[utils.AwsSecretAccessKey]),
+			fmt.Sprintf("spark.hadoop.fs.s3a.session.token %s", awsCredentials[utils.AwsSessionToken]),
+		},
+		"\n",
+	)
+
+	sparkConfSecretName := "spark-conf"
+	sparkConfSecretKey := "spark-defaults.conf"
+	sparkConfSecretData := map[string][]byte{
+		sparkConfSecretKey: []byte(sparkConf),
+	}
+
+	if err := utils.CreateSecretEncoded(clientSet, sparkConfSecretName, utils.DefaultNamespace, sparkConfSecretData); err != nil {
+		t.Fatal("Error while creating a Secret", err)
+	}
+
+	// configure Spark Operator parameters
+	operatorParams := map[string]string{
+		"enableHistoryServer":          "true",
+		"historyServerFsLogDirectory":  awsBucketPath,
+		"historyServerOpts":            "-Dspark.hadoop.fs.s3a.impl=org.apache.hadoop.fs.s3a.S3AFileSystem",
+		"historyServerSparkConfSecret": sparkConfSecretName,
+	}
+
+	// in case we are using temporary security credentials
+	if len(string(awsCredentials[utils.AwsSessionToken])) > 0 {
+		operatorParams["historyServerOpts"] =
+			strings.Join(
+				[]string{
+					operatorParams["historyServerOpts"],
+					"-Dspark.hadoop.fs.s3a.aws.credentials.provider=org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider",
+				},
+				" ",
+			)
+
 	}
 
 	spark := utils.SparkOperatorInstallation{
-		Params: historyParams,
+		SkipNamespaceCleanUp: true,
+		Params:               operatorParams,
 	}
-	err = spark.InstallSparkOperator()
-	defer spark.CleanUp()
 
-	if err != nil {
+	if err := spark.InstallSparkOperator(); err != nil {
 		t.Fatal(err.Error())
 	}
+	defer spark.CleanUp()
 
-	awsParams := map[string]interface{}{
-		"AwsBucketPath":   awsBucketPath,
-		"AwsAccessKey":    awsAccessKey,
-		"AwsAccessSecret": awsAccessSecret,
-		"AwsSessionToken": awsSessionToken,
+	// create a Secret for SparkApplication
+	if err := utils.CreateSecretEncoded(clientSet, utils.DefaultAwsSecretName, utils.DefaultNamespace, awsCredentials); err != nil {
+		t.Fatal("Error while creating a Secret", err)
 	}
+
+	sparkAppParams := map[string]interface{}{
+		"AwsBucketPath": awsBucketPath,
+		"AwsSecretName": utils.DefaultAwsSecretName,
+	}
+
+	if _, isPresent := awsCredentials[utils.AwsSessionToken]; isPresent {
+		sparkAppParams["AwsSessionToken"] = "true"
+	}
+
 	job := utils.SparkJob{
 		Name:     "history-server-linear-regression",
-		Params:   awsParams,
+		Params:   sparkAppParams,
 		Template: "spark-linear-regression-history-server-job.yaml",
 	}
 
 	// Submit a SparkApplication
-	err = spark.SubmitJob(&job)
-	if err != nil {
+	if err := spark.SubmitJob(&job); err != nil {
 		t.Fatal(err.Error())
 	}
 
-	err = spark.WaitUntilSucceeded(job)
-	if err != nil {
+	if err := spark.WaitUntilSucceeded(job); err != nil {
 		t.Error(err.Error())
 	}
 
 	// Find out History Server POD name
 	instanceName := fmt.Sprint(utils.OperatorName, "-history-server")
-	historyServerPodName, err := utils.Kubectl(
-		"get",
-		"pods",
+	historyServerPodName, err := utils.Kubectl("get", "pods",
 		fmt.Sprintf("--namespace=%s", spark.Namespace),
 		"--field-selector=status.phase=Running",
 		fmt.Sprintf("--selector=app.kubernetes.io/name=%s", instanceName),
@@ -202,8 +243,9 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 		t.Errorf("The Job Id '%s' haven't appeared in History Server", jobID)
 		log.Infof("Spark History Server logs:")
 		utils.Kubectl("logs", "-n", spark.Namespace, historyServerPodName)
+		log.Info("Driver logs:")
+		utils.Kubectl("logs", "-n", spark.Namespace, utils.DriverPodName(job.Name))
 	}
-
 }
 
 func TestVolumeMounts(t *testing.T) {

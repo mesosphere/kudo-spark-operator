@@ -81,13 +81,28 @@ func CreateServiceAccount(clientSet *kubernetes.Clientset, name string, namespac
 	return err
 }
 
-func CreateSecret(clientSet *kubernetes.Clientset, name string, namespace string, secretData map[string]string) error {
-	log.Infof("Creating a secret %s/%s with Secret Data: %q", namespace, name, secretData)
+// Creates a secret with unencoded (plain) string data
+func CreateSecretPlain(clientSet *kubernetes.Clientset, name string, namespace string, secretData map[string]string) error {
+	log.Infof("Creating a secret %s/%s", namespace, name)
 	secret := v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
 		},
 		StringData: secretData,
+	}
+
+	_, err := clientSet.CoreV1().Secrets(namespace).Create(&secret)
+	return err
+}
+
+// Creates a secret used to store arbitrary data, encoded using base64
+func CreateSecretEncoded(clientSet *kubernetes.Clientset, name string, namespace string, secretData map[string][]byte) error {
+	log.Infof("Creating a secret %s/%s", namespace, name)
+	secret := v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: name,
+		},
+		Data: secretData,
 	}
 
 	_, err := clientSet.CoreV1().Secrets(namespace).Create(&secret)

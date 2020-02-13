@@ -333,7 +333,7 @@ func runSecretTest(secretName string, secretPath string, secretKey string, expec
 		secretData["secretKey"] = "secretValue"
 	}
 
-	err = utils.CreateSecret(spark.K8sClients, secretName, spark.Namespace, secretData)
+	err = utils.CreateSecretPlain(spark.K8sClients, secretName, spark.Namespace, secretData)
 	if err != nil {
 		return err
 	}
