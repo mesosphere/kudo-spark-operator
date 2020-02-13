@@ -102,6 +102,11 @@ function configure_spark_properties() {
 
 configure_spark_properties
 
+# if _SPARK_AUTH_SECRET is set, enable RPC authetication for executors
+if [[ -n "${_SPARK_AUTH_SECRET}" ]]; then
+  SPARK_EXECUTOR_JAVA_OPTS+=("-Dspark.authenticate=true")
+fi
+
 case "$SPARK_K8S_CMD" in
   driver)
     CMD=(

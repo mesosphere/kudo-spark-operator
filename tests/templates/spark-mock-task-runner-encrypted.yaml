@@ -14,7 +14,8 @@ spec:
     "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
     {{ range $key, $value := .Params.SparkConf }}
-    "{{ $key }}": "{{ $value }}"{{ end }}
+    "{{ $key }}": "{{ $value }}"
+    {{ end }}
   sparkVersion: {{ .SparkVersion }}
   arguments:
   {{ range $i, $arg := index .Params.Args }}
@@ -28,16 +29,21 @@ spec:
     labels:
       version: {{ .SparkVersion }}
     serviceAccount: {{ .ServiceAccount }}
+    {{- if .Params.SslEnabled }}
     secrets:
       - name: {{ .Params.SslSecrets }}
         path: "/tmp/spark/ssl"
         secretType: Generic
+    {{- end }}
     env:
+      {{- if .Params.AuthEnabled }}
       - name: SPARK_AUTHENTICATE_SECRET
         valueFrom:
           secretKeyRef:
             key: auth-secret
             name: {{ .Params.SparkSecrets }}
+      {{- end }}
+      {{- if .Params.SslEnabled }}
       - name: SPARK_SSL_KEYPASSWORD
         valueFrom:
           secretKeyRef:
@@ -53,15 +59,18 @@ spec:
           secretKeyRef:
             key: truststore-password
             name: {{ .Params.SparkSecrets }}
+      {{- end }}
   executor:
     cores: 1
     instances: {{ .ExecutorsCount }}
     memory: "512m"
     labels:
       version: {{ .SparkVersion }}
+    {{- if .Params.AuthEnabled }}
     env:
       - name: _SPARK_AUTH_SECRET
         valueFrom:
           secretKeyRef:
             key: auth-secret
             name: {{ .Params.SparkSecrets }}
+    {{- end }}

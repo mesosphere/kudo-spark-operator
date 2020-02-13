@@ -97,17 +97,17 @@ func (suite *SparkEncryptionSuite) TestRpc() {
 		"spark.authenticate": "true",
 	}
 	suite.Run("TestAuth", func() {
-		assertSparkApp(suite, copyConfToExecutorEnv(sparkConf), []string{"1", "1"})
+		assertSparkApp(suite, sparkConf, []string{"1", "1"})
 	})
 
 	sparkConf["spark.network.crypto.enabled"] = "true"
 	suite.Run("TestNetworkEncryption", func() {
-		assertSparkApp(suite, copyConfToExecutorEnv(sparkConf), []string{"1", "1"})
+		assertSparkApp(suite, sparkConf, []string{"1", "1"})
 	})
 
 	sparkConf["spark.authenticate.enableSaslEncryption"] = "true"
 	suite.Run("TestSaslEncryption", func() {
-		assertSparkApp(suite, copyConfToExecutorEnv(sparkConf), []string{"1", "1"})
+		assertSparkApp(suite, sparkConf, []string{"1", "1"})
 	})
 }
 
@@ -178,6 +178,9 @@ func assertSparkApp(suite *SparkEncryptionSuite, sparkConf map[string]string, ar
 	counter++
 	appName := fmt.Sprintf("spark-mock-task-runner-encrypted-%d", counter)
 
+	_, authEnabled := sparkConf["spark.authenticate"]
+	_, sslEnabled := sparkConf["spark.ssl.enabled"]
+
 	sparkApp := utils.SparkJob{
 		Name:     appName,
 		Template: "spark-mock-task-runner-encrypted.yaml",
@@ -186,6 +189,8 @@ func assertSparkApp(suite *SparkEncryptionSuite, sparkConf map[string]string, ar
 			"SparkConf":    sparkConf,
 			"SparkSecrets": suite.sparkSecrets,
 			"SslSecrets":   suite.sslSecrets,
+			"AuthEnabled":  authEnabled,
+			"SslEnabled":   sslEnabled,
 		},
 	}
 
@@ -193,7 +198,7 @@ func assertSparkApp(suite *SparkEncryptionSuite, sparkConf map[string]string, ar
 	defer suite.operator.DeleteJob(sparkApp)
 
 	// when ssl is configured, check Spark UI is accessible via https on 4440 port
-	if _, present := sparkConf["spark.ssl.enabled"]; present {
+	if sslEnabled {
 		checkSparkUI(appName, sparkApp, suite)
 	}
 
@@ -223,17 +228,4 @@ func checkSparkUI(appName string, sparkApp utils.SparkJob, suite *SparkEncryptio
 	}); err != nil {
 		suite.Fail("Unable to access Spark UI", err)
 	}
-}
-
-// returns modified Spark configuration containing 'JAVA_TOOL_OPTIONS' set for executor env,
-// which allows to pass parameters to executor processes in order to setup RPC auth and encryption.
-// under the normal circumstances, all the properties should be copied from a driver configuration,
-// but for some reason it is not working when running on k8s, so this method can be considered as a temporary workaround.
-func copyConfToExecutorEnv(sparkConf map[string]string) map[string]string {
-	var javaOpts []string
-	for key, value := range sparkConf {
-		javaOpts = append(javaOpts, fmt.Sprintf("-D%s=%s", key, value))
-	}
-	sparkConf["spark.executorEnv.JAVA_TOOL_OPTIONS"] = strings.Join(javaOpts, " ")
-	return sparkConf
 }
