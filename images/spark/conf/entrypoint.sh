@@ -102,9 +102,11 @@ function configure_spark_properties() {
 
 configure_spark_properties
 
-# if _SPARK_AUTH_SECRET is set, enable RPC authetication for executors
-if [[ -n "${_SPARK_AUTH_SECRET}" ]]; then
+# if SPARK_AUTHENTICATE_SECRET is set, enable RPC authetication for executors
+# and provide the auth secret via _SPARK_AUTH_SECRET variable
+if [[ -n "${SPARK_AUTHENTICATE_SECRET}" ]]; then
   SPARK_EXECUTOR_JAVA_OPTS+=("-Dspark.authenticate=true")
+  export _SPARK_AUTH_SECRET="${SPARK_AUTHENTICATE_SECRET}"
 fi
 
 case "$SPARK_K8S_CMD" in
