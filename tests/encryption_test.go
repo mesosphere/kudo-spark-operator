@@ -32,10 +32,13 @@ type SparkEncryptionSuite struct {
 	sparkConf map[string]string
 	// name of a Secret with key-stores
 	sslSecrets string
+	// folder used for storing the key-stores
+	sslMountDir string
 	suite.Suite
 }
 
 func TestSparkEncryptionSuite(t *testing.T) {
+	sslMountDir := "/tmp/spark/ssl"
 	testSuite := SparkEncryptionSuite{
 		sparkSecrets:       "secrets",
 		authSecret:         "changeit",
@@ -43,8 +46,9 @@ func TestSparkEncryptionSuite(t *testing.T) {
 		keyStorePassword:   "changeit",
 		trustStorePassword: "changeit",
 		sslSecrets:         "ssl-secrets",
-		keyStorePath:       "/tmp/spark/ssl/keystore.jks",
-		trustStorePath:     "/tmp/spark/ssl/truststore.jks",
+		sslMountDir:        sslMountDir,
+		keyStorePath:       fmt.Sprintf("%s/keystore.jks", sslMountDir),
+		trustStorePath:     fmt.Sprintf("%s/truststore.jks", sslMountDir),
 	}
 	suite.Run(t, &testSuite)
 }
@@ -95,6 +99,8 @@ func (suite *SparkEncryptionSuite) TearDownSuite() {
 func (suite *SparkEncryptionSuite) TestRpc() {
 	sparkConf := map[string]string{
 		"spark.authenticate": "true",
+		"spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET":   fmt.Sprintf("%s:auth-secret", suite.sparkSecrets),
+		"spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET": fmt.Sprintf("%s:auth-secret", suite.sparkSecrets),
 	}
 	suite.Run("TestAuth", func() {
 		assertSparkApp(suite, sparkConf, []string{"1", "1"})
@@ -117,6 +123,10 @@ func (suite *SparkEncryptionSuite) TestSSL() {
 		"spark.ssl.keyStore":   suite.keyStorePath,
 		"spark.ssl.protocol":   "TLSv1.2",
 		"spark.ssl.trustStore": suite.trustStorePath,
+		"spark.kubernetes.driver.secretKeyRef.SPARK_SSL_KEYPASSWORD":        fmt.Sprintf("%s:key-password", suite.sparkSecrets),
+		"spark.kubernetes.driver.secretKeyRef.SPARK_SSL_KEYSTOREPASSWORD":   fmt.Sprintf("%s:keystore-password", suite.sparkSecrets),
+		"spark.kubernetes.driver.secretKeyRef.SPARK_SSL_TRUSTSTOREPASSWORD": fmt.Sprintf("%s:truststore-password", suite.sparkSecrets),
+		fmt.Sprintf("spark.kubernetes.driver.secrets.%s", suite.sslSecrets): suite.sslMountDir,
 	}
 	assertSparkApp(suite, sparkConf, []string{"1", "20"})
 }
@@ -125,11 +135,10 @@ func (suite *SparkEncryptionSuite) TestSSL() {
 func (suite *SparkEncryptionSuite) prepareKeyStores() {
 	const commandName = "keytool"
 	const alias = "selfsigned"
-	const tempDir = "/tmp/spark/ssl"
-	certPath := fmt.Sprint(tempDir, "/", "test.cert")
+	certPath := fmt.Sprint(suite.sslMountDir, "/", "test.cert")
 
-	if err := exec.Command("mkdir", "-p", tempDir).Run(); err != nil {
-		suite.FailNowf("Can't create a temp dir \"%s\"", tempDir, err)
+	if err := exec.Command("mkdir", "-p", suite.sslMountDir).Run(); err != nil {
+		suite.FailNowf("Can't create a temp dir \"%s\"", suite.sslMountDir, err)
 	}
 	// generate a public-private key pair
 	genKeyPairCmd := []string{
@@ -176,14 +185,14 @@ func (suite *SparkEncryptionSuite) prepareKeyStores() {
 // launches a Spark application based on `sparkConf` and asserts its successful completion
 func assertSparkApp(suite *SparkEncryptionSuite, sparkConf map[string]string, args []string) {
 	counter++
-	appName := fmt.Sprintf("spark-mock-task-runner-encrypted-%d", counter)
+	appName := fmt.Sprintf("spark-mock-task-runner-%d", counter)
 
 	_, authEnabled := sparkConf["spark.authenticate"]
 	_, sslEnabled := sparkConf["spark.ssl.enabled"]
 
 	sparkApp := utils.SparkJob{
 		Name:     appName,
-		Template: "spark-mock-task-runner-encrypted.yaml",
+		Template: "spark-mock-task-runner.yaml",
 		Params: map[string]interface{}{
 			"Args":         args,
 			"SparkConf":    sparkConf,
@@ -215,7 +224,7 @@ func checkSparkUI(appName string, sparkApp utils.SparkJob, suite *SparkEncryptio
 			"curl",
 			"--insecure", // allow insecure SSL
 			"--location", // follow redirects
-			"--include",  //include headers
+			"--include",  // include headers
 			"https://localhost:4440")
 		if err != nil {
 			return err
