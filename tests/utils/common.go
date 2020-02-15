@@ -17,7 +17,7 @@ const DefaultInstanceName = "test-instance"
 const DefaultServiceAccountSuffix = "-spark-service-account"
 const DefaultAwsSecretName = "aws-credentials"
 const rootDirName = "tests"
-const cmdLogFormat = ">%s %v\n%s"
+const cmdLogFormat = "> %s %v\n%s"
 const DefaultRetryInterval = 5 * time.Second
 const DefaultRetryTimeout = 10 * time.Minute
 
@@ -77,7 +77,7 @@ func RetryWithTimeout(timeout time.Duration, interval time.Duration, fn func() e
 	return err
 }
 
-func runAndLogCommandOutput(cmd *exec.Cmd) (string, error) {
+func RunAndLogCommandOutput(cmd *exec.Cmd) (string, error) {
 	out, err := cmd.CombinedOutput()
 
 	if err == nil {

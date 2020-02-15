@@ -53,7 +53,7 @@ func DropNamespace(clientSet *kubernetes.Clientset, name string) error {
 
 	err := clientSet.CoreV1().Namespaces().Delete(name, &options)
 	if err != nil {
-		log.Errorf("Can't delete namespace '%s':%s", name, err)
+		log.Warnf("Can't delete namespace '%s':%s", name, err)
 		return err
 	}
 
@@ -242,7 +242,7 @@ func DeleteConfigName(clientSet *kubernetes.Clientset, name string, namespace st
 
 func Kubectl(args ...string) (string, error) {
 	cmd := exec.Command("kubectl", args...)
-	return runAndLogCommandOutput(cmd)
+	return RunAndLogCommandOutput(cmd)
 
 }
 
@@ -273,6 +273,6 @@ func KubectlDelete(namespace string, filename string) error {
 
 func kubectlRunFile(method string, namespace string, filename string) error {
 	kubectl := exec.Command("kubectl", method, "--namespace", namespace, "-f", filename)
-	_, err := runAndLogCommandOutput(kubectl)
+	_, err := RunAndLogCommandOutput(kubectl)
 	return err
 }
