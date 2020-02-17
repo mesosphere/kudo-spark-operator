@@ -30,17 +30,7 @@ spec:
         - mountPath: /var/keytabs
           name: datanode-keytab
         - name: hadoop-conf
-          mountPath: /hadoop/etc/hadoop/hdfs-site.xml
-          subPath: hdfs-site.xml
-        - name: hadoop-conf
-          mountPath: /hadoop/etc/hadoop/core-site.xml
-          subPath: core-site.xml
-        - name: hadoop-conf
-          mountPath: /hadoop/etc/hadoop/yarn-site.xml
-          subPath: yarn-site.xml
-        - name: hadoop-conf
-          mountPath: /hadoop/etc/hadoop/ssl-server.xml
-          subPath: ssl-server.xml
+          mountPath: /hadoop/etc/hadoop
         - name: krb-config
           mountPath: /etc/krb5.conf
           subPath: krb5.conf

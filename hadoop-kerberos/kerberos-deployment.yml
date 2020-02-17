@@ -27,14 +27,14 @@ spec:
               fieldRef:
                 fieldPath: metadata.namespace
         volumeMounts:
-        - name: kerberos-keytab
+        - name: keytab
           mountPath: /var/keytabs
         - name: krb-config
           mountPath: /etc/krb5.conf
           subPath: krb5.conf
       restartPolicy: Always
       volumes:
-      - name: kerberos-keytab
+      - name: keytab
         persistentVolumeClaim:
           claimName: server-keytab
       - name: krb-config

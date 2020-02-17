@@ -6,21 +6,27 @@ metadata:
 spec:
   type: Scala
   mode: cluster
-  image: "mesosphere/spark-dev:6d430eb03c86e762b7696f3a5acbbecb3736f0fb"
+  image: "registry:5000/spark:kerberos"
   imagePullPolicy: Always
   mainClass: org.apache.spark.examples.HdfsTest
   mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.11-2.4.4.jar"
+  #  mainClass: MockTaskRunner
+  #  mainApplicationFile: "local:///opt/spark/examples/jars/dcos-spark-scala-tests-assembly-2.4.0-20190325.jar"
   sparkConf:
     "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
-    "spark.kubernetes.kerberos.enabled": "true"
-    "spark.kubernetes.kerberos.keytab": "/var/keytabs/hdfs.keytab"
-    "spark.kubernetes.kerberos.principal": "hdfs/namenode.hdfs-kerberos.svc.cluster.local@CLUSTER.LOCAL"
+#    "spark.kubernetes.kerberos.enabled": "true"
+#    "spark.kubernetes.kerberos.keytab": "/var/keytabs/hdfs.keytab"
+#    "spark.kubernetes.kerberos.principal": "hdfs/namenode.hdfs-kerberos.svc.cluster.local@CLUSTER.LOCAL"
     "spark.driver.extraClassPath": "/etc/hadoop/conf/core-site.xml:/etc/hadoop/conf/hdfs-site.xml:/etc/hadoop/conf/yarn-site.xml:/etc/krb5.conf"
+    "spark.executor.extraClassPath": "/etc/hadoop/conf/core-site.xml:/etc/hadoop/conf/hdfs-site.xml:/etc/hadoop/conf/yarn-site.xml:/etc/krb5.conf"
+    "spark.driver.": "-Dhadoop.security.authentication=kerberos -Dhadoop.security.authorization=true"
   arguments:
     - "hdfs://namenode.hdfs-kerberos.svc.cluster.local:9000/spark/README.txt"
+#    - "1"
+#    - "600"
   volumes:
-    - name: kerberos-test-keytab
+    - name: keytab
       persistentVolumeClaim:
         claimName: server-keytab
     - name: krb-config
@@ -37,28 +43,28 @@ spec:
       version: 2.4.4
     serviceAccount: spark-instance-spark-service-account
     volumeMounts:
-      - name: kerberos-test-keytab
+      - name: keytab
         mountPath: /var/keytabs
       - name: krb-config
         mountPath: /etc/krb5.conf
         subPath: krb5.conf
-    initContainers:
-      - name: kinit
-        image: "mesosphere/spark-dev:6d430eb03c86e762b7696f3a5acbbecb3736f0fb"
-        command: ["bash", "-c", "until kinit -kt /var/keytabs/hdfs.keytab hdfs/namenode.hdfs-kerberos.svc.cluster.local; do sleep 15; done"]
-        volumeMounts:
-          - name: kerberos-test-keytab
-            mountPath: /var/keytabs
-          - name: krb-config
-            mountPath: /etc/krb5.conf
-            subPath: krb5.conf
-        volumes:
-          - name: kerberos-test-keytab
-            persistentVolumeClaim:
-              claimName: server-keytab
-          - name: krb-config
-            configMap:
-              name: krb5
+#    initContainers:
+#      - name: populate-data
+#        image: "registry:5000/hadoop-base:latest"
+#        command: ["bash", "-c", "populate-data.sh"]
+#        volumeMounts:
+#          - name: kerberos-test-keytab
+#            mountPath: /var/keytabs
+#          - name: krb-config
+#            mountPath: /etc/krb5.conf
+#            subPath: krb5.conf
+#        volumes:
+#          - name: kerberos-test-keytab
+#            persistentVolumeClaim:
+#              claimName: server-keytab
+#          - name: krb-config
+#            configMap:
+#              name: krb5
   executor:
     cores: 1
     instances: 1
@@ -66,7 +72,7 @@ spec:
     labels:
       version: 2.4.4
     volumeMounts:
-      - name: kerberos-test-keytab
+      - name: keytab
         mountPath: /var/keytabs
       - name: krb-config
         mountPath: /etc/krb5.conf
