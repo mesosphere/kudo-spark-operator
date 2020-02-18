@@ -10,6 +10,10 @@ RUN yum -y install \
     telnet-server \ 
     which
 
+ENV JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk
+ENV PATH=/hadoop/bin:$PATH
+ENV HADOOP_CONF_DIR=/hadoop/etc/hadoop
+
 ADD https://www.apache.org/dist/hadoop/core/hadoop-2.9.2/hadoop-2.9.2.tar.gz /
 
 RUN useradd -u 1000 hdfs && \
@@ -17,7 +21,3 @@ RUN useradd -u 1000 hdfs && \
     chown -R -L hdfs:hdfs /hadoop
 
 COPY bin/*  /usr/local/bin/
-
-ENV JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk
-ENV PATH=/hadoop/bin:$PATH
-ENV HADOOP_CONF_DIR=/hadoop/etc/hadoop

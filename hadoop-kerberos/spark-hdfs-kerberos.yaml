@@ -6,32 +6,21 @@ metadata:
 spec:
   type: Scala
   mode: cluster
-  image: "registry:5000/spark:kerberos"
+  image: "mesosphere/spark:2.4.4-hadoop-2.9-k8s"
   imagePullPolicy: Always
   mainClass: org.apache.spark.examples.HdfsTest
   mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.11-2.4.4.jar"
-  #  mainClass: MockTaskRunner
-  #  mainApplicationFile: "local:///opt/spark/examples/jars/dcos-spark-scala-tests-assembly-2.4.0-20190325.jar"
   sparkConf:
-    "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
-    "spark.scheduler.minRegisteredResourcesRatio": "1.0"
-#    "spark.kubernetes.kerberos.enabled": "true"
-#    "spark.kubernetes.kerberos.keytab": "/var/keytabs/hdfs.keytab"
-#    "spark.kubernetes.kerberos.principal": "hdfs/namenode.hdfs-kerberos.svc.cluster.local@CLUSTER.LOCAL"
-    "spark.driver.extraClassPath": "/etc/hadoop/conf/core-site.xml:/etc/hadoop/conf/hdfs-site.xml:/etc/hadoop/conf/yarn-site.xml:/etc/krb5.conf"
-    "spark.executor.extraClassPath": "/etc/hadoop/conf/core-site.xml:/etc/hadoop/conf/hdfs-site.xml:/etc/hadoop/conf/yarn-site.xml:/etc/krb5.conf"
-    "spark.driver.": "-Dhadoop.security.authentication=kerberos -Dhadoop.security.authorization=true"
+    "spark.kubernetes.driverEnv.HADOOP_TOKEN_FILE_LOCATION": "/var/keytabs/delegation.token"
   arguments:
     - "hdfs://namenode.hdfs-kerberos.svc.cluster.local:9000/spark/README.txt"
-#    - "1"
-#    - "600"
   volumes:
     - name: keytab
       persistentVolumeClaim:
         claimName: server-keytab
-    - name: krb-config
-      configMap:
-        name: krb5
+#    - name: krb-config
+#      configMap:
+#        name: krb5
   hadoopConfigMap: hadoop-conf
   sparkVersion: 2.4.4
   restartPolicy:
@@ -45,26 +34,9 @@ spec:
     volumeMounts:
       - name: keytab
         mountPath: /var/keytabs
-      - name: krb-config
-        mountPath: /etc/krb5.conf
-        subPath: krb5.conf
-#    initContainers:
-#      - name: populate-data
-#        image: "registry:5000/hadoop-base:latest"
-#        command: ["bash", "-c", "populate-data.sh"]
-#        volumeMounts:
-#          - name: kerberos-test-keytab
-#            mountPath: /var/keytabs
-#          - name: krb-config
-#            mountPath: /etc/krb5.conf
-#            subPath: krb5.conf
-#        volumes:
-#          - name: kerberos-test-keytab
-#            persistentVolumeClaim:
-#              claimName: server-keytab
-#          - name: krb-config
-#            configMap:
-#              name: krb5
+#      - name: krb-config
+#        mountPath: /etc/krb5.conf
+#        subPath: krb5.conf
   executor:
     cores: 1
     instances: 1
@@ -74,7 +46,6 @@ spec:
     volumeMounts:
       - name: keytab
         mountPath: /var/keytabs
-      - name: krb-config
-        mountPath: /etc/krb5.conf
-        subPath: krb5.conf
-
+    env:
+      - name: HADOOP_TOKEN_FILE_LOCATION
+        value: "/var/keytabs/delegation.token"

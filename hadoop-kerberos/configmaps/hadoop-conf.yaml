@@ -103,8 +103,6 @@ data:
         <name>dfs.namenode.kerberos.internal.spnego.principal</name>
         <value>HTTP/namenode.hdfs-kerberos.svc.cluster.local@CLUSTER.LOCAL</value>
       </property>
-
-      <!-- prevent those errors -->
       <property>
         <name>dfs.namenode.datanode.registration.ip-hostname-check</name>
         <value>false</value>
@@ -127,7 +125,7 @@ data:
       </property>
       <property>
         <name>dfs.datanode.keytab.file</name>
-        <value>/var/keytabs/hdfs.keytab</value> <!-- path to the HDFS keytab -->
+        <value>/var/keytabs/hdfs.keytab</value>
       </property>
       <property>
         <name>dfs.datanode.kerberos.principal</name>
@@ -157,7 +155,7 @@ data:
       </property>
       <property>
         <name>dfs.web.authentication.kerberos.keytab</name>
-        <value>/var/keytabs/hdfs.keytab</value> <!-- path to the HTTP keytab -->
+        <value>/var/keytabs/hdfs.keytab</value>
       </property>
     </configuration>
   ssl-server.xml: |

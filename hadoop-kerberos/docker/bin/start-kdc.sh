@@ -2,9 +2,6 @@
 
 /usr/sbin/kdb5_util -P changeme create -s
 
-/usr/sbin/kadmin.local -q "addprinc  -randkey spark"
-/usr/sbin/kadmin.local -q "ktadd -k /var/keytabs/spark.keytab spark"
-
 /usr/sbin/kadmin.local -q "addprinc -randkey HTTP/server.${NAMESPACE}.svc.cluster.local"
 /usr/sbin/kadmin.local -q "ktadd -k /var/keytabs/server.keytab HTTP/server.${NAMESPACE}.svc.cluster.local"
 
