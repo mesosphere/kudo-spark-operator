@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kerberos
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: hdfs-kerberos
+  template:
+    metadata:
+      annotations:
+        pod.beta.kubernetes.io/hostname: kerberos
+      labels:
+        name: hdfs-kerberos
+        kerberosService: kerberos
+    spec:
+      containers:
+      - command:
+        - start-kdc.sh
+        name: kerberos
+        image: lembiewski/hdfs-kerberos:v1.0.0
+        imagePullPolicy: Always
+        env:
+          - name: NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+        readinessProbe:
+          exec:
+            command:
+              - cat
+              - /kdc_pid
+        volumeMounts:
+        - name: keytab
+          mountPath: /var/keytabs
+        - name: krb-config
+          mountPath: /etc/krb5.conf
+          subPath: krb5.conf
+      restartPolicy: Always
+      volumes:
+      - name: keytab
+        persistentVolumeClaim:
+          claimName: server-keytab
+      - name: krb-config
+        configMap:
+          name: krb5
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    kerberosService: kerberos
+  name: kerberos
+spec:
+  clusterIP: None
+  selector:
+    kerberosService: kerberos
