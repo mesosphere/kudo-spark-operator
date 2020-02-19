@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: namenode
+  name: hdfs-namenode
 spec:
   replicas: 1
   selector:
@@ -41,9 +41,9 @@ spec:
       - name: keytab
         persistentVolumeClaim:
           claimName: server-keytab
-      - name: namenode-hadoop
-        persistentVolumeClaim:
-          claimName: namenode-hadoop
+#      - name: namenode-hadoop
+#        persistentVolumeClaim:
+#          claimName: namenode-hadoop
       - name: hadoop-conf
         configMap:
           name: hadoop-conf
@@ -54,8 +54,6 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
   labels:
     kerberosService: namenode
   name: namenode

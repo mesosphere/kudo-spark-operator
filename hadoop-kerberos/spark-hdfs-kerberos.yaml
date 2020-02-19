@@ -6,21 +6,15 @@ metadata:
 spec:
   type: Scala
   mode: cluster
-  image: "mesosphere/spark:2.4.4-hadoop-2.9-k8s"
+  image: "registry:5000/spark:2.4.4-hadoop-2.9-k8s"
   imagePullPolicy: Always
   mainClass: org.apache.spark.examples.HdfsTest
   mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.11-2.4.4.jar"
-  sparkConf:
-    "spark.kubernetes.driverEnv.HADOOP_TOKEN_FILE_LOCATION": "/var/keytabs/delegation.token"
   arguments:
     - "hdfs://namenode.hdfs-kerberos.svc.cluster.local:9000/spark/README.txt"
-  volumes:
-    - name: keytab
-      persistentVolumeClaim:
-        claimName: server-keytab
-#    - name: krb-config
-#      configMap:
-#        name: krb5
+  sparkConf:
+    "spark.eventLog.enabled": "true"
+    "spark.eventLog.dir": "hdfs://namenode.hdfs-kerberos.svc.cluster.local:9000/history"
   hadoopConfigMap: hadoop-conf
   sparkVersion: 2.4.4
   restartPolicy:
@@ -31,21 +25,17 @@ spec:
     labels:
       version: 2.4.4
     serviceAccount: spark-instance-spark-service-account
-    volumeMounts:
-      - name: keytab
-        mountPath: /var/keytabs
-#      - name: krb-config
-#        mountPath: /etc/krb5.conf
-#        subPath: krb5.conf
+    secrets:
+      - name: hadoop-token
+        path: /mnt/secrets
+        secretType: HadoopDelegationToken
   executor:
     cores: 1
     instances: 1
     memory: "512m"
     labels:
       version: 2.4.4
-    volumeMounts:
-      - name: keytab
-        mountPath: /var/keytabs
-    env:
-      - name: HADOOP_TOKEN_FILE_LOCATION
-        value: "/var/keytabs/delegation.token"
+    secrets:
+      - name: hadoop-token
+        path: /mnt/secrets
+        secretType: HadoopDelegationToken

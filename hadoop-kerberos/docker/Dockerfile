@@ -14,10 +14,11 @@ ENV JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk
 ENV PATH=/hadoop/bin:$PATH
 ENV HADOOP_CONF_DIR=/hadoop/etc/hadoop
 
-ADD https://www.apache.org/dist/hadoop/core/hadoop-2.9.2/hadoop-2.9.2.tar.gz /
+#ADD https://www.apache.org/dist/hadoop/core/hadoop-2.9.2/hadoop-2.9.2.tar.gz /
+ADD hadoop-2.9.2.tar.gz /
 
 RUN useradd -u 1000 hdfs && \
     ln -s hadoop-2.9.2 hadoop && \
     chown -R -L hdfs:hdfs /hadoop
 
-COPY bin/*  /usr/local/bin/
+COPY bin/* /usr/local/bin/

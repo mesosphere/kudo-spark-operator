@@ -4,8 +4,6 @@ metadata:
   name: krb5
 data:
   krb5.conf: |
-    #includedir /etc/krb5.conf.d/
-
     [logging]
     default = FILE:/var/log/krb5libs.log
     kdc = FILE:/var/log/krb5kdc.log
@@ -14,11 +12,9 @@ data:
     [libdefaults]
     dns_lookup_realm = false
     ticket_lifetime = 24h
-    # renew_lifetime = 7d
     forwardable = true
     rdns = false
     default_realm = CLUSTER.LOCAL
-    # default_ccache_name = KEYRING:persistent:%{uid}
 
     [realms]
     CLUSTER.LOCAL = {

@@ -48,16 +48,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
   labels:
     kerberosService: datanode
   name: datanode
 spec:
   clusterIP: None
-  ports:
-    - protocol: TCP
-      port: 12345
-      targetPort: 0
   selector:
     kerberosService: datanode

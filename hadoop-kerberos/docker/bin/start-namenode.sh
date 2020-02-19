@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 until kinit -kt /var/keytabs/hdfs.keytab hdfs/namenode."${NAMESPACE}".svc.cluster.local; do sleep 15; done
 

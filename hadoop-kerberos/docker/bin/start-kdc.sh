@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+set -x
 
 /usr/sbin/kdb5_util -P changeme create -s
 
@@ -23,4 +24,4 @@ keytool -genkey -alias datanode."${NAMESPACE}".svc.cluster.local -keyalg rsa -ke
 chmod 700 /var/keytabs/hdfs.jks
 chown hdfs /var/keytabs/hdfs.jks
 
-krb5kdc -n
+krb5kdc -n -P /kdc_pid
