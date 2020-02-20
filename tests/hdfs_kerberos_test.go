@@ -62,6 +62,7 @@ func TestHdfsIntegrationSuite(t *testing.T) {
 }
 
 func (suite *HdfsIntegrationSuite) SetupSuite() {
+	utils.Kubectl("delete", "ns", namespace)
 	if _, err := utils.Kubectl("create", "ns", namespace); err != nil {
 		suite.FailNow("Error while creating namespace", err)
 	}
@@ -95,18 +96,25 @@ func (suite *HdfsIntegrationSuite) SetupSuite() {
 		hadoopTokenPath, "-n", namespace); err != nil {
 		suite.FailNow("Error while copying the delegation token", err)
 	}
-	if _, err := utils.Kubectl("create", "secret",
-		"generic", hadoopTokenSecret, "--from-file", hadoopTokenPath, "-n", namespace); err != nil {
-		suite.FailNow("Error while creating a secret for delegation token", err)
-	}
 }
 
 // invoked before each test
 func (suite *HdfsIntegrationSuite) BeforeTest(suiteName, testName string) {
-	suite.operator = utils.SparkOperatorInstallation{
-		Namespace:            namespace,
-		SkipNamespaceCleanUp: true,
+	utils.Kubectl("create", "ns", utils.DefaultNamespace)
+
+	// create a Secret with Hadoop delegation token, warn if exists
+	if _, err := utils.Kubectl("create", "secret",
+		"generic", hadoopTokenSecret, "--from-file", hadoopTokenPath, "-n", utils.DefaultNamespace); err != nil {
+		suite.FailNow("Error while creating a Hadoop token secret", err)
 	}
+
+	// create ConfigMap with hadoop config files
+	utils.Kubectl("apply", "-f", fmt.Sprint(resourceFolder, "/configmaps/hadoop-conf.yaml"), "-n", suite.operator.Namespace)
+
+	suite.operator = utils.SparkOperatorInstallation{
+		SkipNamespaceCleanUp: true, // cleanup is done in AfterTest function
+	}
+
 	if testName == "Test_Spark_Hdfs_Kerberos_SparkHistoryServer" {
 		operatorParams := map[string]string{
 			"enableHistoryServer":         "true",
@@ -115,15 +123,10 @@ func (suite *HdfsIntegrationSuite) BeforeTest(suiteName, testName string) {
 		}
 		suite.operator.Params = operatorParams
 	}
+
 	if err := suite.operator.InstallSparkOperator(); err != nil {
 		suite.FailNow(err.Error())
 	}
-}
-
-func (suite *HdfsIntegrationSuite) AfterTest(suiteName, testName string) {
-	// remove the operator and wait until all resources are deleted
-	utils.Kubectl("delete", "instance.kudo.dev", suite.operator.InstanceName,
-		"-n", suite.operator.Namespace, "--wait=true")
 }
 
 func (suite *HdfsIntegrationSuite) Test_Spark_Hdfs_Kerberos() {
@@ -177,6 +180,10 @@ func (suite *HdfsIntegrationSuite) Test_Spark_Hdfs_Kerberos_SparkHistoryServer()
 	})
 }
 
+func (suite *HdfsIntegrationSuite) AfterTest(suiteName, testName string) {
+	suite.operator.CleanUp()
+}
+
 func (suite *HdfsIntegrationSuite) TearDownSuite() {
-	utils.Kubectl("delete", "ns", namespace)
+	utils.Kubectl("delete", "ns", namespace, "--wait=true")
 }
