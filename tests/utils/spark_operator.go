@@ -66,7 +66,7 @@ func (spark *SparkOperatorInstallation) InstallSparkOperator() error {
 		spark.Params = make(map[string]string)
 	}
 	if strings.Contains(OperatorImage, ":") {
-		// handle the case, when using local docker registry (e.g. registry:5000/kudo-spark-operator:2.4.4-0.2.0)
+		// handle the case, when using local docker registry (e.g. registry:5000/kudo-spark-operator:2.4.5-0.2.0)
 		tagIndex := strings.LastIndex(OperatorImage, ":")
 		spark.Params["operatorImageName"] = OperatorImage[0:tagIndex]
 		spark.Params["operatorVersion"] = OperatorImage[tagIndex+1:]
