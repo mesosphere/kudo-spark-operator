@@ -1,0 +1,201 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hadoop-conf
+data:
+  core-site.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+    <configuration>
+      <property>
+        <name>hadoop.security.authentication</name>
+        <value>kerberos</value>
+      </property>
+      <property>
+        <name>hadoop.security.authorization</name>
+        <value>true</value>
+      </property>
+      <property>
+        <name>fs.defaultFS</name>
+        <value>hdfs://namenode.hdfs-kerberos.svc.cluster.local:9000</value>
+      </property>
+      <property>
+        <name>hadoop.rpc.protection</name>
+        <value>authentication</value>
+      </property>
+    </configuration>
+  hdfs-site.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+    <configuration>
+      <property>
+        <name>dfs.replication</name>
+        <value>1</value>
+      </property>
+
+      <!-- General HDFS security config -->
+      <property>
+        <name>dfs.permissions</name>
+        <value>true</value>
+      </property>
+      <property>
+        <name>dfs.block.access.token.enable</name>
+        <value>true</value>
+      </property>
+
+      <!-- NameNode security config -->
+      <property>
+        <name>dfs.namenode.keytab.file</name>
+        <value>/var/keytabs/hdfs.keytab</value>
+      </property>
+      <property>
+        <name>dfs.namenode.kerberos.principal</name>
+        <value>hdfs/namenode.hdfs-kerberos.svc.cluster.local@CLUSTER.LOCAL</value>
+      </property>
+      <property>
+        <name>dfs.namenode.kerberos.internal.spnego.principal</name>
+        <value>HTTP/namenode.hdfs-kerberos.svc.cluster.local@CLUSTER.LOCAL</value>
+      </property>
+      <property>
+        <name>dfs.namenode.rpc-address</name>
+        <value>namenode.hdfs-kerberos.svc.cluster.local:9000</value>
+      </property>
+
+      <!-- For testing, we want tokens to expire FAST -->
+      <property>
+        <name>dfs.namenode.delegation.token.max-lifetime</name>
+        <value>3600000</value><!-- 1 hour -->
+      </property>
+      <property>
+        <name>dfs.namenode.delegation.token.renew-interval</name>
+        <value>3600000</value><!-- 1 hour -->
+      </property>
+
+      <!-- DataNode security config -->
+      <property>
+        <name>dfs.data.transfer.protection</name>
+        <value>integrity</value>
+      </property>
+      <property>
+        <name>dfs.datanode.address</name>
+        <value>0.0.0.0:10019</value>
+      </property>
+
+      <property>
+        <name>dfs.datanode.http.address</name>
+        <value>0.0.0.0:10022</value>
+      </property>
+
+      <property>
+        <name>dfs.http.policy</name>
+        <value>HTTPS_ONLY</value>
+      </property>
+
+      <property>
+        <name>dfs.namenode.keytab.file</name>
+        <value>/var/keytabs/hdfs.keytab</value>
+      </property>
+      <property>
+        <name>dfs.namenode.kerberos.principal</name>
+        <value>hdfs/namenode.hdfs-kerberos.svc.cluster.local@CLUSTER.LOCAL</value>
+      </property>
+      <property>
+        <name>dfs.namenode.kerberos.internal.spnego.principal</name>
+        <value>HTTP/namenode.hdfs-kerberos.svc.cluster.local@CLUSTER.LOCAL</value>
+      </property>
+      <property>
+        <name>dfs.namenode.datanode.registration.ip-hostname-check</name>
+        <value>false</value>
+      </property>
+      <property>
+        <name>dfs.datanode.data.dir.perm</name>
+        <value>700</value>
+      </property>
+      <property>
+        <name>dfs.namenode.name.dir</name>
+        <value>file:///hadoop/etc/data</value>
+      </property>
+      <property>
+        <name>dfs.datanode.name.dir</name>
+        <value>file:///hadoop/etc/data</value>
+      </property>
+      <property>
+        <name>dfs.data.dir</name>
+        <value>file:///hadoop/etc/data</value>
+      </property>
+      <property>
+        <name>dfs.datanode.keytab.file</name>
+        <value>/var/keytabs/hdfs.keytab</value>
+      </property>
+      <property>
+        <name>dfs.datanode.kerberos.principal</name>
+        <value>hdfs/datanode.hdfs-kerberos.svc.cluster.local@CLUSTER.LOCAL</value>
+      </property>
+      <property>
+        <name>dfs.encrypt.data.transfer</name>
+        <value>true</value>
+      </property>
+      <property>
+        <name>dfs.encrypt.data.transfer.cipher.suites</name>
+        <value>AES/CTR/NoPadding</value>
+      </property>
+      <property>
+        <name>dfs.encrypt.data.transfer.cipher.key.bitlength</name>
+        <value>256</value>
+      </property>
+
+      <!-- Web Authentication config -->
+      <property>
+        <name>dfs.webhdfs.enabled</name>
+        <value>true</value>
+      </property>
+      <property>
+        <name>dfs.web.authentication.kerberos.principal</name>
+        <value>HTTP/datanode.hdfs-kerberos.svc.cluster.local@CLUSTER.LOCAL</value>
+      </property>
+      <property>
+        <name>dfs.web.authentication.kerberos.keytab</name>
+        <value>/var/keytabs/hdfs.keytab</value>
+      </property>
+    </configuration>
+  ssl-server.xml: |
+    <?xml version="1.0"?>
+    <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+    <configuration>
+      <property>
+        <name>ssl.server.truststore.location</name>
+        <value>/var/keytabs/hdfs.jks</value>
+      </property>
+
+      <property>
+        <name>ssl.server.truststore.password</name>
+        <value>changeme</value>
+      </property>
+
+      <property>
+        <name>ssl.server.keystore.location</name>
+        <value>/var/keytabs/hdfs.jks</value>
+      </property>
+
+      <property>
+        <name>ssl.server.keystore.password</name>
+        <value>changeme</value>
+      </property>
+
+      <property>
+        <name>ssl.server.keystore.keypassword</name>
+        <value>changeme</value>
+      </property>
+    </configuration>
+  yarn-site.xml: |
+    <?xml version="1.0" encoding="UTF-8"?>
+    <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+    <configuration>
+      <!-- must be set for HDFS libraries to obtain delegation tokens -->
+      <!-- (hardcoded to use this ID as the renewer) -->
+      <property>
+        <name>yarn.resourcemanager.principal</name>
+        <value>yarn/_HOST@CLUSTER.LOCAL</value>
+      </property>
+    </configuration>
