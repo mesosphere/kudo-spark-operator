@@ -62,7 +62,6 @@ func TestHdfsIntegrationSuite(t *testing.T) {
 }
 
 func (suite *HdfsIntegrationSuite) SetupSuite() {
-	utils.Kubectl("delete", "ns", namespace)
 	if _, err := utils.Kubectl("create", "ns", namespace); err != nil {
 		suite.FailNow("Error while creating namespace", err)
 	}
