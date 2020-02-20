@@ -47,6 +47,21 @@ spec:
       - name: krb-config
         configMap:
           name: krb5
+      # NOTE: by default, Konvoy on AWS uses 'aws-ebs-csi-driver', which is a CSI driver for Amazon EBS,
+      # and, according to https://kubernetes.io/docs/concepts/storage/persistent-volumes/, AWSElasticBlockStore doesn't support
+      # ReadWriteMany mode for PVs. That means a volume can't be mounted as read-write by many nodes.
+      # The solution is to use pod affinity in order to place all Kerberos and HDFS pods on the same node
+      # and use ReadWriteOnce mode fo PV.
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchExpressions:
+                  - key: name
+                    operator: In
+                    values:
+                      - hdfs-kerberos
 ---
 apiVersion: v1
 kind: Service

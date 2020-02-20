@@ -44,6 +44,16 @@ spec:
       - name: krb-config
         configMap:
           name: krb5
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: "kubernetes.io/hostname"
+              labelSelector:
+                matchExpressions:
+                  - key: name
+                    operator: In
+                    values:
+                      - hdfs-kerberos
 ---
 apiVersion: v1
 kind: Service
