@@ -25,7 +25,7 @@ GNU Make is used as the main build tool and includes the following main targets:
 * `make cluster-create` creates a Konvoy or MKE cluster
 * `make cluster-destroy` creates a Konvoy or MKE cluster
 * `make clean-all` removes all artifacts produced by targets from local filesystem
-* `make docker-spark` builds Spark base image based on Apache Spark 2.4.3
+* `make docker-spark` builds Spark base image based on Apache Spark 2.4.5
 * `make docker-operator` builds Operator image and Spark base image if it's not built
 * `make docker-builder` builds image with required tools to run tests
 * `make docker-push` publishes Spark base image and Spark Operator image to DockerHub
@@ -45,8 +45,8 @@ To run tests on a pre-existing cluster with specified operator and spark images,
 
 ```
 make test KUBECONFIG=$HOME/.kube/config \
-SPARK_IMAGE_FULL_NAME=mesosphere/spark:spark-2.4.3-hadoop-2.9-k8s \
-OPERATOR_IMAGE_FULL_NAME=mesosphere/kudo-spark-operator:spark-2.4.3-hadoop-2.9-k8s
+SPARK_IMAGE_FULL_NAME=mesosphere/spark:spark-2.4.5-hadoop-2.9-k8s \
+OPERATOR_IMAGE_FULL_NAME=mesosphere/kudo-spark-operator:spark-2.4.5-hadoop-2.9-k8s
 ```
 
 # Installing and using Spark Operator
@@ -55,7 +55,7 @@ OPERATOR_IMAGE_FULL_NAME=mesosphere/kudo-spark-operator:spark-2.4.3-hadoop-2.9-k
 
 * Kubernetes cluster up and running
 * `kubectl` configured to work with provisioned cluster
-* [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli) 0.8.0 or higher
+* [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli) 0.10.1 or higher
 
 ### Installation
 
