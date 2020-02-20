@@ -68,14 +68,14 @@ func (suite *HdfsIntegrationSuite) SetupSuite() {
 	// deploy KDC and HDFS
 	for _, resource := range hdfsKerberosDeployment {
 		if _, err := utils.Kubectl("apply", "-f", fmt.Sprint(resourceFolder, "/", resource.path), "-n", namespace); err != nil {
-			suite.FailNowf("Error while creating \"%s\"", resource.name, err)
+			suite.FailNowf(err.Error(), "Error while creating \"%s\"", resource.name)
 		}
 		if resource.wait {
 			if _, err := utils.Kubectl("wait", fmt.Sprint("deployments/", resource.name),
 				"--for=condition=available",
 				fmt.Sprintf("--timeout=%v", waitTimeout),
 				"-n", namespace); err != nil {
-				suite.FailNowf("Error while waiting for resource \"%s\" to be deployed", resource.name, err)
+				suite.FailNowf(err.Error(), "Error while waiting for resource \"%s\" to be deployed", resource.name)
 			}
 		}
 	}
@@ -101,14 +101,14 @@ func (suite *HdfsIntegrationSuite) SetupSuite() {
 func (suite *HdfsIntegrationSuite) BeforeTest(suiteName, testName string) {
 	utils.Kubectl("create", "ns", utils.DefaultNamespace)
 
-	// create a Secret with Hadoop delegation token, warn if exists
+	// create a Secret with Hadoop delegation token
 	if _, err := utils.Kubectl("create", "secret",
 		"generic", hadoopTokenSecret, "--from-file", hadoopTokenPath, "-n", utils.DefaultNamespace); err != nil {
 		suite.FailNow("Error while creating a Hadoop token secret", err)
 	}
 
-	// create ConfigMap with hadoop config files
-	utils.Kubectl("apply", "-f", fmt.Sprint(resourceFolder, "/configmaps/hadoop-conf.yaml"), "-n", suite.operator.Namespace)
+	// create ConfigMap with hadoop config files in Spark operator namespace
+	utils.Kubectl("apply", "-f", fmt.Sprint(resourceFolder, "/configmaps/hadoop-conf.yaml"), "-n", utils.DefaultNamespace)
 
 	suite.operator = utils.SparkOperatorInstallation{
 		SkipNamespaceCleanUp: true, // cleanup is done in AfterTest function
