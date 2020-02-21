@@ -6,7 +6,7 @@ OPERATOR_DIR="$(dirname ${SCRIPT_DIR})/operators/repository/spark/operator"
 
 NAMESPACE=${NAMESPACE:-spark}
 OPERATOR_DOCKER_REPO=${OPERATOR_DOCKER_REPO:-mesosphere/kudo-spark-operator}
-OPERATOR_VERSION=${OPERATOR_VERSION:-2.4.5-0.2.0}
+OPERATOR_VERSION=${OPERATOR_VERSION:-2.4.5-1.0.0}
 
 echo "Using namespace '${NAMESPACE}' for installation"
 
