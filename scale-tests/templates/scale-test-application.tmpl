@@ -5,24 +5,24 @@ metadata:
 spec:
   type: Scala
   mode: cluster
-  image: mesosphere/spark:2.4.3-bin-hadoop2.9-k8s
+  image: mesosphere/spark:2.4.5-bin-hadoop2.9-k8s
   imagePullPolicy: Always
   mainClass: MockTaskRunner
-  mainApplicationFile: "https://infinity-artifacts.s3-us-west-2.amazonaws.com/spark/scale-tests-spark-2.4.3-20191101.jar"
+  mainApplicationFile: "https://kudo-spark.s3-us-west-2.amazonaws.com/spark-scala-tests-2.4.5-20200225.jar"
   arguments:
     - "NUM_TASKS"
     - "TASK_DURATION_SEC"
   sparkConf:
     "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
-  sparkVersion: "2.4.3"
+  sparkVersion: "2.4.5"
   restartPolicy:
     type: Never
   driver:
     cores: 1
     memory: "2g"
     labels:
-      version: 2.4.3
+      version: 2.4.5
       metrics-exposed: "true"
     serviceAccount: spark-service-account
   executor:
@@ -30,7 +30,7 @@ spec:
     instances: NUM_EXECUTORS
     memory: "1g"
     labels:
-      version: 2.4.3
+      version: 2.4.5
       metrics-exposed: "true"
   monitoring:
     exposeDriverMetrics: true
