@@ -29,7 +29,8 @@ for i in $(seq ${1}); do
     kubectl kudo --namespace "${NAMESPACE}" install --instance "${INSTANCE_NAME_PREFIX}-${i}" "${OPERATOR_DIR}" \
             -p operatorVersion="${OPERATOR_VERSION}" \
             -p sparkServiceAccountName="${SERVICE_ACCOUNT_NAME}" \
-            -p createSparkServiceAccount=false
+            -p createSparkServiceAccount=false \
+            -p sparkJobNamespace="${NAMEPSACE}"
 
     kubectl wait  --for=condition=Available deployment --all  --namespace "$NAMESPACE" --timeout=120s
 done

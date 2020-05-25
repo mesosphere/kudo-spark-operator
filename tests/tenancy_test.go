@@ -148,6 +148,9 @@ func operatorBuilder(numberOfOperators int, separateNamespace bool, uniqueOperat
 		operator := utils.SparkOperatorInstallation{
 			InstanceName: operatorInstanceName,
 			Namespace:    operatorNamespace,
+			Params: map[string]string{
+				"sparkJobNamespace": operatorNamespace,
+			},
 		}
 		if separateNamespace {
 			operator.Namespace = fmt.Sprintf("%s-%d", operatorNamespace, i)
