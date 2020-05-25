@@ -125,7 +125,7 @@ func (spark *SparkOperatorInstallation) waitForInstanceStatus(targetStatus strin
 }
 
 func (spark *SparkOperatorInstallation) getInstanceStatus() (string, error) {
-	status, err := Kubectl("get", "instances.kudo.dev", spark.InstanceName, "--namespace", spark.Namespace, `-o=jsonpath={.status.aggregatedStatus.status}`)
+	status, err := Kubectl("get", "instances.kudo.dev", spark.InstanceName, "--namespace", spark.Namespace, `-o=jsonpath={.spec..status}`)
 	status = strings.Trim(status, `'`)
 
 	return status, err
