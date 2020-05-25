@@ -12,7 +12,7 @@ pushd $TEST_DIR
 
 if [ -n "$TEAMCITY_VERSION" ]; then
   # Running in Teamcity, therefore we need to convert `go test` output accordingly
-  go test -v -count=1 -timeout 60m . | go-test-teamcity
+  go test -v -count=1 -json -timeout 60m .
 else
   go test -v -count=1 -timeout 60m .
 fi

@@ -11,6 +11,5 @@ RUN curl -LO ${KUBECTL_DOWNLOAD_URL} && \
     mv ./kubectl /usr/local/bin/kubectl && \
     curl -L ${KUDO_DOWNLOAD_URL} -o /go/bin/kubectl-kudo && \
     chmod +x /go/bin/kubectl-kudo && \
-    go get github.com/2tvenom/go-test-teamcity && \
     mkdir -p /usr/local/java && \
     curl -L -O ${JAVA_URL} && tar -xf openjdk-8u212b03-hotspot-linux-x64.tar.gz -C /usr/local/java --strip-components=1
