@@ -176,7 +176,7 @@ func (suite *MetricsTestSuite) queryPrometheus(query string, v1api v1.API, timeR
 			log.Warnf("Warnings: %v\n", warnings)
 		}
 		if len(result.String()) == 0 {
-			return fmt.Errorf("no metrics found for query \"%s\"", query)
+			return fmt.Errorf("no metrics found for query %v", query)
 		}
 		log.Infof("Result: %v", result)
 		return nil

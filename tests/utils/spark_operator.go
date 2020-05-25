@@ -86,21 +86,12 @@ func (spark *SparkOperatorInstallation) CleanUp() {
 	// So far multiple Spark operator instances in one namespace is not a supported configuration, so whole namespace will be cleaned
 	log.Infof("Uninstalling ALL kudo spark operator instances and versions from %s", spark.Namespace)
 	instances, _ := getInstanceNames(spark.Namespace)
-	versions, _ := getOperatorVersions(spark.Namespace)
 
 	if instances != nil {
 		for _, instance := range instances {
-			DeleteResource(spark.Namespace, "instance.kudo.dev", instance)
+			unistallKudoPackage(spark.Namespace, instance)
 		}
 	}
-
-	if versions != nil {
-		for _, version := range versions {
-			DeleteResource(spark.Namespace, "operatorversion.kudo.dev", version)
-		}
-	}
-
-	DeleteResource(spark.Namespace, "operator.kudo.dev", "spark")
 	DropNamespace(spark.K8sClients, spark.Namespace)
 }
 
@@ -185,30 +176,6 @@ func getInstanceNames(namespace string) ([]string, error) {
 	if len(out) > 0 {
 		names := strings.Split(out, "\n")
 		return names, nil
-	} else {
-		return nil, nil
-	}
-}
-
-func getOperatorVersions(namespace string) ([]string, error) {
-	jsonpathExpr := `-o=jsonpath={range .items[?(@.metadata.labels.kudo\.dev/operator=="spark")]}{.spec.operatorVersion.name}{"\n"}`
-	out, err := Kubectl("get", "instances.kudo.dev", "--namespace", namespace, jsonpathExpr)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if len(out) > 0 {
-		var versions []string
-		for _, version := range strings.Split(out, "\n") {
-			for _, contained := range versions {
-				if contained == version {
-					continue
-				}
-			}
-			versions = append(versions, version)
-		}
-		return versions, nil
 	} else {
 		return nil, nil
 	}
