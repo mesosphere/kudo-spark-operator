@@ -29,8 +29,8 @@ const jobName = "mock-task-runner"
 const jobTemplate = "spark-mock-task-runner-with-monitoring.yaml"
 const prometheusNamespace = "kubeaddons"
 const prometheusPort = 9090
-const queryTimeout = 1 * time.Minute
-const queryRetryDelay = 5 * time.Second
+const queryTimeout = 3 * time.Minute
+const queryRetryDelay = 15 * time.Second
 const contextTimeout = 10 * time.Second
 
 type MetricsTestSuite struct {
