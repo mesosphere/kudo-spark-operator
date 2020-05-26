@@ -49,6 +49,17 @@ func installKudoPackage(namespace string, operatorDir string, instance string, p
 	return err
 }
 
+func unistallKudoPackage(namespace string, instance string) error {
+	var args = []string{"uninstall"}
+	args = append(args, "--instance", instance)
+	args = append(args, "--namespace", namespace)
+
+	cmd := exec.Command(KudoCmd, args...)
+	_, err := RunAndLogCommandOutput(cmd)
+
+	return err
+}
+
 func isKudoInstalled() bool {
 	log.Info("Checking if KUDO is installed")
 	clients, err := GetK8sClientSet()

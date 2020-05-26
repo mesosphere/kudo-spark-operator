@@ -24,9 +24,10 @@ type securityTestCase interface {
 }
 
 type commonTestCaseDetails struct {
-	name      string
-	namespace string
-	params    map[string]string
+	name         string
+	instanceName string
+	namespace    string
+	params       map[string]string
 }
 
 func (c *commonTestCaseDetails) common() *commonTestCaseDetails {
@@ -34,7 +35,7 @@ func (c *commonTestCaseDetails) common() *commonTestCaseDetails {
 }
 
 func (c *commonTestCaseDetails) getJobServiceAccount() string {
-	return utils.DefaultInstanceName + utils.DefaultServiceAccountSuffix
+	return c.instanceName + utils.DefaultServiceAccountSuffix
 }
 
 type serviceAccountTestCase struct {
@@ -100,7 +101,7 @@ func (tc *rbacTestCase) prepare(client *kubernetes.Clientset) error {
 	if tc.prepareRBAC {
 		log.Infof("Preparing RBAC entities before installing the operator")
 		const rbacTemplate = "security_test_rbac.yaml"
-		const sparkSA = utils.DefaultInstanceName + utils.DefaultServiceAccountSuffix
+		sparkSA := tc.instanceName + utils.DefaultServiceAccountSuffix
 		const operatorSA = "spark-operator-test-service-account"
 
 		// Create and apply RBAC template
@@ -108,7 +109,7 @@ func (tc *rbacTestCase) prepare(client *kubernetes.Clientset) error {
 			"service-account":           sparkSA,
 			"operator-service-account":  operatorSA,
 			"service-account-namespace": tc.namespace,
-			"instance-name":             utils.DefaultInstanceName,
+			"instance-name":             tc.instanceName,
 		})
 		if err != nil {
 			return err
@@ -155,23 +156,26 @@ func (tc *rbacTestCase) verify(spark *utils.SparkOperatorInstallation) error {
 }
 
 func TestServiceAccounts(t *testing.T) {
+	instanceName := utils.GenerateInstanceName()
 	testCases := []serviceAccountTestCase{
 		{
 			commonTestCaseDetails: commonTestCaseDetails{
-				name:      "DefaultConfiguration",
-				namespace: "sa-test-default",
+				name:         "DefaultConfiguration",
+				instanceName: instanceName,
+				namespace:    "sa-test-default",
 				params: map[string]string{
 					"operatorServiceAccountName": "spark-operator-service-account",
 					"sparkServiceAccountName":    "spark-service-account",
 				},
 			},
-			expectedOperatorSA: utils.DefaultInstanceName + "-spark-operator-service-account",
-			expectedDriverSA:   utils.DefaultInstanceName + "-spark-service-account",
+			expectedOperatorSA: instanceName + "-spark-operator-service-account",
+			expectedDriverSA:   instanceName + "-spark-service-account",
 		},
 		{
 			commonTestCaseDetails: commonTestCaseDetails{
-				name:      "ProvidedOperatorServiceAccount",
-				namespace: "sa-test-operator",
+				name:         "ProvidedOperatorServiceAccount",
+				instanceName: instanceName,
+				namespace:    "sa-test-operator",
 				params: map[string]string{
 					"operatorServiceAccountName":   "custom-operator-sa",
 					"createOperatorServiceAccount": "false",
@@ -180,12 +184,13 @@ func TestServiceAccounts(t *testing.T) {
 			},
 			prepareOperatorSA:  true,
 			expectedOperatorSA: "custom-operator-sa",
-			expectedDriverSA:   utils.DefaultInstanceName + "-spark-service-account",
+			expectedDriverSA:   instanceName + "-spark-service-account",
 		},
 		{
 			commonTestCaseDetails: commonTestCaseDetails{
-				name:      "ProvidedSparkServiceAccount",
-				namespace: "sa-test-spark",
+				name:         "ProvidedSparkServiceAccount",
+				namespace:    "sa-test-spark",
+				instanceName: instanceName,
 				params: map[string]string{
 					"operatorServiceAccountName": "spark-operator-service-account",
 					"createSparkServiceAccount":  "false",
@@ -193,7 +198,7 @@ func TestServiceAccounts(t *testing.T) {
 				},
 			},
 			prepareDriverSA:    true,
-			expectedOperatorSA: utils.DefaultInstanceName + "-spark-operator-service-account",
+			expectedOperatorSA: instanceName + "-spark-operator-service-account",
 			expectedDriverSA:   "custom-spark-sa",
 		},
 	}
@@ -212,8 +217,9 @@ func TestRoleBasedAccessControl(t *testing.T) {
 	testCases := []rbacTestCase{
 		{
 			commonTestCaseDetails: commonTestCaseDetails{
-				name:      "CreateDefaultRBAC",
-				namespace: "rbac-test-default",
+				name:         "CreateDefaultRBAC",
+				namespace:    "rbac-test-default",
+				instanceName: utils.GenerateInstanceName(),
 				params: map[string]string{
 					"createRBAC": "true",
 				},
@@ -221,8 +227,9 @@ func TestRoleBasedAccessControl(t *testing.T) {
 		},
 		{
 			commonTestCaseDetails: commonTestCaseDetails{
-				name:      "ProvidedRBAC",
-				namespace: "rbac-test-provided",
+				name:         "ProvidedRBAC",
+				namespace:    "rbac-test-provided",
+				instanceName: utils.GenerateInstanceName(),
 				params: map[string]string{
 					"createRBAC": "false",
 				},
@@ -264,6 +271,7 @@ func runTestCase(tc securityTestCase) error {
 		Namespace:            tc.common().namespace,
 		SkipNamespaceCleanUp: true,
 		Params:               tc.common().params,
+		InstanceName:         tc.common().instanceName,
 	}
 
 	err = spark.InstallSparkOperator()
