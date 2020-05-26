@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/GoogleCloudPlatform/spark-on-k8s-operator/pkg/apis/sparkoperator.k8s.io/v1beta2"
 	operator "github.com/GoogleCloudPlatform/spark-on-k8s-operator/pkg/client/clientset/versioned"
+	petname "github.com/dustinkirkland/golang-petname"
 	log "github.com/sirupsen/logrus"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -47,7 +48,7 @@ func (spark *SparkOperatorInstallation) InstallSparkOperator() error {
 		spark.Namespace = DefaultNamespace
 	}
 	if spark.InstanceName == "" {
-		spark.InstanceName = DefaultInstanceName
+		spark.InstanceName = GenerateInstanceName()
 	}
 
 	if !spark.SkipNamespaceCleanUp {
@@ -186,4 +187,8 @@ func (spark *SparkOperatorInstallation) GetOperatorPodName() (string, error) {
 		"--selector", "app.kubernetes.io/name=spark",
 		"--namespace", spark.Namespace,
 		"-o=jsonpath={.items[*].metadata.name}")
+}
+
+func GenerateInstanceName() string {
+	return fmt.Sprintf("spark-%s", petname.Generate(2, "-"))
 }
