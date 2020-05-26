@@ -24,15 +24,18 @@ func TestTenancyTwoOperatorsDifferentNamespaces(t *testing.T) {
 		verifyWorkloads(t, operators)
 	})
 
-	t.Run("TestCRDsDeletion", func(t *testing.T) {
-		// verify CRDs are present after one of the operators is deleted
-		operators[0].CleanUp()
-		assert.Assert(t, crdsInstalled(t), "CRDs are not present!")
+	// this test has been commented out due to the following limitations in KUDO:
+	// https://kudo.dev/docs/what-is-kudo.html#limitations
 
-		// check that CRDs are deleted after no operator instances left
-		operators[1].CleanUp()
-		assert.Assert(t, !crdsInstalled(t), "CRDs are not deleted!")
-	})
+	//t.Run("TestCRDsDeletion", func(t *testing.T) {
+	//	// verify CRDs are present after one of the operators is deleted
+	//	operators[0].CleanUp()
+	//	assert.Assert(t, crdsInstalled(t), "CRDs are not present!")
+	//
+	//	// check that CRDs are deleted after no operator instances left
+	//	operators[1].CleanUp()
+	//	assert.Assert(t, !crdsInstalled(t), "CRDs are not deleted!")
+	//})
 }
 
 func TestTenancyTwoOperatorsSingleNamespace(t *testing.T) {
@@ -154,6 +157,9 @@ func operatorBuilder(numberOfOperators int, separateNamespace bool, uniqueOperat
 		}
 		if uniqueOperatorInstanceName {
 			operator.InstanceName = fmt.Sprintf("%s-%d", operatorInstanceName, i)
+		}
+		operator.Params = map[string]string{
+			"sparkJobNamespace": operator.Namespace,
 		}
 		operators = append(operators, &operator)
 	}

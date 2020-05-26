@@ -30,8 +30,8 @@ for i in $(seq ${1}); do
             -p operatorVersion="${OPERATOR_VERSION}" \
             -p sparkServiceAccountName="${SERVICE_ACCOUNT_NAME}" \
             -p createSparkServiceAccount=false \
-            -p enableMetrics=true
-done
+            -p enableMetrics=true \
+            -p sparkJobNamespace="${NAMEPSACE}"
 
 for i in $(seq ${1}); do
     kubectl wait --for=condition=Available deployment --all  --namespace "$NAMESPACE" --timeout=120s || sleep 1
