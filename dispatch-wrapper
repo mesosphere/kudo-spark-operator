@@ -1,0 +1,30 @@
+#!/bin/bash
+# To be moved to the shared repo pending https://jira.d2iq.com/browse/D2IQ-68551
+set -o nounset
+step_type="$1"
+shift
+
+case "${step_type}" in
+mandatory)
+	;;
+optional)
+	;;
+*)
+	echo "Unknown step type '${step_type}'" >&2
+	exit 1
+	;;
+esac
+
+# Existence of this file means some previous step failed.
+marker="${0}-marker"
+if [[ ! -e ${marker} || ${step_type} == mandatory ]]; then
+  "$@"
+  result="$?"
+else
+  echo "Skipping step $1 due to previous failure." >&2
+  result=0
+fi
+if [[ ! -e ${marker} && ${result} -ne 0 ]]; then
+  echo "${result}" > "${marker}"
+fi
+exit 0

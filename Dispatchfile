@@ -1,0 +1,251 @@
+#!mesosphere/dispatch-starlark:v0.5
+
+load("github.com/mesosphere/dispatch-catalog/starlark/stable/pipeline@0.0.4", "gitResource")
+
+gitResource("kudo-spark-operator", url="$(context.git.url)", revision="$(context.git.commit)")
+gitResource("operators", url="https://github.com/kudobuilder/operators.git", revision="master")
+
+inputs = ["kudo-spark-operator", "operators"]
+
+load("github.com/mesosphere/dispatch-catalog/starlark/stable/docker@0.0.4", "dindTask")
+load("github.com/mesosphere/dispatch-catalog/starlark/stable/pipeline@0.0.4", "storageResource")
+
+storageResource("artifacts")
+
+def secret_var(name, key):
+    return k8s.corev1.EnvVarSource(
+        secretKeyRef=k8s.corev1.SecretKeySelector(
+            localObjectReference=k8s.corev1.LocalObjectReference(name=name),
+            key=key
+        )
+    )
+
+
+dindTask("checks", inputs=inputs, outputs=["artifacts"], steps=[k8s.corev1.Container(
+  name="image-build-and-push",
+  command=[
+    "/entrypoint.sh",
+    "./shared/teamcity/image-build-and-push",
+    "--build_artifacts_directory", "$(resources.outputs.artifacts.path)",
+    "--kudo_version", "v0.13.0",
+    "--operator_repo_name", "kudo-spark-operator"
+  ],
+  workingDir="/workspace/kudo-spark-operator",
+  env=[
+    k8s.corev1.EnvVar(name="BUILD_VCS_NUMBER_kudo_spark_operator", value="$(context.git.commit)")
+  ],
+  resources = k8s.corev1.ResourceRequirements(
+    limits={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    },
+    requests={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    }
+  )
+
+ ), k8s.corev1.Container(
+  name="compile-tests-binary",
+  command=[
+    "/entrypoint.sh",
+    "docker", "run", "--rm", "-v", "./kudo-spark-operator/tests:/tests", "-w", "/tests", "golang:1.13",
+    "go", "test", "-c"
+  ],
+  workingDir="/workspace",
+  resources = k8s.corev1.ResourceRequirements(
+    limits={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    },
+    requests={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    }
+  )
+
+ ), k8s.corev1.Container(
+  name="pre-checks",
+  command=[
+    "/entrypoint.sh",
+    "./kudo-spark-operator/shared/teamcity/run-pre-checks",
+    "--build_artifacts_directory", "$(resources.outputs.artifacts.path)",
+    "--kudo_version", "v0.13.0",
+    "--operator_repo_name", "kudo-spark-operator"
+  ],
+  workingDir="/workspace",
+  env=[
+    k8s.corev1.EnvVar(name="BUILD_VCS_NUMBER_kudo_spark_operator", value="$(context.git.commit)")
+  ],
+  resources = k8s.corev1.ResourceRequirements(
+    limits={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    },
+    requests={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    }
+  )
+
+ ), k8s.corev1.Container(
+  name="cluster-create",
+  command=[
+    "/entrypoint.sh",
+    "./kudo-spark-operator/dispatch-wrapper", "optional",
+    "./kudo-spark-operator/shared/teamcity/cluster-create",
+    "--cluster_type", "konvoy",
+    "--operator_repo_name", "kudo-spark-operator"
+  ],
+  workingDir="/workspace",
+  env=[
+    k8s.corev1.EnvVar(name="KONVOY_VERSION", value="v1.3.0"),
+    k8s.corev1.EnvVar(name="WORKER_NODE_COUNT", value="5"),
+    k8s.corev1.EnvVar(name="WORKER_NODE_INSTANCE_TYPE", value="m5.xlarge"),
+    k8s.corev1.EnvVar(name="BUILD_VCS_NUMBER_kudo_spark_operator", value="$(context.git.commit)"),
+    k8s.corev1.EnvVar(name="GITHUB_TOKEN", valueFrom=secret_var("d2iq-dispatch-github-personal-access-token", "GITHUB_TOKEN")),  # needed by konvoy.sh to fetch konvoy from private repo
+    k8s.corev1.EnvVar(name="AWS_ACCESS_KEY_ID", valueFrom=secret_var("kudo-operators-aws", "AWS_ACCESS_KEY_ID")),
+    k8s.corev1.EnvVar(name="AWS_SECRET_ACCESS_KEY", valueFrom=secret_var("kudo-operators-aws", "AWS_SECRET_ACCESS_KEY"))
+  ],
+  resources = k8s.corev1.ResourceRequirements(
+    limits={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    },
+    requests={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    }
+  )
+
+ ), k8s.corev1.Container(
+  name="deploy-kudo",
+  command=[
+    "/entrypoint.sh",
+    "./kudo-spark-operator/dispatch-wrapper", "optional",
+    "./kudo-spark-operator/shared/teamcity/deploy-kudo",
+    "--kudo_version", "v0.13.0",
+    "--operator_repo_name", "kudo-spark-operator"
+  ],
+  workingDir="/workspace",
+  env=[
+    k8s.corev1.EnvVar(name="BUILD_VCS_NUMBER_kudo_spark_operator", value="$(context.git.commit)")
+  ],
+  resources = k8s.corev1.ResourceRequirements(
+    limits={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    },
+    requests={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    }
+  )
+
+ ), k8s.corev1.Container(
+  name="tests",
+  command=[
+    "/entrypoint.sh",
+    "./kudo-spark-operator/dispatch-wrapper", "optional",
+    "./kudo-spark-operator/shared/teamcity/run-tests",
+    "--build_artifacts_directory", "$(resources.outputs.artifacts.path)",
+    "--kudo_version", "v0.13.0",
+    "--operator_repo_name", "kudo-spark-operator"
+  ],
+  workingDir="/workspace",
+  env=[
+    k8s.corev1.EnvVar(name="AWS_ACCESS_KEY_ID", valueFrom=secret_var("kudo-operators-aws", "AWS_ACCESS_KEY_ID")),  # Needed for backup test
+    k8s.corev1.EnvVar(name="AWS_SECRET_ACCESS_KEY", valueFrom=secret_var("kudo-operators-aws", "AWS_SECRET_ACCESS_KEY")),  # ditto
+    k8s.corev1.EnvVar(name="AVAILABILITY_ZONES", value="us-west-2a,us-west-2b,us-west-2c"),
+    k8s.corev1.EnvVar(name="WORKER_NODE_COUNT", value="10"),
+    k8s.corev1.EnvVar(name="WORKER_NODE_INSTANCE_TYPE", value="t3.xlarge"),
+    k8s.corev1.EnvVar(name="BUILD_VCS_NUMBER_kudo_spark_operator", value="$(context.git.commit)")
+  ],
+  resources = k8s.corev1.ResourceRequirements(
+    limits={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    },
+    requests={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    }
+  )
+
+ ), k8s.corev1.Container(
+  name="collect-logs",
+  command=[
+    "/entrypoint.sh",
+    "./kudo-spark-operator/dispatch-wrapper", "mandatory",
+    "./kudo-spark-operator/shared/teamcity/collect-logs",
+    "--build_artifacts_directory", "$(resources.outputs.artifacts.path)",
+    "--cluster_type", "konvoy",
+    "--kudo_version", "v0.13.0",
+    "--operator_repo_name", "kudo-spark-operator"
+  ],
+  workingDir="/workspace",
+  env=[
+    k8s.corev1.EnvVar(name="KONVOY_VERSION", value="v1.3.0"),
+    k8s.corev1.EnvVar(name="BUILD_VCS_NUMBER_kudo_spark_operator", value="$(context.git.commit)")
+  ],
+  resources = k8s.corev1.ResourceRequirements(
+    limits={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    },
+    requests={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    }
+  )
+
+ ), k8s.corev1.Container(
+  name="cluster-tear-down",
+  command=[
+    "/entrypoint.sh",
+    "./kudo-spark-operator/dispatch-wrapper", "mandatory",
+    "./kudo-spark-operator/shared/teamcity/cluster-teardown",
+    "--cluster_type", "konvoy",
+    "--operator_repo_name", "kudo-spark-operator"
+  ],
+  workingDir="/workspace",
+  env=[
+    k8s.corev1.EnvVar(name="KONVOY_VERSION", value="v1.3.0"),
+    k8s.corev1.EnvVar(name="BUILD_VCS_NUMBER_kudo_spark_operator", value="$(context.git.commit)"),
+    k8s.corev1.EnvVar(name="AWS_ACCESS_KEY_ID", valueFrom=secret_var("kudo-operators-aws", "AWS_ACCESS_KEY_ID")),
+    k8s.corev1.EnvVar(name="AWS_SECRET_ACCESS_KEY", valueFrom=secret_var("kudo-operators-aws", "AWS_SECRET_ACCESS_KEY"))
+  ],
+  resources = k8s.corev1.ResourceRequirements(
+    limits={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    },
+    requests={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    }
+  )
+
+ ), k8s.corev1.Container(
+  name="exit",
+  command=[
+    "bash",
+    "-c",
+    "tar -zcvf $(resources.outputs.artifacts.path)/all.tgz $(resources.outputs.artifacts.path)/*/; marker='./kudo-spark-operator/dispatch-wrapper-marker';if [[ -e ${marker} ]]; then exit $(cat ${marker}); fi"
+  ],
+  workingDir="/workspace",
+  resources = k8s.corev1.ResourceRequirements(
+    limits={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    },
+    requests={
+      "cpu": k8s.resource_quantity("2000m"),
+      "memory": k8s.resource_quantity("7.5Gi")
+    }
+  )
+ )
+])
+
+load("github.com/mesosphere/dispatch-catalog/starlark/stable/pipeline@0.0.4", "push")
+action(tasks=["checks"], on=push())
