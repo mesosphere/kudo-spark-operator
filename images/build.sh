@@ -1,10 +1,7 @@
 #!/bin/bash
 
+set -e
 SCRIPT_DIR=$(dirname "$0")
-ROOT_DIR="$(dirname ${SCRIPT_DIR})"
-
-pushd "${ROOT_DIR}"
+cd "${SCRIPT_DIR}/.."
 
 make docker-push
-
-popd
