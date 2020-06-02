@@ -49,7 +49,7 @@ dindTask("checks", inputs=inputs, outputs=["artifacts"], steps=[k8s.corev1.Conta
   name="compile-tests-binary",
   command=[
     "/entrypoint.sh",
-    "docker", "run", "--rm", "-v", "./kudo-spark-operator/tests:/tests", "-w", "/tests", "golang:1.13",
+    "docker", "run", "--rm", "-v", "/workspace/kudo-spark-operator/tests:/tests", "-w", "/tests", "golang:1.13",
     "go", "test", "-c"
   ],
   workingDir="/workspace",
