@@ -21,9 +21,7 @@ def secret_var(name, key):
     )
 
 
-dindTask("checks", inputs=inputs, outputs=["artifacts"], steps=[
-
- k8s.corev1.Container(
+dindTask("checks", inputs=inputs, outputs=["artifacts"], steps=[k8s.corev1.Container(
   name="image-build-and-push",
   command=[
     "/entrypoint.sh",
@@ -46,9 +44,8 @@ dindTask("checks", inputs=inputs, outputs=["artifacts"], steps=[
       "memory": k8s.resource_quantity("7.5Gi")
     }
   )
- ),
 
- k8s.corev1.Container(
+ ), k8s.corev1.Container(
   name="compile-tests-binary",
   command=[
     "/entrypoint.sh",
@@ -66,9 +63,8 @@ dindTask("checks", inputs=inputs, outputs=["artifacts"], steps=[
       "memory": k8s.resource_quantity("7.5Gi")
     }
   )
- ),
 
- k8s.corev1.Container(
+ ), k8s.corev1.Container(
   name="pre-checks",
   command=[
     "/entrypoint.sh",
@@ -91,9 +87,8 @@ dindTask("checks", inputs=inputs, outputs=["artifacts"], steps=[
       "memory": k8s.resource_quantity("7.5Gi")
     }
   )
- ),
 
- k8s.corev1.Container(
+ ), k8s.corev1.Container(
   name="cluster-create",
   command=[
     "/entrypoint.sh",
@@ -122,9 +117,8 @@ dindTask("checks", inputs=inputs, outputs=["artifacts"], steps=[
       "memory": k8s.resource_quantity("7.5Gi")
     }
   )
- ),
 
- k8s.corev1.Container(
+ ), k8s.corev1.Container(
   name="deploy-kudo",
   command=[
     "/entrypoint.sh",
@@ -147,9 +141,8 @@ dindTask("checks", inputs=inputs, outputs=["artifacts"], steps=[
       "memory": k8s.resource_quantity("7.5Gi")
     }
   )
- ),
 
- k8s.corev1.Container(
+ ), k8s.corev1.Container(
   name="tests",
   command=[
     "/entrypoint.sh",
@@ -178,9 +171,8 @@ dindTask("checks", inputs=inputs, outputs=["artifacts"], steps=[
       "memory": k8s.resource_quantity("7.5Gi")
     }
   )
- ),
 
- k8s.corev1.Container(
+ ), k8s.corev1.Container(
   name="collect-logs",
   command=[
     "/entrypoint.sh",
@@ -206,9 +198,8 @@ dindTask("checks", inputs=inputs, outputs=["artifacts"], steps=[
       "memory": k8s.resource_quantity("7.5Gi")
     }
   )
- ),
 
- k8s.corev1.Container(
+ ), k8s.corev1.Container(
   name="cluster-tear-down",
   command=[
     "/entrypoint.sh",
@@ -234,9 +225,8 @@ dindTask("checks", inputs=inputs, outputs=["artifacts"], steps=[
       "memory": k8s.resource_quantity("7.5Gi")
     }
   )
- ),
 
- k8s.corev1.Container(
+ ), k8s.corev1.Container(
   name="exit",
   command=[
     "bash",
@@ -255,7 +245,6 @@ dindTask("checks", inputs=inputs, outputs=["artifacts"], steps=[
     }
   )
  )
-
 ])
 
 load("github.com/mesosphere/dispatch-catalog/starlark/stable/pipeline@0.0.4", "push")
