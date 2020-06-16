@@ -9,7 +9,7 @@ Required software:
 * GNU Make 4.2.1 or higher
 * sha1sum
 * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-* [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli) 0.10.1 or higher
+* [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli) 0.13.0 or higher
 
 For test cluster provisioning and Stub Universe artifacts upload valid AWS access credentials required:
 * `AWS_PROFILE` **or** `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables should be provided
@@ -46,7 +46,7 @@ To run tests on a pre-existing cluster with specified operator and spark images,
 ```
 make test KUBECONFIG=$HOME/.kube/config \
 SPARK_IMAGE_FULL_NAME=mesosphere/spark:spark-2.4.5-hadoop-2.9-k8s \
-OPERATOR_IMAGE_FULL_NAME=mesosphere/kudo-spark-operator:2.4.5-1.0.0
+OPERATOR_IMAGE_FULL_NAME=mesosphere/kudo-spark-operator:2.4.5-1.0.1
 ```
 
 # Installing and using Spark Operator
@@ -55,7 +55,7 @@ OPERATOR_IMAGE_FULL_NAME=mesosphere/kudo-spark-operator:2.4.5-1.0.0
 
 * Kubernetes cluster up and running
 * `kubectl` configured to work with provisioned cluster
-* [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli) 0.10.1 or higher
+* [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli) 0.13.0 or higher
 
 ### Installation
 
