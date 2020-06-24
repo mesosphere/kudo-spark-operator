@@ -123,7 +123,7 @@ test:
 		-v $(KUBECONFIG):/root/.kube/config \
 		-e TEST_DIR=/kudo-spark-operator/tests \
 		-e KUBECONFIG=/root/.kube/config \
-		-e SPARK_IMAGE=$(SPARK_IMAGE_FULL_NAME) \
+		-e SPARK_IMAGE=mesosphere/spark-dev:spark-2.4.5-hive-sentry \
 		-e OPERATOR_IMAGE=$(OPERATOR_IMAGE_FULL_NAME) \
 		-e TEAMCITY_VERSION="$(TEAMCITY_VERSION)" \
 		-e AWS_ACCESS_KEY_ID="$(AWS_ACCESS_KEY_ID)" \
