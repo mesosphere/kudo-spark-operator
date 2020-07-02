@@ -60,7 +60,7 @@ Pushing the new tag will trigger [release workflow](.github/workflows/release.ym
 create a new GH release draft with the package attached to it.
 
 - Verify the new release (draft) is created and operator package attached as a release asset
-- Add the release notes and create publish the release
+- Add the release notes and publish the release
  
 # Installing and using Spark Operator
 
