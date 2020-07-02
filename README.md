@@ -49,6 +49,19 @@ SPARK_IMAGE_FULL_NAME=mesosphere/spark:spark-2.4.5-hadoop-2.9-k8s \
 OPERATOR_IMAGE_FULL_NAME=mesosphere/kudo-spark-operator:2.4.5-1.0.1
 ```
 
+# Package and Release
+Release process is semi-automated and based on Github Actions. To make a new release:
+- Point the [operators](operators) submodule to the release commit, raise a PR and make sure the CI check is successful
+- After the PR is merged, create and push a new tag, e.g:
+```
+git tag -a v2.4.5-1.0.2 -m "KUDO Spark Operator 2.4.5-1.0.2 release"
+```   
+Pushing the new tag will trigger [release workflow](.github/workflows/release.yml), will build the operator package with KUDO,
+create a new GH release draft with the package attached to it.
+
+- Verify the new release (draft) is created and operator package attached as a release asset
+- Add the release notes and create publish the release
+ 
 # Installing and using Spark Operator
 
 ### Prerequisites
