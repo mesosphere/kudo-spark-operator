@@ -1,0 +1,54 @@
+on:
+  push:
+    tags:
+      - 'v*' # triggered when a new tag is added, e.g. v2.4.5-1.0.1
+
+name: KUDO Spark Operator Release
+
+env:
+  SPARK_OPERATOR_DIR: operators/repository/spark/operator
+
+jobs:
+  build:
+    name: Package and Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Configure git to use https instead of ssh
+        run: 'git config --global url."https://github.com/".insteadof git@github.com:'
+      - name: Update 'operators' submodule
+        run: git submodule update --init -- operators
+      - name: Extract release version from a tag ref
+        id: vars
+        run: echo ::set-output name=version::${GITHUB_REF#refs/*/v}
+      - name: Extract KUDO version
+        run: echo "::set-env name=KUDO_VERSION::$(grep kudoVersion $SPARK_OPERATOR_DIR/operator.yaml | cut -d' ' -f2 | tr -d '"')"
+      - name: Download KUDO
+        run: |
+          curl -L https://github.com/kudobuilder/kudo/releases/download/v${{env.KUDO_VERSION}}/kudo_${{env.KUDO_VERSION}}_linux_x86_64.tar.gz | tar -xvz
+          chmod +x kubectl-kudo
+      - name: Package the operator
+        run: |
+          ./kubectl-kudo package create $SPARK_OPERATOR_DIR
+          echo "::set-env name=OPERATOR_PACKAGE_FILE::$(find spark-*.tgz)"
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: KUDO Spark Operator ${{ steps.vars.outputs.version }}
+          draft: true
+          prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset 
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./${{ env.OPERATOR_PACKAGE_FILE }}
+          asset_name: ${{ env.OPERATOR_PACKAGE_FILE }}
+          asset_content_type: application/gzip
