@@ -7,7 +7,7 @@ SCRIPTS_DIR := $(ROOT_DIR)/scripts
 KUDO_TOOLS_DIR := $(ROOT_DIR)/shared
 SPARK_OPERATOR_DIR := $(ROOT_DIR)/spark-on-k8s-operator
 
-export KONVOY_VERSION ?= v1.3.0
+export KONVOY_VERSION ?= v1.5.0
 export WORKER_NODE_INSTANCE_TYPE ?= m5.xlarge
 export WORKER_NODE_COUNT ?= 5
 

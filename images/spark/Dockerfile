@@ -6,12 +6,14 @@ ARG SPARK_REPO="apache/spark"
 ARG SPARK_TAG="v2.4.5"
 ARG SCALA_VERSION="2.11"
 ARG HADOOP_VERSION="2.9.2"
+ARG KUBERNETES_CLIENT_VERSION="4.9.2"
 
 ARG SPARK_BUILD_ARGS="\
     -Pkubernetes \
     -Phadoop-cloud \
     -Pscala-${SCALA_VERSION} \
     -Dhadoop.version=${HADOOP_VERSION} \
+    -Dkubernetes.client.version=${KUBERNETES_CLIENT_VERSION} \
     -Pnetlib-lgpl \
     -Psparkr \
     -Phive \
