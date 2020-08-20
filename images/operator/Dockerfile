@@ -1,20 +1,29 @@
 ARG SPARK_IMAGE=mesosphere/spark:spark-2.4.5-hadoop-2.9-k8s
 
-FROM golang:1.12.5-alpine as builder
-LABEL stage=spark-operator-builder
-ARG DEP_VERSION="0.5.3"
-RUN apk add --no-cache bash git
-ADD https://github.com/golang/dep/releases/download/v${DEP_VERSION}/dep-linux-amd64 /usr/bin/dep
-RUN chmod +x /usr/bin/dep
+FROM golang:1.14.1-alpine as builder
 
-COPY . ${GOPATH}/src/github.com/GoogleCloudPlatform/spark-on-k8s-operator
-WORKDIR ${GOPATH}/src/github.com/GoogleCloudPlatform/spark-on-k8s-operator
-RUN dep ensure -vendor-only \
-    && go generate \
-    && CGO_ENABLED=0 GOOS=linux go build -o /usr/bin/spark-operator
+WORKDIR /workspace
+
+# Copy the Go Modules manifests
+COPY go.mod go.mod
+COPY go.sum go.sum
+# Cache deps before building and copying source so that we don't need to re-download as much
+# and so that source changes don't invalidate our downloaded layer
+RUN go mod download
+
+# Copy the go source code
+COPY main.go main.go
+COPY pkg/ pkg/
+
+# Build
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -o /usr/bin/spark-operator main.go
 
 FROM ${SPARK_IMAGE}
+USER root
 COPY --from=builder /usr/bin/spark-operator /usr/bin/
+RUN apt-get update \
+    && apt-get install -y openssl curl tini \
+    && rm -rf /var/lib/apt/lists/*
 COPY hack/gencerts.sh /usr/bin/
 
 COPY entrypoint.sh /usr/bin/
