@@ -122,21 +122,9 @@ spec:
         - name: gatekeeper
           enabled: true
         - name: external-dns
-          enabled: true
-          values: |
-            sources:
-            - service
-            - ingress
-            - istio-gateway
-            aws:
-              region: us-west-2c
-              preferCNAME: true
-            policy: sync
-            txtPrefix: local-
-            domainFilters:
-            - d2iq-kudo.mesosphe.re
-        - name: istio # Istio is currently in Preview
-          enabled: true
+          enabled: false
+        - name: istio
+          enabled: false
         - name: kibana
           enabled: false
         - name: konvoyconfig
