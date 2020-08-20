@@ -2,8 +2,8 @@ FROM ubuntu:18.04
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG TINI_VERSION=v0.18.0
-ARG SPARK_REPO="mesosphere/spark"
-ARG SPARK_TAG="kubernetes-1.17"
+ARG SPARK_REPO="apache/spark"
+ARG SPARK_TAG="v3.0.0"
 ARG SCALA_VERSION="2.11"
 ARG HADOOP_VERSION="2.9.2"
 
