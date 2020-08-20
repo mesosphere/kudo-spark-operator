@@ -9,7 +9,7 @@ spec:
   image: {{ .Image }}
   imagePullPolicy: Always
   mainClass: org.apache.spark.examples.SparkPi
-  mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.11-{{ .SparkVersion }}.jar"
+  mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.12-{{ .SparkVersion }}.jar"
   {{- if .Params.BatchScheduler }}
   batchScheduler: {{ .Params.BatchScheduler }}
   {{- end }}
