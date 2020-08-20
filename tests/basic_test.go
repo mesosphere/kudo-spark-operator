@@ -347,7 +347,7 @@ func TestRSupport(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := spark.WaitForOutput(job, "3   2.997274"); err != nil {
+	if err := spark.WaitForOutput(job, "userId movieId rating prediction"); err != nil {
 		t.Fatal(err)
 	}
 
