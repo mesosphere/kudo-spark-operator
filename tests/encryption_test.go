@@ -218,7 +218,7 @@ func checkSparkUI(appName string, sparkApp utils.SparkJob, suite *SparkEncryptio
 	if err := suite.operator.WaitForJobState(sparkApp, v1beta2.RunningState); err != nil {
 		suite.Fail("SparkApplication \"%s\" is not running", appName, err)
 	}
-	if err := utils.RetryWithTimeout(20*time.Second, 2*time.Second, func() error {
+	if err := utils.RetryWithTimeout(1*time.Minute, 5*time.Second, func() error {
 		response, err := utils.Kubectl("exec", utils.DriverPodName(appName), "-n", sparkApp.Namespace,
 			"--",
 			"curl",
