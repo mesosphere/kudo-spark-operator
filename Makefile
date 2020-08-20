@@ -10,7 +10,7 @@ SPARK_OPERATOR_DIR := $(ROOT_DIR)/spark-on-k8s-operator
 export KONVOY_VERSION ?= v1.5.0
 export CLUSTER_CONFIG_YAML ?= $(ROOT_DIR)/cluster.template.yaml
 export WORKER_NODE_INSTANCE_TYPE ?= m5.2xlarge
-export WORKER_NODE_COUNT ?= 5
+export WORKER_NODE_COUNT ?= 4
 
 export NAMESPACE ?= spark
 MKE_CLUSTER_NAME=kubernetes-cluster1
@@ -161,7 +161,7 @@ clean-all:
 
 # function for extracting the value of an AWS property passed as an argument
 define get_aws_credential
-$(if $(AWS_PROFILE),$(shell cat ~/.aws/credentials | grep ${AWS_PROFILE} -A3 | tail -n3 | grep $1 | xargs | cut -d' ' -f3),$(error AWS_PROFILE is not set))
+$(if $(AWS_PROFILE),$(shell cat ~/.aws/credentials | grep ${AWS_PROFILE} -A3 | tail -n3 | grep $1 | xargs | cut -d ' ' -f3),$(warning unable to update $1 from AWS credentials file: AWS_PROFILE is not provided. $1 will not be set))
 endef
 
 # function for calculating global checksum of directories and files passed as arguments.
