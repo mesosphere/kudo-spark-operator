@@ -94,7 +94,6 @@ function add_spark_conf_if_non_empty() {
 # This method is required for passing secret data to spark-submit via environment variables,
 # injected by K8s via Secrets.
 function configure_spark_properties() {
-    add_spark_conf_if_non_empty "spark.authenticate.secret" "${SPARK_AUTHENTICATE_SECRET}"
     add_spark_conf_if_non_empty "spark.ssl.keyPassword" "${SPARK_SSL_KEYPASSWORD}"
     add_spark_conf_if_non_empty "spark.ssl.keyStorePassword" "${SPARK_SSL_KEYSTOREPASSWORD}"
     add_spark_conf_if_non_empty "spark.ssl.trustStorePassword" "${SPARK_SSL_TRUSTSTOREPASSWORD}"
@@ -102,12 +101,6 @@ function configure_spark_properties() {
 
 configure_spark_properties
 
-# if SPARK_AUTHENTICATE_SECRET is set, enable RPC authetication for executors
-# and provide the auth secret via _SPARK_AUTH_SECRET variable
-if [[ -n "${SPARK_AUTHENTICATE_SECRET}" ]]; then
-  SPARK_EXECUTOR_JAVA_OPTS+=("-Dspark.authenticate=true")
-  export _SPARK_AUTH_SECRET="${SPARK_AUTHENTICATE_SECRET}"
-fi
 
 case "$SPARK_K8S_CMD" in
   driver)
