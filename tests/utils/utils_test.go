@@ -27,7 +27,7 @@ func TestTemplating(t *testing.T) {
 		Namespace:    "foo",
 		Image:        "bar",
 		SparkVersion: "baz",
-		Template:     "spark-linear-regression-job.yaml",
+		Template:     "spark-piyaml",
 	})
 	defer os.Remove(tmpFilePath)
 

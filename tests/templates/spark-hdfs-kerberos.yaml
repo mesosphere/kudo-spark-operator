@@ -9,7 +9,7 @@ spec:
   image: {{ .Image }}
   imagePullPolicy: Always
   mainClass: org.apache.spark.examples.HdfsTest
-  mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.11-{{ .SparkVersion }}.jar"
+  mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.12-{{ .SparkVersion }}.jar"
   arguments:
     - "hdfs://namenode.hdfs-kerberos.svc.cluster.local:9000/spark/README.txt"
   sparkConf:

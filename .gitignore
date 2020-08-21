@@ -13,7 +13,7 @@ konvoy-*
 license.*
 
 admin.conf
-cluster.*.yaml
+cluster.yaml
 inventory.yaml
 license.txt
 

@@ -66,8 +66,8 @@ func TestJobSubmission(t *testing.T) {
 	}
 
 	job := utils.SparkJob{
-		Name:     "linear-regression",
-		Template: "spark-linear-regression-job.yaml",
+		Name:     "spark-pi",
+		Template: "spark-pi.yaml",
 	}
 
 	err = spark.SubmitJob(&job)
@@ -181,9 +181,9 @@ func TestSparkHistoryServerInstallation(t *testing.T) {
 	}
 
 	job := utils.SparkJob{
-		Name:     "history-server-linear-regression",
+		Name:     "spark-pi-history-server",
 		Params:   sparkAppParams,
-		Template: "spark-linear-regression-history-server-job.yaml",
+		Template: "spark-pi-history-server-job.yaml",
 	}
 
 	// Submit a SparkApplication
@@ -347,7 +347,7 @@ func TestRSupport(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if err := spark.WaitForOutput(job, "3   2.997274"); err != nil {
+	if err := spark.WaitForOutput(job, "userId movieId rating prediction"); err != nil {
 		t.Fatal(err)
 	}
 
