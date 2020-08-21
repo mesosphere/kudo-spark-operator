@@ -187,7 +187,7 @@ endef
 
 # arguments:
 # $1 - release image repo, e.g. mesosphere/spark
-# $2 - release image tag, e.g spark-2.4.5-hadoop-2.9-k8s
+# $2 - release image tag, e.g spark-3.0.0-hadoop-2.9-k8s
 # $3 - dev image full name, e.g mesosphere/spark-dev:ab36f1f3691a8be2050f3acb559c34e3e8e5d66e
 define tag_and_push_image
 	$(eval RELEASE_IMAGE_FULL_NAME=$(1):$(2))
