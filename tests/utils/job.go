@@ -125,7 +125,11 @@ func (spark *SparkOperatorInstallation) WaitForOutput(job SparkJob, text string)
 
 func (spark *SparkOperatorInstallation) WaitUntilSucceeded(job SparkJob) error {
 	driverPodName := DriverPodName(job.Name)
-	return waitForPodStatusPhase(spark.K8sClients, driverPodName, job.Namespace, "Succeeded")
+	err := waitForPodStatusPhase(spark.K8sClients, driverPodName, job.Namespace, "Succeeded")
+	if err != nil {
+		logPodLogTail(spark.K8sClients, job.Namespace, DriverPodName(job.Name), 0)
+	}
+	return err
 }
 
 func DriverPodName(jobName string) string {
