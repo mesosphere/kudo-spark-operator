@@ -10,6 +10,8 @@ spec:
   imagePullPolicy: Always
   mainClass: org.apache.spark.examples.SparkPi
   mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.12-{{ .SparkVersion }}.jar"
+  arguments:
+    - "10"
   {{- if .Params.BatchScheduler }}
   batchScheduler: {{ .Params.BatchScheduler }}
   {{- end }}

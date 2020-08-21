@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/GoogleCloudPlatform/spark-on-k8s-operator/pkg/apis/sparkoperator.k8s.io/v1beta2"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	v12 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
@@ -43,8 +44,14 @@ func (spark *SparkOperatorInstallation) SubmitJob(job *SparkJob) error {
 
 	yamlFile := createSparkJob(*job)
 	defer os.Remove(yamlFile)
-	log.Infof("Submitting the job")
-	err := KubectlApply(job.Namespace, yamlFile)
+
+	content, err := ioutil.ReadFile(yamlFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Infof("Submitting the job:\n" + string(content))
+	err = KubectlApply(job.Namespace, yamlFile)
 
 	return err
 }
