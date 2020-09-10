@@ -147,7 +147,7 @@ test:
 		-e AWS_BUCKET_NAME=$(AWS_BUCKET_NAME) \
 		-e AWS_BUCKET_PATH=$(AWS_BUCKET_PATH) \
 		$(shell cat $(ROOT_DIR)/docker-builder) \
-		kubectl kuttl test --config tests/kuttl-test.yaml --report xml $(KUTTL_FLAGS)
+		kubectl kuttl test --report xml $(KUTTL_FLAGS)
 
 .PHONY: install
 install:
