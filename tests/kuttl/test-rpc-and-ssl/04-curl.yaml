@@ -1,0 +1,15 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: |
+      kubectl exec spark-mock-task-runner-with-ssl-driver -n $NAMESPACE -- sh -c \
+        "curl \
+          --insecure \
+          --location \
+          --include \
+          --connect-timeout 5 \
+          --max-time 10 \
+          --retry 10 \
+          --retry-delay 0 \
+          --retry-max-time 60 \
+          --retry-connrefused https://localhost:4440"

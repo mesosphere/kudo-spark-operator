@@ -1,0 +1,18 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: |
+    kubectl kudo install "$ROOT_DIR"/operators/repository/spark/operator \
+      --namespace=spark-rbac-test \
+      --instance=spark-with-custom-rbac \
+      --wait \
+      -p operatorImageName=$OPERATOR_DOCKER_REPO \
+      -p operatorVersion=$OPERATOR_VERSION \
+      -p sparkJobNamespace=spark-rbac-test \
+      -p createOperatorServiceAccount=false \
+      -p createSparkServiceAccount=false \
+      -p operatorServiceAccountName=spark-operator-custom-rbac-service-account \
+      -p sparkServiceAccountName=spark-custom-rbac-spark-service-account \
+      -p createRBAC=false
+assert:
+- ../manifests/kudo-controller.yaml

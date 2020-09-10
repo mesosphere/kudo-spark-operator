@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: spark-custom-rbac-spark-service-account
+  namespace: spark-rbac-test
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: spark-driver-test-role
+  namespace: spark-rbac-test
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["*"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: spark-driver-role-test-binding
+  namespace: spark-rbac-test
+subjects:
+- kind: ServiceAccount
+  name: spark-custom-rbac-spark-service-account
+roleRef:
+  kind: Role
+  name: spark-driver-test-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: spark-operator-custom-rbac-service-account
+  namespace: spark-rbac-test
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: spark-operator-custom-rbac-cluster-role
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["*"]
+- apiGroups: [""]
+  resources: ["services", "configmaps", "secrets"]
+  verbs: ["create", "get", "delete", "update"]
+- apiGroups: ["extensions"]
+  resources: ["ingresses"]
+  verbs: ["create", "get", "delete"]
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["create", "update", "patch"]
+- apiGroups: ["apiextensions.k8s.io"]
+  resources: ["customresourcedefinitions"]
+  verbs: ["create", "get", "update", "delete"]
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources: ["mutatingwebhookconfigurations"]
+  verbs: ["create", "get", "update", "delete"]
+- apiGroups: ["sparkoperator.k8s.io"]
+  resources: ["sparkapplications", "scheduledsparkapplications", "sparkapplications/status", "scheduledsparkapplications/status"]
+  verbs: ["*"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: spark-operator-custom-rbac-cluster-role-binding
+subjects:
+- kind: ServiceAccount
+  name: spark-operator-custom-rbac-service-account
+  namespace: spark-rbac-test
+roleRef:
+  kind: ClusterRole
+  name: spark-operator-custom-rbac-cluster-role
+  apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,19 @@
+apiVersion: kudo.dev/v1beta1
+kind: Instance
+metadata:
+  name: spark
+  namespace: spark-namespace-1
+status:
+  planStatus:
+    deploy:
+      status: COMPLETE
+---
+apiVersion: kudo.dev/v1beta1
+kind: Instance
+metadata:
+  name: spark
+  namespace: spark-namespace-2
+status:
+  planStatus:
+    deploy:
+      status: COMPLETE

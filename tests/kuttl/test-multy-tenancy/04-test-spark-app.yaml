@@ -1,0 +1,8 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: |
+      for i in `seq 2`
+      do
+        kubectl apply -f ../manifests/spark-pi.yaml -n spark-namespace-$i
+      done

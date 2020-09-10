@@ -1,0 +1,23 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+timeout: 300
+collectors:
+- pod: shuffle-app-driver
+---
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: shuffle-app
+status:
+  applicationState:
+    state: COMPLETED
+---
+apiVersion: v1
+kind: Event
+reason: SparkApplicationCompleted
+source:
+  component: spark-operator
+involvedObject:
+  apiVersion: sparkoperator.k8s.io/v1beta2
+  kind: SparkApplication
+  name: shuffle-app

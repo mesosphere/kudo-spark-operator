@@ -1,0 +1,21 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+timeout: 60
+collectors:
+- pod: mock-task-runner-driver
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mock-task-runner-driver
+status:
+  phase: Running
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    spark-role: executor
+    sparkoperator.k8s.io/app-name: mock-task-runner
+status:
+  phase: Running

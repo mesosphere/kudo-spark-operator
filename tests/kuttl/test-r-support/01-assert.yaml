@@ -1,0 +1,24 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+timeout: 120
+collectors:
+- pod: spark-r-als-driver
+---
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: spark-r-als
+status:
+  applicationState:
+    state: COMPLETED
+---
+apiVersion: v1
+kind: Event
+reason: SparkApplicationCompleted
+source:
+  component: spark-operator
+involvedObject:
+  apiVersion: sparkoperator.k8s.io/v1beta2
+  kind: SparkApplication
+  name: spark-r-als
+

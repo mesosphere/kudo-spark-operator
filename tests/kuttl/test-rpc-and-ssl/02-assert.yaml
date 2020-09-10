@@ -1,0 +1,23 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+timeout: 60
+collectors:
+- pod: spark-mock-task-runner-with-auth-driver
+---
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: spark-mock-task-runner-with-auth
+status:
+  applicationState:
+    state: COMPLETED
+---
+apiVersion: v1
+kind: Event
+reason: SparkApplicationCompleted
+source:
+  component: spark-operator
+involvedObject:
+  apiVersion: sparkoperator.k8s.io/v1beta2
+  kind: SparkApplication
+  name: spark-mock-task-runner-with-auth

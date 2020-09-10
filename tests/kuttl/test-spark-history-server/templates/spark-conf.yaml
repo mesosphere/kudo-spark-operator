@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: spark-conf
+type: Opaque
+stringData:
+  spark-defaults.conf: |
+    spark.hadoop.fs.s3a.access.key {{AWS_ACCESS_KEY_ID}}
+    spark.hadoop.fs.s3a.secret.key {{AWS_SECRET_ACCESS_KEY}}
+    spark.hadoop.fs.s3a.session.token {{AWS_SESSION_TOKEN}}
+    spark.hadoop.fs.s3a.impl org.apache.hadoop.fs.s3a.S3AFileSystem
+    # uncomment the following line to enable Temporary AWS credentials support
+    # spark.hadoop.fs.s3a.aws.credentials.provider org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider
+    spark.history.fs.update.interval 2s

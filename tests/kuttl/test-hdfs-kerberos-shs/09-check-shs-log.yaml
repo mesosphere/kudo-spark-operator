@@ -1,0 +1,18 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: |
+    match="FsHistoryProvider: Finished parsing hdfs://namenode.hdfs-kerberos.svc.cluster.local:9000/history/spark-"
+    for try in `seq 5`
+    do
+      shs_log=$(kubectl logs -l app.kubernetes.io/name=spark-history-server -n $NAMESPACE)
+      if [ $(echo ${shs_log} | grep -c "${match}") -gt 0 ]; then
+        echo string found in the logs
+        exit 0
+      else
+        echo match not found - retrying, attempt: $try
+      fi
+      sleep 5
+    done
+    echo timed out waiting for the match, logs: ${shs_log}
+    exit 1

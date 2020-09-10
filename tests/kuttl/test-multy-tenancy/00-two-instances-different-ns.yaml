@@ -1,0 +1,19 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: |
+      for i in `seq 2`
+      do
+        kubectl create ns spark-namespace-$i
+      done
+  - script: |
+      for i in `seq 2`
+      do
+        kubectl kudo install "${ROOT_DIR}"/operators/repository/spark/operator \
+          --instance=spark-$i \
+          --wait \
+          --namespace=spark-namespace-$i \
+          -p operatorImageName=$OPERATOR_DOCKER_REPO \
+          -p operatorVersion=$OPERATOR_VERSION \
+          -p sparkJobNamespace=spark-namespace-$i
+      done

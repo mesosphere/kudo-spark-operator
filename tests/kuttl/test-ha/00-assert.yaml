@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spark-operator-lock
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark
+status:
+  availableReplicas: 3

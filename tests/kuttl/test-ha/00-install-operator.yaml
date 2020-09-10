@@ -1,0 +1,17 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: |
+      kubectl kudo install "${ROOT_DIR}"/operators/repository/spark/operator \
+        --namespace=$NAMESPACE \
+        --instance=spark \
+        --wait \
+        -p operatorImageName=$OPERATOR_DOCKER_REPO \
+        -p operatorVersion=$OPERATOR_VERSION \
+        -p sparkJobNamespace=$NAMESPACE \
+        -p enableLeaderElection=true \
+        -p leaderElectionLockNamespace=$NAMESPACE \
+        -p replicas=3
+assert:
+  - ../manifests/kudo-controller.yaml
+  - ../manifests/spark-instance.yaml

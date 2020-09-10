@@ -1,0 +1,17 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: |
+    kubectl kudo install "${ROOT_DIR}"/operators/repository/spark/operator \
+      --namespace=$NAMESPACE \
+      --instance=spark \
+      --wait \
+      -p operatorImageName=$OPERATOR_DOCKER_REPO \
+      -p operatorVersion=$OPERATOR_VERSION \
+      -p sparkJobNamespace=$NAMESPACE \
+      -p enableHistoryServer=true \
+      -p historyServerFsLogDirectory=hdfs://namenode.hdfs-kerberos.svc.cluster.local:9000/history \
+      -p delegationTokenSecret=hadoop-token
+assert:
+  - ../manifests/kudo-controller.yaml
+  - ../manifests/spark-instance.yaml

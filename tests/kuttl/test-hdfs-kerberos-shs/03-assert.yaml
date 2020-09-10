@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hadoop-token
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hadoop-conf

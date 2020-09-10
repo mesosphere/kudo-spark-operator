@@ -1,0 +1,8 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: |
+      set -x
+
+      leader_pod=$(kubectl get cm spark-operator-lock -n $NAMESPACE -o jsonpath='{.metadata.annotations.control-plane\.alpha\.kubernetes\.io/leader}' | jq -r .holderIdentity)
+      kubectl delete pod ${leader_pod} -n $NAMESPACE

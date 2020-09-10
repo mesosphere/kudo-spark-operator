@@ -1,0 +1,5 @@
+apiVersion: kudo.dev/v1alpha1
+kind: TestSuite
+testDirs:
+- tests/kuttl
+timeout: 120

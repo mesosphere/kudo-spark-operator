@@ -1,0 +1,10 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: |
+    set -x
+
+    mkdir -p .tmp
+    echo "$AWS_BUCKET_PATH/spark-history-server/$(head /dev/urandom | LC_ALL=C LC_CTYPE=C tr -dc A-Za-z0-9 | head -c10)/" > .tmp/s3_bucket_path
+
+    aws s3api put-object --bucket $AWS_BUCKET_NAME --key $(cat .tmp/s3_bucket_path)

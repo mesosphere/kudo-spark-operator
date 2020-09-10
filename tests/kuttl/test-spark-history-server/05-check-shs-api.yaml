@@ -1,0 +1,12 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: |
+      set -x
+
+      shs_pod=$(kubectl get pod -n $NAMESPACE -l app.kubernetes.io/name=spark-history-server -o=jsonpath='{.items[0].metadata.name}')
+      spark_app=$(kubectl get pod -n $NAMESPACE -o=jsonpath='{.items[0].metadata.labels.spark-app-selector}')
+
+      kubectl exec ${shs_pod} -n $NAMESPACE -- sh -c \
+      "curl --fail --show-error --retry 10 --retry-delay 0 --retry-max-time 60 --retry-connrefused \
+        http://localhost:18080/api/v1/applications/${spark_app}/jobs"
