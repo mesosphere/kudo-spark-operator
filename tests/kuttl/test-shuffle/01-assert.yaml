@@ -11,13 +11,3 @@ metadata:
 status:
   applicationState:
     state: COMPLETED
----
-apiVersion: v1
-kind: Event
-reason: SparkApplicationCompleted
-source:
-  component: spark-operator
-involvedObject:
-  apiVersion: sparkoperator.k8s.io/v1beta2
-  kind: SparkApplication
-  name: shuffle-app

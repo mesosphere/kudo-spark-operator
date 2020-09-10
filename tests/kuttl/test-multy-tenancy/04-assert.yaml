@@ -13,17 +13,6 @@ status:
   applicationState:
     state: COMPLETED
 ---
-apiVersion: v1
-kind: Event
-reason: SparkApplicationCompleted
-metadata:
-  namespace: spark-namespace-1
-involvedObject:
-  apiVersion: sparkoperator.k8s.io/v1beta2
-  kind: SparkApplication
-  name: spark-pi
-  namespace: spark-namespace-1
----
 apiVersion: sparkoperator.k8s.io/v1beta2
 kind: SparkApplication
 metadata:
@@ -32,14 +21,3 @@ metadata:
 status:
   applicationState:
     state: COMPLETED
----
-apiVersion: v1
-kind: Event
-reason: SparkApplicationCompleted
-metadata:
-  namespace: spark-namespace-2
-involvedObject:
-  apiVersion: sparkoperator.k8s.io/v1beta2
-  kind: SparkApplication
-  name: spark-pi
-  namespace: spark-namespace-2

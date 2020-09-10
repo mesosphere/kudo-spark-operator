@@ -18,7 +18,7 @@ spec:
     "spark.eventLog.enabled": "true"
     "spark.eventLog.dir": "{{EVENT_LOG_DIR}}"
     # uncomment the following line to enable Temporary AWS credentials support
-    "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider"
+#    "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider"
   deps:
     jars:
     - local:///opt/spark/examples/jars/scopt_2.12-3.7.1.jar

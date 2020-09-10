@@ -12,16 +12,3 @@ metadata:
 status:
   applicationState:
     state: COMPLETED
----
-apiVersion: v1
-kind: Event
-reason: SparkApplicationCompleted
-metadata:
-  namespace: spark-rbac-test
-source:
-  component: spark-operator
-involvedObject:
-  apiVersion: sparkoperator.k8s.io/v1beta2
-  kind: SparkApplication
-  name: mock-task-runner
-  namespace: spark-rbac-test

@@ -1,6 +1,6 @@
 apiVersion: kuttl.dev/v1beta1
 kind: TestAssert
-timeout: 300
+timeout: 120
 collectors:
 - pod: mock-task-runner-driver
 ---
