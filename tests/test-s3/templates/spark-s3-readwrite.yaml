@@ -15,13 +15,12 @@ spec:
     "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
     # uncomment the following line to enable Temporary AWS credentials support
   #    "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider"
-
   sparkVersion: 3.0.0
   arguments:
   - "--readUrl"
-  - {? {S3_READ_URL: ''} : ''}
+  - "{{S3_READ_URL}}"
   - "--writeUrl"
-  - {? {S3_WRITE_URL: ''} : ''}
+  - "{{S3_WRITE_URL}}"
   restartPolicy:
     type: Never
   driver:
