@@ -5,12 +5,12 @@ metadata:
 spec:
   type: Scala
   mode: cluster
-  image: mesosphere/spark:spark-3.0.0-hadoop-2.9-k8s-rc1
+  image: mesosphere/spark-dev:e0f9eb2dcc71b2de6d3e0ce8a0f26c059430b946
   imagePullPolicy: Always
   mainClass: org.apache.spark.examples.HdfsTest
   mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.12-3.0.0.jar"
   arguments:
-    - "hdfs://namenode.hdfs-kerberos.svc.cluster.local:9000/spark/README.txt"
+  - "hdfs://namenode.hdfs-kerberos.svc.cluster.local:9000/spark/README.txt"
   sparkConf:
     "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
@@ -27,9 +27,9 @@ spec:
       version: 3.0.0
     serviceAccount: spark-spark-service-account
     secrets:
-      - name: hadoop-token
-        path: /mnt/secrets
-        secretType: HadoopDelegationToken
+    - name: hadoop-token
+      path: /mnt/secrets
+      secretType: HadoopDelegationToken
   executor:
     cores: 1
     instances: 1
@@ -37,6 +37,6 @@ spec:
     labels:
       version: 3.0.0
     secrets:
-      - name: hadoop-token
-        path: /mnt/secrets
-        secretType: HadoopDelegationToken
+    - name: hadoop-token
+      path: /mnt/secrets
+      secretType: HadoopDelegationToken

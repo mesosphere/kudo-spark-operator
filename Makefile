@@ -117,15 +117,15 @@ docker-push:
 # Testing
 
 # this target updates Spark image for all SparkApplication manifests in tests
-.PHONY: update_spark_image
-update_spark_image:
+.PHONY: update-spark-image-in-test-manifests
+update-spark-image-in-test-manifests:
 	if ! command -v yq &> /dev/null; then
 	  echo 'Error: yq is not installed.' >&2
 	  exit 1
 	fi
 	for yaml in tests/kuttl/**/*.yaml; do
 		if [[ `yq r $$yaml 'kind'` == 'SparkApplication' ]]; then
-			yq w $$yaml 'spec.image' $(SPARK_IMAGE_FULL_NAME)
+			yq w -i $$yaml 'spec.image' $(SPARK_IMAGE_FULL_NAME)
 		fi
 	done
 
