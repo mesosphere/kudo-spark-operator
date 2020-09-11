@@ -27,5 +27,6 @@ spec:
     cores: 1
     instances: 1
     memory: "512m"
+    deleteOnTermination: false
     labels:
       version: 3.0.0

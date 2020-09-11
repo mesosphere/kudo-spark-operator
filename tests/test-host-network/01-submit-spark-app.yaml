@@ -29,6 +29,7 @@ spec:
     cores: 1
     instances: 1
     memory: "512m"
+    deleteOnTermination: false
     hostNetwork: true
     labels:
       version: 3.0.0

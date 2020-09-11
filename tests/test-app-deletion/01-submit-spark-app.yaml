@@ -27,5 +27,6 @@ spec:
   executor:
     cores: 1
     instances: 1
+    deleteOnTermination: false
     labels:
       version: 3.0.0

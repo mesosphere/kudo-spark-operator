@@ -2,7 +2,9 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestAssert
 timeout: 120
 collectors:
-- pod: mock-task-runner-driver
+- selector: spark-role=driver
+- selector: spark-role=executor
+- selector: app.kubernetes.io/instance=spark
 ---
 apiVersion: v1
 kind: Pod
