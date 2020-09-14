@@ -36,6 +36,9 @@ spec:
       runAsUser: 65534
       runAsGroup: 65534
       runAsNonRoot: true
+    env:
+    - name: KUBERNETES_REQUEST_TIMEOUT
+      value: 100000 # ms
   executor:
     cores: 1
     instances: 1
