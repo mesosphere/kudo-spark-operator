@@ -14,6 +14,8 @@ spec:
   sparkConf:
     "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
+    "spark.kubernetes.submission.connectionTimeout": "60000"
+    "spark.kubernetes.submission.requestTimeout": "60000"
   hadoopConfigMap: hadoop-conf
   sparkVersion: 3.0.0
   restartPolicy:

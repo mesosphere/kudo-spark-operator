@@ -12,6 +12,8 @@ spec:
   sparkConf:
     "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
+    "spark.kubernetes.submission.connectionTimeout": "60000"
+    "spark.kubernetes.submission.requestTimeout": "60000"
     "spark.ssl.enabled": "true"
     "spark.ssl.protocol": "TLSv1.2"
     "spark.ssl.keyStore": "/tmp/spark/ssl/keystore.jks"

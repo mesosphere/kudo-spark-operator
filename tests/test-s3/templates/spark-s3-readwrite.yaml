@@ -12,6 +12,8 @@ spec:
   sparkConf:
     "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
+    "spark.kubernetes.submission.connectionTimeout": "60000"
+    "spark.kubernetes.submission.requestTimeout": "60000"
     "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
     # uncomment the following line to enable Temporary AWS credentials support
   #    "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider"
