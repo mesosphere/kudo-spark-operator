@@ -38,7 +38,7 @@ spec:
       runAsNonRoot: true
     env:
     - name: KUBERNETES_REQUEST_TIMEOUT
-      value: "100000" # ms
+      value: 100000 # ms
   executor:
     cores: 1
     instances: 1
