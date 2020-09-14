@@ -24,9 +24,6 @@ spec:
     labels:
       version: 3.0.0
     serviceAccount: spark-2-spark-service-account
-    env:
-    - name: KUBERNETES_REQUEST_TIMEOUT
-      value: 100000 # ms
   executor:
     cores: 1
     instances: 1

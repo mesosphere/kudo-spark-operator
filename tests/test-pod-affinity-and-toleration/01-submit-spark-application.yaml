@@ -42,9 +42,6 @@ spec:
     - key: NonExistingLabel
       operator: Exists
       effect: NoSchedule
-    env:
-    - name: KUBERNETES_REQUEST_TIMEOUT
-      value: 100000 # ms
   executor:
     cores: 1
     instances: 1

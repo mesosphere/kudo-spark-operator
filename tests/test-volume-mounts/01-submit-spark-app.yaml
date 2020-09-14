@@ -34,9 +34,6 @@ spec:
     volumeMounts:
     - name: test-volume
       mountPath: /opt/spark/work-dir
-    env:
-    - name: KUBERNETES_REQUEST_TIMEOUT
-      value: 100000 # ms
   executor:
     cores: 1
     instances: 1

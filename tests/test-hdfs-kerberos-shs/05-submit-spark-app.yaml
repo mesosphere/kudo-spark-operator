@@ -28,9 +28,6 @@ spec:
     - name: hadoop-token
       path: /mnt/secrets
       secretType: HadoopDelegationToken
-    env:
-    - name: KUBERNETES_REQUEST_TIMEOUT
-      value: 100000 # ms
   executor:
     cores: 1
     instances: 1
