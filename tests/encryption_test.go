@@ -18,8 +18,6 @@ type SparkEncryptionSuite struct {
 	operator utils.SparkOperatorInstallation
 	// name of Secret object with sensitive data
 	sparkSecrets string
-	// secret used for RPC authentication
-	authSecret string
 	// password for private key
 	keyPassword string
 	// password for keystore
@@ -41,7 +39,6 @@ func TestSparkEncryptionSuite(t *testing.T) {
 	sslMountDir := "/tmp/spark/ssl"
 	testSuite := SparkEncryptionSuite{
 		sparkSecrets:       "secrets",
-		authSecret:         "changeit",
 		keyPassword:        "changeit",
 		keyStorePassword:   "changeit",
 		trustStorePassword: "changeit",
@@ -64,7 +61,6 @@ func (suite *SparkEncryptionSuite) SetupSuite() {
 
 func (suite *SparkEncryptionSuite) createSecrets() {
 	sparkSecrets := map[string][]byte{
-		"auth-secret":         []byte(suite.authSecret),
 		"key-password":        []byte(suite.keyPassword),
 		"keystore-password":   []byte(suite.keyStorePassword),
 		"truststore-password": []byte(suite.trustStorePassword),
@@ -99,8 +95,6 @@ func (suite *SparkEncryptionSuite) TearDownSuite() {
 func (suite *SparkEncryptionSuite) TestRpc() {
 	sparkConf := map[string]string{
 		"spark.authenticate": "true",
-		"spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET":   fmt.Sprintf("%s:auth-secret", suite.sparkSecrets),
-		"spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET": fmt.Sprintf("%s:auth-secret", suite.sparkSecrets),
 	}
 	suite.Run("TestAuth", func() {
 		assertSparkApp(suite, sparkConf, []string{"1", "1"})
@@ -218,7 +212,7 @@ func checkSparkUI(appName string, sparkApp utils.SparkJob, suite *SparkEncryptio
 	if err := suite.operator.WaitForJobState(sparkApp, v1beta2.RunningState); err != nil {
 		suite.Fail("SparkApplication \"%s\" is not running", appName, err)
 	}
-	if err := utils.RetryWithTimeout(20*time.Second, 2*time.Second, func() error {
+	if err := utils.RetryWithTimeout(1*time.Minute, 5*time.Second, func() error {
 		response, err := utils.Kubectl("exec", utils.DriverPodName(appName), "-n", sparkApp.Namespace,
 			"--",
 			"curl",
