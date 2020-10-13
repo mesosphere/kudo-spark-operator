@@ -1,0 +1,17 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: |
+      set -x
+
+      ns=hdfs-kerberos
+
+      # get the name of a Namenode pod
+      namenode_pod=$(kubectl get pods --selector=name=hdfs-namenode --output=jsonpath={.items[*].metadata.name} -n $ns)
+
+      # run the init script to copy test data to HDFS and export delegation token
+      kubectl exec $namenode_pod -n $ns -- init.sh
+
+      # copy delegation token from the pod to a local filesystem
+      mkdir -p .tmp
+      kubectl cp $namenode_pod:tmp/hadoop.token .tmp/hadoop.token -n $ns

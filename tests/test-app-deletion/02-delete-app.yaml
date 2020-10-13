@@ -1,0 +1,6 @@
+apiVersion: kudo.dev/v1alpha1
+kind: TestStep
+delete:
+- apiVersion: "sparkoperator.k8s.io/v1beta2"
+  kind: SparkApplication
+  name: mock-task-runner

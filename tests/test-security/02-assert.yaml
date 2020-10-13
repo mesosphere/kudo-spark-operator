@@ -1,0 +1,36 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+timeout: 120
+collectors:
+- selector: spark-role=driver
+- selector: spark-role=executor
+- selector: app.kubernetes.io/instance=spark
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mock-task-runner-driver
+  labels:
+    sparkoperator.k8s.io/app-name: mock-task-runner
+spec:
+  securityContext:
+    runAsGroup: 65534
+    runAsNonRoot: true
+    runAsUser: 65534
+status:
+  phase: Running
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    spark-role: executor
+    sparkoperator.k8s.io/app-name: mock-task-runner
+spec:
+  securityContext:
+    runAsUser: 65534
+    runAsNonRoot: true
+    runAsGroup: 65534
+status:
+  phase: Running
+

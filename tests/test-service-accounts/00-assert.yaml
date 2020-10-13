@@ -1,0 +1,22 @@
+apiVersion: kudo.dev/v1beta1
+kind: Instance
+metadata:
+  name: spark-default-sa
+status:
+  planStatus:
+    deploy:
+      status: COMPLETE
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    kudo.dev/instance: spark-default-sa
+  name: spark-default-sa-spark-service-account
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    kudo.dev/instance: spark-default-sa
+  name: spark-default-sa-spark-operator-service-account

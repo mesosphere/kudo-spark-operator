@@ -1,0 +1,8 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: |
+      sed \
+      -e "s|{{S3_READ_URL}}|s3a://$AWS_BUCKET_NAME/$AWS_BUCKET_PATH/spark-s3-readwrite/README.md|g" \
+      -e "s|{{S3_WRITE_URL}}|s3a://$AWS_BUCKET_NAME/$(cat .tmp/s3_bucket_path)|g" \
+      templates/spark-s3-readwrite.yaml | kubectl apply -n $NAMESPACE -f -

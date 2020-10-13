@@ -1,0 +1,8 @@
+apiVersion: kudo.dev/v1alpha1
+kind: TestStep
+commands:
+  - script: |
+      for i in `seq 2`
+      do
+        kubectl delete ns spark-namespace-$i
+      done

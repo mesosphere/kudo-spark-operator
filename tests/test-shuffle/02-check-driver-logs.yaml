@@ -1,0 +1,5 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- script: |
+    kubectl logs shuffle-app-driver -n $NAMESPACE | grep "Groups count: 12000"

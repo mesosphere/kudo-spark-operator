@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: mock-task-runner-driver
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    spark-role: executor
+    sparkoperator.k8s.io/app-name: mock-task-runner
+
+# verify no pods left after app deletion

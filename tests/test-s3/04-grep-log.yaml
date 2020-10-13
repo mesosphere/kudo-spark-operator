@@ -1,0 +1,4 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: kubectl logs spark-s3-readwrite-driver -n $NAMESPACE | grep "Wrote 105 lines"

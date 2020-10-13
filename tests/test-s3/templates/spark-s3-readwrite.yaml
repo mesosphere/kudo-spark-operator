@@ -1,0 +1,57 @@
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: spark-s3-readwrite
+spec:
+  type: Scala
+  mode: cluster
+  image: mesosphere/spark-dev:e0f9eb2dcc71b2de6d3e0ce8a0f26c059430b946
+  imagePullPolicy: Always
+  mainClass: S3Job
+  mainApplicationFile: "https://kudo-spark.s3-us-west-2.amazonaws.com/spark-scala-tests-3.0.0-20200819.jar"
+  sparkConf:
+    "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
+    "spark.scheduler.minRegisteredResourcesRatio": "1.0"
+    "spark.kubernetes.submission.connectionTimeout": "60000"
+    "spark.kubernetes.submission.requestTimeout": "60000"
+    "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
+    # uncomment the following line to enable Temporary AWS credentials support
+  #    "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider"
+  sparkVersion: 3.0.0
+  arguments:
+  - "--readUrl"
+  - "{{S3_READ_URL}}"
+  - "--writeUrl"
+  - "{{S3_WRITE_URL}}"
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 1
+    memory: "512m"
+    labels:
+      version: 3.0.0
+    serviceAccount: spark-spark-service-account
+    env:
+    - name: AWS_ACCESS_KEY_ID
+      valueFrom:
+        secretKeyRef:
+          name: aws-credentials
+          key: AWS_ACCESS_KEY_ID
+    - name: AWS_SECRET_ACCESS_KEY
+      valueFrom:
+        secretKeyRef:
+          name: aws-credentials
+          key: AWS_SECRET_ACCESS_KEY
+    - name: AWS_SESSION_TOKEN
+      valueFrom:
+        secretKeyRef:
+          name: aws-credentials
+          key: AWS_SESSION_TOKEN
+          optional: true
+  executor:
+    cores: 1
+    instances: 1
+    memory: "512m"
+    deleteOnTermination: false
+    labels:
+      version: 3.0.0

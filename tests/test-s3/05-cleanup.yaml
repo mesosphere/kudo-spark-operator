@@ -1,0 +1,7 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: |
+      set -x
+      aws s3 rm --recursive s3://$AWS_BUCKET_NAME/$(cat .tmp/s3_bucket_path)
+      rm -rf .tmp

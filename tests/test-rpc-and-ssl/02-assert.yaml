@@ -1,0 +1,15 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+timeout: 120
+collectors:
+- selector: spark-role=driver
+- selector: spark-role=executor
+- selector: app.kubernetes.io/instance=spark
+---
+apiVersion: sparkoperator.k8s.io/v1beta2
+kind: SparkApplication
+metadata:
+  name: spark-mock-task-runner-with-auth
+status:
+  applicationState:
+    state: COMPLETED

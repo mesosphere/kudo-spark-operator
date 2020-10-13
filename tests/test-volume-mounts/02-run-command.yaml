@@ -1,0 +1,6 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+- command: kubectl exec mock-task-runner-driver --namespace=$NAMESPACE --
+           sh -c "touch /opt/spark/work-dir/tmp/testfile; ls -l /opt/spark/work-dir/tmp/"
+# assert that folder exists, and it is writable

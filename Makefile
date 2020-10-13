@@ -115,6 +115,20 @@ docker-push:
 	fi
 
 # Testing
+
+# this target updates Spark image for all SparkApplication manifests in tests
+.PHONY: update-spark-image-in-test-manifests
+update-spark-image-in-test-manifests:
+	if ! command -v yq &> /dev/null; then
+	  echo 'Error: yq is not installed.' >&2
+	  exit 1
+	fi
+	for yaml in tests/**/**/*.yaml; do
+		if [[ `yq r $$yaml 'kind'` == 'SparkApplication' ]]; then
+			yq w -i $$yaml 'spec.image' $(SPARK_IMAGE_FULL_NAME)
+		fi
+	done
+
 .PHONY: test
 test: docker-builder
 test: docker-push
@@ -122,18 +136,18 @@ test:
 	docker run -i --rm \
 		-v $(ROOT_DIR):/kudo-spark-operator \
 		-v $(KUBECONFIG):/root/.kube/config \
-		-e TEST_DIR=/kudo-spark-operator/tests \
+		-w /kudo-spark-operator \
+		-e ROOT_DIR=/kudo-spark-operator \
 		-e KUBECONFIG=/root/.kube/config \
-		-e SPARK_IMAGE=$(SPARK_IMAGE_FULL_NAME) \
-		-e OPERATOR_IMAGE=$(OPERATOR_IMAGE_FULL_NAME) \
-		-e TEAMCITY_VERSION="$(TEAMCITY_VERSION)" \
+		-e OPERATOR_DOCKER_REPO=$(OPERATOR_DOCKER_REPO) \
+		-e OPERATOR_VERSION=$(OPERATOR_VERSION) \
 		-e AWS_ACCESS_KEY_ID="$(AWS_ACCESS_KEY_ID)" \
 		-e AWS_SECRET_ACCESS_KEY="$(AWS_SECRET_ACCESS_KEY)" \
 		-e AWS_SESSION_TOKEN="$(AWS_SESSION_TOKEN)" \
-		-e AWS_BUCKET_NAME="$(AWS_BUCKET_NAME)" \
-		-e AWS_BUCKET_PATH="$(AWS_BUCKET_PATH)" \
+		-e AWS_BUCKET_NAME=$(AWS_BUCKET_NAME) \
+		-e AWS_BUCKET_PATH=$(AWS_BUCKET_PATH) \
 		$(shell cat $(ROOT_DIR)/docker-builder) \
-		/kudo-spark-operator/tests/run.sh
+		kubectl kuttl test --report xml $(KUTTL_FLAGS)
 
 .PHONY: install
 install:

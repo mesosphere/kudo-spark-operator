@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kudo-controller-manager-0
+  namespace: kudo-system
+status:
+  phase: Running

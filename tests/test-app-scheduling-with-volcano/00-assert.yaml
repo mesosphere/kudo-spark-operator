@@ -1,0 +1,26 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: volcano-scheduler
+  namespace: volcano-system
+status:
+  availableReplicas: 1
+  readyReplicas: 1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: volcano-admission
+  namespace: volcano-system
+status:
+  availableReplicas: 1
+  readyReplicas: 1
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: volcano-controllers
+  namespace: volcano-system
+status:
+  availableReplicas: 1
+  readyReplicas: 1

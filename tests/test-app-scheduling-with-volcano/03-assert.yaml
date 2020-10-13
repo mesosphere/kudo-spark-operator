@@ -1,0 +1,17 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+timeout: 120
+collectors:
+- selector: spark-role=driver
+- selector: spark-role=executor
+- selector: app.kubernetes.io/instance=spark
+---
+apiVersion: v1
+involvedObject:
+  apiVersion: v1
+  kind: Pod
+  name: mock-task-runner-driver
+kind: Event
+reason: Scheduled
+source:
+  component: volcano

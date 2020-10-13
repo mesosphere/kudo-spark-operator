@@ -1,0 +1,14 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+timeout: 120
+collectors:
+- selector: spark-role=driver
+- selector: spark-role=executor
+- selector: app.kubernetes.io/instance=spark
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: spark-mock-task-runner-with-ssl-driver
+status:
+  phase: Running

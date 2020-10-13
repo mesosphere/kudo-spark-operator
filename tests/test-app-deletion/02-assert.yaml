@@ -1,0 +1,17 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+timeout: 120
+collectors:
+- selector: spark-role=driver
+- selector: spark-role=executor
+- selector: app.kubernetes.io/instance=spark
+---
+apiVersion: v1
+kind: Event
+reason: SparkApplicationDeleted
+source:
+  component: spark-operator
+involvedObject:
+  apiVersion: sparkoperator.k8s.io/v1beta2
+  kind: SparkApplication
+  name: mock-task-runner

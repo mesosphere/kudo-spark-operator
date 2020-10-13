@@ -1,0 +1,12 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+# the order is important here
+- command: kubectl apply -n hdfs-kerberos -f hdfs-kerberos/configmaps
+- command: kubectl apply -n hdfs-kerberos -f hdfs-kerberos/volumes
+- command: kubectl apply -n hdfs-kerberos -f hdfs-kerberos/kerberos-deployment.yaml
+- command: kubectl wait deployment/kerberos --for=condition=available --timeout=5m -n hdfs-kerberos
+- command: kubectl apply -n hdfs-kerberos -f hdfs-kerberos/namenode-deployment.yaml
+- command: kubectl wait deployment/hdfs-namenode --for=condition=available --timeout=5m -n hdfs-kerberos
+- command: kubectl apply -n hdfs-kerberos -f hdfs-kerberos/datanode-deployment.yaml
+- command: kubectl wait deployment/hdfs-datanode --for=condition=available --timeout=5m -n hdfs-kerberos

@@ -1,0 +1,6 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: |
+      sed -e "s|{{EVENT_LOG_DIR}}|s3a://$AWS_BUCKET_NAME/$(cat .tmp/s3_bucket_path)|g" \
+      templates/mock-task-runner.yaml | kubectl apply -n $NAMESPACE -f -

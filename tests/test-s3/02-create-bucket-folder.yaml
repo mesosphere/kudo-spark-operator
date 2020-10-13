@@ -1,0 +1,9 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: |
+      set -x
+
+      mkdir -p .tmp
+      folder_name=$(head /dev/urandom | LC_ALL=C LC_CTYPE=C tr -dc A-Za-z0-9 | head -c10)
+      echo "$AWS_BUCKET_PATH/spark-s3-readwrite/${folder_name}/" > .tmp/s3_bucket_path;
