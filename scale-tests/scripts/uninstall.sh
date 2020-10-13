@@ -5,8 +5,6 @@ SCRIPT_DIR="$(realpath "$(dirname "$0")")"
 SCALE_TESTS_DIR="$(dirname "${SCRIPT_DIR}")"
 PROJECT_ROOT_DIR="$(dirname "${SCALE_TESTS_DIR}")"
 
-SPECS_DIR="${PROJECT_ROOT_DIR}/specs"
-
 NAMESPACE_PREFIX=${NAMESPACE_PREFIX:-spark}
 INSTANCE_NAME_PREFIX=${INSTANCE_NAME_PREFIX:-spark-operator}
 

@@ -1261,7 +1261,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "spark_app_failure_count{pod=\"$Spark_Operator_Instance\"}",
+          "expr": "sum(spark_app_failure_count)",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
