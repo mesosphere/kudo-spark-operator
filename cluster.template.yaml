@@ -52,7 +52,7 @@ spec:
     user: centos
     publicKeyFile: kudo-spark-ssh.pub
     privateKeyFile: kudo-spark-ssh.pem
-  version: v1.5.0
+  version: v1.6.0-rc.2
 ---
 kind: ClusterConfiguration
 apiVersion: konvoy.mesosphere.io/v1beta2
@@ -61,7 +61,7 @@ metadata:
   creationTimestamp: "2020-01-28T23:15:38Z"
 spec:
   kubernetes:
-    version: 1.17.8
+    version: 1.18.9
     controlPlane:
       controlPlaneEndpointOverride: ""
       certificate: {}
@@ -80,7 +80,7 @@ spec:
         - NodeRestriction
   containerNetworking:
     calico:
-      version: v3.13.4
+      version: v3.16.0
       encapsulation: ipip
       mtu: 1480
   containerRuntime:
@@ -92,7 +92,7 @@ spec:
     - name: worker
   addons:
     - configRepository: https://github.com/mesosphere/kubernetes-base-addons
-      configVersion: stable-1.17-2.0.2
+      configVersion: testing-2.5.0-3
       addonsList:
         - name: awsebscsiprovisioner
           enabled: true
@@ -181,4 +181,4 @@ spec:
       addonsList:
       - name: kommander
         enabled: false
-  version: v1.5.0
+  version: v1.6.0-rc.2
