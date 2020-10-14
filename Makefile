@@ -171,7 +171,7 @@ clean-docker:
 clean-all: clean-docker
 clean-all:
 	rm -f *.pem *.pub *-created aws_credentials
-	rm -rf state runs .konvoy-* *checksum cluster.*yaml* inventory.yaml admin.conf
+	rm -rf state runs .konvoy-* *checksum cluster.yaml* inventory.yaml admin.conf
 
 # function for extracting the value of an AWS property passed as an argument
 define get_aws_credential
