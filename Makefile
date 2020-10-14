@@ -7,7 +7,7 @@ SCRIPTS_DIR := $(ROOT_DIR)/scripts
 KUDO_TOOLS_DIR := $(ROOT_DIR)/shared
 SPARK_OPERATOR_DIR := $(ROOT_DIR)/spark-on-k8s-operator
 
-export KONVOY_VERSION ?= v1.5.0
+export KONVOY_VERSION ?= v1.6.0-rc.2
 export CLUSTER_CONFIG_YAML ?= $(ROOT_DIR)/cluster.template.yaml
 export WORKER_NODE_INSTANCE_TYPE ?= m5.2xlarge
 export WORKER_NODE_COUNT ?= 5
@@ -171,7 +171,7 @@ clean-docker:
 clean-all: clean-docker
 clean-all:
 	rm -f *.pem *.pub *-created aws_credentials
-	rm -rf state runs .konvoy-* *checksum cluster.*yaml* inventory.yaml admin.conf
+	rm -rf state runs .konvoy-* *checksum cluster.yaml* inventory.yaml admin.conf
 
 # function for extracting the value of an AWS property passed as an argument
 define get_aws_credential
