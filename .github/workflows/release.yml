@@ -23,12 +23,16 @@ jobs:
         id: vars
         run: echo ::set-output name=version::${GITHUB_REF#refs/*/v}
       - name: Extract KUDO version
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         run: echo "::set-env name=KUDO_VERSION::$(grep kudoVersion $SPARK_OPERATOR_DIR/operator.yaml | cut -d' ' -f2 | tr -d '"')"
       - name: Download KUDO
         run: |
           curl -L https://github.com/kudobuilder/kudo/releases/download/v${{env.KUDO_VERSION}}/kudo_${{env.KUDO_VERSION}}_linux_x86_64.tar.gz | tar -xvz
           chmod +x kubectl-kudo
       - name: Package the operator
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: true
         run: |
           ./kubectl-kudo package create $SPARK_OPERATOR_DIR
           echo "::set-env name=OPERATOR_PACKAGE_FILE::$(find spark-*.tgz)"

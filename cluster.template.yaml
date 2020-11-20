@@ -10,7 +10,7 @@ spec:
     vpc:
       overrideDefaultRouteTable: true
       enableInternetGateway: true
-      enableVPCEndpoints: true
+      enableVPCEndpoints: false
     availabilityZones:
       - us-west-2c
     elb:
@@ -52,7 +52,7 @@ spec:
     user: centos
     publicKeyFile: kudo-spark-ssh.pub
     privateKeyFile: kudo-spark-ssh.pem
-  version: v1.6.0-rc.2
+  version: v1.6.0
 ---
 kind: ClusterConfiguration
 apiVersion: konvoy.mesosphere.io/v1beta2
@@ -61,17 +61,12 @@ metadata:
   creationTimestamp: "2020-01-28T23:15:38Z"
 spec:
   kubernetes:
-    version: 1.18.9
-    controlPlane:
-      controlPlaneEndpointOverride: ""
-      certificate: {}
+    version: 1.18.10
     networking:
       podSubnet: 192.168.0.0/16
       serviceSubnet: 10.0.0.0/18
       iptables:
         addDefaultRules: false
-      httpProxy: ""
-      httpsProxy: ""
     cloudProvider:
       provider: aws
     admissionPlugins:
@@ -80,20 +75,22 @@ spec:
         - NodeRestriction
   containerNetworking:
     calico:
-      version: v3.16.0
+      version: v3.16.4
       encapsulation: ipip
       mtu: 1480
   containerRuntime:
     containerd:
-      version: 1.3.4
+      version: 1.3.7
   osPackages:
     enableAdditionalRepositories: true
   nodePools:
     - name: worker
   addons:
     - configRepository: https://github.com/mesosphere/kubernetes-base-addons
-      configVersion: testing-2.5.0-3
+      configVersion: stable-1.18-3.0.0
       addonsList:
+        - name: ambassador # Ambassador is currently in Preview
+          enabled: false
         - name: awsebscsiprovisioner
           enabled: true
         - name: awsebsprovisioner
@@ -112,6 +109,8 @@ spec:
         - name: dex-k8s-authenticator
           enabled: true
         - name: elasticsearch
+          enabled: false
+        - name: elasticsearch-curator
           enabled: false
         - name: elasticsearchexporter
           enabled: false
@@ -166,19 +165,14 @@ spec:
                   secretKeyRef: null
         - name: velero
           enabled: false
-    - configRepository: https://github.com/mesosphere/kubeaddons-conductor
-      configVersion: stable-1.17-1.0.0
-      addonsList:
-        - name: conductor
-          enabled: false
     - configRepository: https://github.com/mesosphere/kubeaddons-dispatch
-      configVersion: stable-1.17-1.2.2
+      configVersion: stable-1.18-1.3.0
       addonsList:
       - name: dispatch
         enabled: false
     - configRepository: https://github.com/mesosphere/kubeaddons-kommander
-      configVersion: stable-1.17-1.1.0
+      configVersion: stable-1.18-1.2.0
       addonsList:
       - name: kommander
         enabled: false
-  version: v1.6.0-rc.2
+  version: v1.6.0
