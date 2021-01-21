@@ -28,7 +28,7 @@ rules:
       executor_id: "$3"
   # These come from the application driver
   # Example: default/spark-pi.driver.DAGScheduler.stage.failedStages
-  - pattern: metrics<name=(\S+)\.(\S+)\.driver\.(BlockManager|DAGScheduler|jvm)\.(\S+)><>Value
+  - pattern: metrics<name=(\S+)\.(\S+)\.driver\.(BlockManager|DAGScheduler|jvm)\.(.*)><>Value
     name: spark_driver_$3_$4
     type: GAUGE
     labels:
