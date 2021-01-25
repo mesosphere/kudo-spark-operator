@@ -30,7 +30,7 @@ spec:
         type: m5.2xlarge
     - name: control-plane
       controlPlane: true
-      count: 3
+      count: 1
       machine:
         rootVolumeSize: 80
         rootVolumeType: io1
@@ -89,7 +89,7 @@ spec:
     - configRepository: https://github.com/mesosphere/kubernetes-base-addons
       configVersion: testing-1.19-3.2.0
       addonsList:
-        - name: ambassador # Ambassador is currently in Experimental status
+        - name: ambassador
           enabled: false
         - name: awsebscsiprovisioner
           enabled: true
@@ -122,11 +122,11 @@ spec:
           enabled: false
         - name: gatekeeper
           enabled: true
-        - name: istio # Istio is currently in Experimental status
+        - name: istio
           enabled: false
-        - name: jaeger # Jaeger is currently in Experimental status
+        - name: jaeger
           enabled: false
-        - name: kiali # Kiali is currently in Experimental status
+        - name: kiali
           enabled: false
         - name: kibana
           enabled: false
