@@ -34,7 +34,7 @@ spec:
     - name: spark-secret
       path: /mnt/secrets
       secretType: Opaque
-    securityContext:
+    podSecurityContext:
       runAsUser: 65534
       runAsGroup: 65534
       runAsNonRoot: true
@@ -53,7 +53,7 @@ spec:
     - name: spark-secret
       path: /mnt/secrets
       secretType: Opaque
-    securityContext:
+    podSecurityContext:
       runAsUser: 65534
       runAsGroup: 65534
       runAsNonRoot: true
