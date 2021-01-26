@@ -5,7 +5,7 @@ metadata:
 spec:
   type: Scala
   mode: cluster
-  image: mesosphere/spark-dev:57eeec111333edfefa2fb3179650537aae9b8a65
+  image: mesosphere/spark:spark-3.0.0-hadoop-2.9-k8s
   imagePullPolicy: Always
   mainClass: MockTaskRunner
   mainApplicationFile: "https://kudo-spark.s3-us-west-2.amazonaws.com/spark-scala-tests-3.0.0-20200819.jar"
