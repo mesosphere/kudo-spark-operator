@@ -9,7 +9,7 @@ Required software:
 * GNU Make 4.2.1 or higher
 * sha1sum
 * [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
-* [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli) 0.13.0 or higher
+* [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli) 0.15.0 or higher
 
 For test cluster provisioning and Stub Universe artifacts upload valid AWS access credentials required:
 * `AWS_PROFILE` **or** `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` environment variables should be provided
@@ -25,7 +25,7 @@ GNU Make is used as the main build tool and includes the following main targets:
 * `make cluster-create` creates a Konvoy or MKE cluster
 * `make cluster-destroy` creates a Konvoy or MKE cluster
 * `make clean-all` removes all artifacts produced by targets from local filesystem
-* `make docker-spark` builds Spark base image based on Apache Spark 2.4.5
+* `make docker-spark` builds Spark base image based on Apache Spark 3.0.0
 * `make docker-operator` builds Operator image and Spark base image if it's not built
 * `make docker-builder` builds image with required tools to run tests
 * `make docker-push` publishes Spark base image and Spark Operator image to DockerHub
@@ -45,8 +45,8 @@ To run tests on a pre-existing cluster with specified operator and spark images,
 
 ```
 make test KUBECONFIG=$HOME/.kube/config \
-SPARK_IMAGE_FULL_NAME=mesosphere/spark:spark-2.4.5-hadoop-2.9-k8s \
-OPERATOR_IMAGE_FULL_NAME=mesosphere/kudo-spark-operator:2.4.5-1.0.1
+SPARK_IMAGE_FULL_NAME=mesosphere/spark:spark-3.0.0-hadoop-2.9-k8s \
+OPERATOR_IMAGE_FULL_NAME=mesosphere/kudo-spark-operator:3.0.0-1.1.0
 ```
 
 # Package and Release
@@ -54,7 +54,7 @@ Release process is semi-automated and based on Github Actions. To make a new rel
 - Point the [operators](operators) submodule to the release commit, raise a PR and make sure the CI check is successful
 - After the PR is merged, create and push a new tag, e.g:
 ```
-git tag -a v2.4.5-1.0.2 -m "KUDO Spark Operator 2.4.5-1.0.2 release"
+git tag -a v3.0.0-1.1.0 -m "KUDO Spark Operator 3.0.0-1.1.0 release"
 ```   
 Pushing the new tag will trigger [release workflow](.github/workflows/release.yml), will build the operator package with KUDO,
 create a new GH release draft with the package attached to it.
@@ -68,7 +68,7 @@ create a new GH release draft with the package attached to it.
 
 * Kubernetes cluster up and running
 * `kubectl` configured to work with provisioned cluster
-* [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli) 0.13.0 or higher
+* [KUDO CLI Plugin](https://kudo.dev/docs/#install-kudo-cli) 0.15.0 or higher
 
 ### Installation
 
@@ -103,25 +103,3 @@ kubectl describe sparkapplication mock-task-runner
 ```
 
 To get started with your app monitoring, please, see also [monitoring documentation](operators/repository/spark/docs/latest/monitoring.md)
-
-###  MKE cluster provisioning
-
-If you want to create a cluster with MKE Kubernetes distribution, the following environment variables must be set before executing 
-`make cluster-create` :
-
-- DCOS_LICENSE - should be populated from a `licence.txt` file
-- CLUSTER_TYPE - type of a cluster, in our case is `mke`
-- AWS_ACCESS_KEY_ID
-- AWS_SECRET_ACCESS_KEY
-- AWS_SESSION_TOKEN
-
-AWS credentials are exported automatically by `make`, so there is no need to handle them manually, but `CLUSTER_TYPE` 
-and `DCOS_LICENSE` need to be set manually.
-```
-
-$ maws li Team\ 10 #refresh AWS credentials
-$ export CLUSTER_TYPE=mke
-$ export DCOS_LICENSE=$(cat /path/to/the/license.txt)
-$ make cluster-create
-```
-
