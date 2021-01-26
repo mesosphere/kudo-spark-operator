@@ -21,3 +21,6 @@ docker-*
 *.checksum
 *.bak
 *.tmp
+
+kubeconfig
+kuttl-test.xml
