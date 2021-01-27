@@ -26,6 +26,13 @@ spec:
             valueFrom:
               fieldRef:
                 fieldPath: metadata.namespace
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "1"
+          limits:
+            memory: "512Mi"
+            cpu: "1"
         readinessProbe:
           exec:
             command:
