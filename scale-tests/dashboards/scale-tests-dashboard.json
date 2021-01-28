@@ -918,7 +918,7 @@
       "tableColumn": "",
       "targets": [
         {
-          "expr": "sum(kube_pod_container_status_running{container=\"executor\"})",
+          "expr": "sum(kube_pod_container_status_running{container=\"spark-kubernetes-executor\"})",
           "format": "time_series",
           "instant": true,
           "intervalFactor": 1,
@@ -1670,7 +1670,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "count(spark_executor_filesystem_hdfs_read_ops) by (app_id)",
+          "expr": "count(spark_app_executor_running_count) by (app_id)",
           "format": "time_series",
           "intervalFactor": 1,
           "refId": "A"
@@ -1856,7 +1856,7 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Failed Executors per Namespace",
+      "title": "Executors Failed per Namespace",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -2716,7 +2716,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(spark_executor_shufflebyteswritten_count[1m]))",
+          "expr": "sum(increase(spark_executor_shufflebyteswritten_type_counters_count[1m]))",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
@@ -2809,7 +2809,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "sum(increase(spark_executor_shuffletotalbytesread_count[1m]))",
+          "expr": "sum(increase(spark_executor_shuffletotalbytesread_type_counters_count[1m]))",
           "format": "time_series",
           "hide": false,
           "intervalFactor": 1,
