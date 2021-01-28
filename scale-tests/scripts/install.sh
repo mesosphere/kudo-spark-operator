@@ -26,7 +26,7 @@ for i in $(seq ${1}); do
     sed 's|SPARK_NAMESPACE|'"${NAMESPACE}"'|g' ${TEMPLATES_DIR}/namespace.tmpl | kubectl apply -f -
     sed 's|SERVICE_ACCOUNT_NAME|'"${SERVICE_ACCOUNT_NAME}"'|g' ${TEMPLATES_DIR}/service-account.tmpl | kubectl apply --namespace "${NAMESPACE}" -f -
 
-    kubectl kudo --namespace "${NAMESPACE}" install --instance "${INSTANCE_NAME_PREFIX}-${i}" \
+    kubectl kudo --namespace "${NAMESPACE}" install --instance "${INSTANCE_NAME_PREFIX}-${i}" spark \
             -p operatorVersion="${OPERATOR_VERSION}" \
             -p sparkServiceAccountName="${SERVICE_ACCOUNT_NAME}" \
             -p createSparkServiceAccount=false \
