@@ -51,7 +51,7 @@ OPERATOR_IMAGE_FULL_NAME=mesosphere/kudo-spark-operator:3.0.0-1.1.0
 
 # Package and Release
 Release process is semi-automated and based on Github Actions. To make a new release:
-- Point the [operators](operators) submodule to the release commit, raise a PR and make sure the CI check is successful
+- Copy manifsets and docs for KUDO Spark Operator to the [Operators repo](https://github.com/kudobuilder/operators/tree/master/repository/spark), raise a PR and make sure the CI check is successful
 - After the PR is merged, create and push a new tag, e.g:
 ```
 git tag -a v3.0.0-1.1.0 -m "KUDO Spark Operator 3.0.0-1.1.0 release"
