@@ -102,4 +102,4 @@ kubectl get sparkapplication
 kubectl describe sparkapplication mock-task-runner
 ```
 
-To get started with your app monitoring, please, see also [monitoring documentation](operators/repository/spark/docs/latest/monitoring.md)
+To get started with your app monitoring, please, see also [monitoring documentation](https://github.com/kudobuilder/operators/blob/master/repository/spark/docs/latest/monitoring.md)

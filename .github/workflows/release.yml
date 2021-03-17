@@ -6,7 +6,7 @@ on:
 name: KUDO Spark Operator Release
 
 env:
-  SPARK_OPERATOR_DIR: operators/repository/spark/operator
+  SPARK_OPERATOR_DIR: operator
 
 jobs:
   build:

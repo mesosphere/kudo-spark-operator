@@ -4,6 +4,3 @@
 [submodule "shared"]
 	path = shared
 	url = git@github.com:mesosphere/data-services-kudo.git
-[submodule "operators"]
-	path = operators
-	url = git@github.com:kudobuilder/operators.git

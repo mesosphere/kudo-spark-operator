@@ -2,7 +2,7 @@
 
 set -ex
 SCRIPT_DIR=$(dirname "$0")
-OPERATOR_DIR="$(dirname ${SCRIPT_DIR})/operators/repository/spark/operator"
+OPERATOR_DIR="$(dirname ${SCRIPT_DIR})/operator"
 
 NAMESPACE=${NAMESPACE:-spark}
 OPERATOR_DOCKER_REPO=${OPERATOR_DOCKER_REPO:-mesosphere/kudo-spark-operator}
