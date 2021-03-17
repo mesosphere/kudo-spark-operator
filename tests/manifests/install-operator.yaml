@@ -2,7 +2,7 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
   - script: |
-      kubectl kudo install "${ROOT_DIR}"/operator \
+      kubectl kudo install "${ROOT_DIR}"/kudo-spark-operator/operator \
         --instance=spark \
         --namespace=$NAMESPACE \
         --wait \

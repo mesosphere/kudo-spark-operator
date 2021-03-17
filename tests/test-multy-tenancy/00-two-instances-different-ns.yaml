@@ -9,7 +9,7 @@ commands:
   - script: |
       for i in `seq 2`
       do
-        kubectl kudo install "${ROOT_DIR}"/operator \
+        kubectl kudo install "${ROOT_DIR}"/kudo-spark-operator/operator \
           --instance=spark-$i \
           --wait \
           --namespace=spark-namespace-$i \
