@@ -1,0 +1,27 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestAssert
+timeout: 300
+commands:
+  - script: |
+      set -eux
+
+      get_operator_field() {
+        field=${1:-}
+        grep "${field}" kudo-spark-operator/operator/operator.yaml | cut -d ' ' -f2 |  tr -d '"'
+      }
+
+      APP_VERSION=$(get_operator_field "appVersion")
+      OPERATOR_VERSION=$(get_operator_field "operatorVersion")
+
+      test $(kubectl get instance spark -n $NAMESPACE -o=jsonpath='{$.status.planStatus.upgrade.status}') = "COMPLETE"
+      test $(kubectl get instance spark -n $NAMESPACE -o=jsonpath='{$.spec.operatorVersion.name}') = spark-${APP_VERSION}-${OPERATOR_VERSION}
+---
+apiVersion: kudo.dev/v1beta1
+kind: Instance
+metadata:
+  name: spark
+status:
+  planStatus:
+    upgrade:
+      name: upgrade
+      status: COMPLETE

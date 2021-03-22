@@ -1,0 +1,12 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+  - script: |
+      kubectl kudo install spark \
+        --instance=spark \
+        --namespace=$NAMESPACE \
+        -p sparkJobNamespace=$NAMESPACE \
+        --wait
+assert:
+  - ../manifests/kudo-controller.yaml
+  - ../manifests/spark-instance.yaml
