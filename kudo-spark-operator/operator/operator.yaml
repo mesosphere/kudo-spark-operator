@@ -69,9 +69,6 @@ plans:
         strategy: serial
       - name: update-spark
         steps:
-        - name: spark-cleanup
-          tasks:
-            - spark-cleanup
         - name: spark
           tasks:
           - spark
@@ -114,11 +111,7 @@ tasks:
   spec:
     resources:
     - spark-operator-deployment.yaml
-- kind: Delete
-  name: spark-cleanup
-  spec:
-    resources:
-      - spark-operator-deployment.yaml
+
 - kind: Apply
   name: webhook
   spec:

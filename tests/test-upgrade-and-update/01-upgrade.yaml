@@ -2,11 +2,7 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
    - script: |
-       find "${ROOT_DIR}"/kudo-spark-operator/operator
-
        kubectl kudo upgrade "${ROOT_DIR}"/kudo-spark-operator/operator \
                --instance spark \
-              -p operatorImageName=$OPERATOR_DOCKER_REPO \
-              -p operatorVersion=$OPERATOR_VERSION \
-              -p sparkJobNamespace=$NAMESPACE \
+               -p sparkJobNamespace=$NAMESPACE \
                --namespace $NAMESPACE
