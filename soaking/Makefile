@@ -14,11 +14,14 @@ install:
         --wait \
         -p enableMetrics=true \
         -p sparkJobNamespace=$(NAMESPACE)
+	kubectl apply -f $(ROOT_DIR)/app/mock-task-runner.yaml -n $(NAMESPACE)
+	kubectl apply -f $(ROOT_DIR)/app/shuffle-app.yaml -n $(NAMESPACE)
+
+.PHONY: upgrade
+upgrade:
 	kubectl kudo upgrade $(ROOT_DIR)/../kudo-spark-operator/operator \
 		--instance=spark \
 		--namespace=$(NAMESPACE)
-	kubectl apply -f $(ROOT_DIR)/app/mock-task-runner.yaml -n $(NAMESPACE)
-	kubectl apply -f $(ROOT_DIR)/app/shuffle-app.yaml -n $(NAMESPACE)
 
 .PHONY: uninstall
 uninstall:
