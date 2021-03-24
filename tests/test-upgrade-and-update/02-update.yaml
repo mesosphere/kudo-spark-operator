@@ -1,0 +1,10 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+    - script: |
+        kubectl kudo update --instance spark \
+          --namespace=$NAMESPACE \
+          --instance=spark \
+          --wait \
+          -p enableHistoryServer=true \
+          -p historyServerFsLogDirectory=file://tmp/spark-events
