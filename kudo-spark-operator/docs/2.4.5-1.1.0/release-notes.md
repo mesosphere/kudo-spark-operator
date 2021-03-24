@@ -1,14 +1,7 @@
 # Release Notes
 
-## 3.0.0-1.1.0 (latest)
-* Upgraded to Spark 3.0.0 with Scala 2.12 and Hadoop 2.9.2 support
-* Spark Operator based on version `v1beta2-1.2.2`
-* KUDO version updated to `0.15.0`
-
-## 2.4.5-1.0.1
-* Changed `sparkJobNamespace` parameter propagation logic, making the operator manage Spark jobs across all namespaces by default
-* Spark Operator based on version `v1beta2-1.1.1`
-* KUDO version updated to `0.13.0`
+## 2.4.5-1.1.0 (latest)
+* Added Kubernetes 1.18 support for KUDO Operator
 
 ## 2.4.5-1.0.0
 * Spark Operator Docker image based on [apache/spark](https://github.com/apache/spark/) 2.4.5 with Hadoop 2.9.2 support
@@ -25,7 +18,7 @@
 
 ## beta1
 * Spark Operator Docker image based on [mesosphere/spark](https://github.com/mesosphere/spark/) 2.4.3 with Hadoop 2.9.2 support
-* Spark Operator based on version `v1beta2-1.0.1`
+* Spark Operator based on version `v1beta2-1.1.0`
 * Added Spark History Server support
 * Added `ServiceMonitors` for integration with the Prometheus Operator
 * Prometheus Java agent updated to version `0.11.0`

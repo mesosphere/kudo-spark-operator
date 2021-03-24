@@ -5,10 +5,10 @@ metadata:
 spec:
   type: Scala
   mode: cluster
-  image: mesosphere/spark:spark-3.0.0-hadoop-2.9-k8s
+  image: mesosphere/spark:spark-2.4.5-hadoop-2.9-k8s
   imagePullPolicy: Always
   mainClass: S3Job
-  mainApplicationFile: "https://kudo-spark.s3-us-west-2.amazonaws.com/spark-scala-tests-3.0.0-20200819.jar"
+  mainApplicationFile: "https://kudo-spark.s3-us-west-2.amazonaws.com/spark-scala-tests-2.4.5-20200225.jar"
   sparkConf:
     "spark.scheduler.maxRegisteredResourcesWaitingTime": "2400s"
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
@@ -17,7 +17,7 @@ spec:
     "spark.hadoop.fs.s3a.impl": "org.apache.hadoop.fs.s3a.S3AFileSystem"
     # uncomment the following line to enable Temporary AWS credentials support
   #    "spark.hadoop.fs.s3a.aws.credentials.provider": "org.apache.hadoop.fs.s3a.TemporaryAWSCredentialsProvider"
-  sparkVersion: 3.0.0
+  sparkVersion: 2.4.5
   arguments:
   - "--readUrl"
   - "{{S3_READ_URL}}"
@@ -29,7 +29,7 @@ spec:
     cores: 1
     memory: "512m"
     labels:
-      version: 3.0.0
+      version: 2.4.5
     serviceAccount: spark-spark-service-account
     env:
     - name: AWS_ACCESS_KEY_ID
@@ -54,4 +54,4 @@ spec:
     memory: "512m"
     deleteOnTermination: false
     labels:
-      version: 3.0.0
+      version: 2.4.5

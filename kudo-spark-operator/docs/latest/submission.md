@@ -7,7 +7,7 @@
 
 In order to deploy a Spark Application to Kubernetes using the KUDO Spark Operator, it should be described as a Kubernetes object. To do that, create a specification in `yaml` format with all the necessary configuration required for the application.
 
-Let's take a simple `SparkPi` application as an example. The `yaml` specification could be found here: [spark-pi.yaml](resources/spark-pi.yaml).  This example assumes that you installed KUDO spark to the `spark` namespace.
+Let's take a simple `SparkPi` application as an example. The `yaml` specification could be found here: [spark-pi.yaml](resources/spark-pi.yaml)
 
 ```yaml
 apiVersion: "sparkoperator.k8s.io/v1beta2"
@@ -18,32 +18,32 @@ metadata:
 spec:
   type: Scala
   mode: cluster
-  image: "mesosphere/spark:spark-3.0.0-hadoop-2.9-k8s"
+  image: "mesosphere/spark:spark-2.4.5-hadoop-2.9-k8s"
   imagePullPolicy: Always
   mainClass: org.apache.spark.examples.SparkPi
-  mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.12-3.0.0.jar"
+  mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.11-2.4.5.jar"
+  arguments:
+    - "150000"
   sparkConf:
     "spark.ui.port": "4041"
-  sparkVersion: "3.0.0"
+  sparkVersion: "2.4.5"
   restartPolicy:
     type: Never
   driver:
     cores: 1
     memory: "512m"
     labels:
-      version: 3.0.0
-    serviceAccount: spark-spark-service-account
+      version: 2.4.5
+    serviceAccount: spark-driver
   executor:
     cores: 1
     instances: 2
     memory: "512m"
     labels:
-      version: 3.0.0
+      version: 2.4.5
 ```
 
-All the Spark application configuration is placed under `spec` section. Here you can specify Spark related configuration properties, such as number of executors, number of cores for drivers/executors, amount of memory, etc. There is also a `sparkConf` section, where you can place configuration parameters in the form of key-value pairs. In this example, we override the default `spark.ui.port` with a custom value.
-
-Crucial to the success of running this Spark job is the `serviceAccount`.  The format for the service account is `{spark-operator name}-spark-service-account`.  If you have installed the spark operator without specifying the instance name, its name will be `spark-instance`, thus the service account name will need to be `spark-instance-spark-service-account`.
+Basically, all the Spark application configuration is placed under `spec` section. Here you can specify Spark related configuration properties, such as number of executors, number of cores for drivers/executors, amount of memory, etc. There is also a `sparkConf` section, where you can place configuration parameters in the form of key-value pairs. In this example, we override the default `spark.ui.port` with a custom value.
 
 #### Creating the application
 

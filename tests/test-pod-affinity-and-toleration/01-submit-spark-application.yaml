@@ -5,10 +5,10 @@ metadata:
 spec:
   type: Scala
   mode: cluster
-  image: mesosphere/spark:spark-3.0.0-hadoop-2.9-k8s
+  image: mesosphere/spark:spark-2.4.5-hadoop-2.9-k8s
   imagePullPolicy: Always
   mainClass: MockTaskRunner
-  mainApplicationFile: "https://kudo-spark.s3-us-west-2.amazonaws.com/spark-scala-tests-3.0.0-20200819.jar"
+  mainApplicationFile: "https://kudo-spark.s3-us-west-2.amazonaws.com/spark-scala-tests-2.4.5-20200225.jar"
   arguments:
   - "1"
   - "10"
@@ -17,14 +17,14 @@ spec:
     "spark.scheduler.minRegisteredResourcesRatio": "1.0"
     "spark.kubernetes.submission.connectionTimeout": "60000"
     "spark.kubernetes.submission.requestTimeout": "60000"
-  sparkVersion: 3.0.0
+  sparkVersion: 2.4.5
   restartPolicy:
     type: Never
   driver:
     cores: 1
     memory: "512m"
     labels:
-      version: 3.0.0
+      version: 2.4.5
     serviceAccount: spark-spark-service-account
     affinity:
       nodeAffinity:
@@ -50,7 +50,7 @@ spec:
     memory: "512m"
     deleteOnTermination: false
     labels:
-      version: 3.0.0
+      version: 2.4.5
     affinity:
       nodeAffinity:
         requiredDuringSchedulingIgnoredDuringExecution:

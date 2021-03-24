@@ -16,13 +16,12 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 34,
-  "iteration": 1611271749832,
+  "id": 28,
+  "iteration": 1571773908377,
   "links": [],
   "panels": [
     {
       "collapsed": false,
-      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -45,12 +44,6 @@
       ],
       "datasource": "default",
       "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -129,21 +122,13 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "default",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
         "h": 6,
         "w": 10,
         "x": 3,
         "y": 1
       },
-      "hiddenSeries": false,
       "id": 29,
       "legend": {
         "alignAsTable": true,
@@ -161,9 +146,6 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -248,23 +230,14 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
       "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
         "h": 6,
         "w": 11,
         "x": 13,
         "y": 1
       },
-      "hiddenSeries": false,
       "id": 31,
       "legend": {
         "alignAsTable": true,
@@ -280,9 +253,6 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -367,12 +337,6 @@
       ],
       "datasource": "default",
       "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "format": "none",
       "gauge": {
         "maxValue": 100,
@@ -447,7 +411,6 @@
     },
     {
       "collapsed": false,
-      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -464,22 +427,13 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
         "h": 7,
         "w": 12,
         "x": 0,
         "y": 8
       },
-      "hiddenSeries": false,
       "id": 41,
       "legend": {
         "alignAsTable": true,
@@ -496,9 +450,6 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -511,7 +462,7 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "spark_driver_jvm_total_max_type_gauges{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
+          "expr": "spark_driver_jvm_total_max{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
           "format": "time_series",
           "interval": "",
           "intervalFactor": 1,
@@ -519,9 +470,8 @@
           "refId": "A"
         },
         {
-          "expr": "spark_driver_jvm_total_used_type_gauges{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
+          "expr": "spark_driver_jvm_total_used{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
           "format": "time_series",
-          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "Heap used ({{app_id}})",
           "refId": "B"
@@ -573,22 +523,13 @@
       "bars": false,
       "dashLength": 10,
       "dashes": false,
-      "datasource": null,
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
         "h": 7,
         "w": 12,
         "x": 12,
         "y": 8
       },
-      "hiddenSeries": false,
       "id": 115,
       "legend": {
         "alignAsTable": true,
@@ -605,9 +546,6 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -619,17 +557,15 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "spark_executor_jvm_total_max_type_gauges{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
+          "expr": "spark_executor_jvm_total_max{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
           "format": "time_series",
-          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "Heap max ({{app_id}})",
           "refId": "A"
         },
         {
-          "expr": "spark_executor_jvm_total_used_type_gauges{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
+          "expr": "spark_executor_jvm_total_used{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
           "format": "time_series",
-          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "Heap used ({{app_id}})",
           "refId": "B"
@@ -682,21 +618,13 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "default",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
         "h": 7,
         "w": 8,
         "x": 0,
         "y": 15
       },
-      "hiddenSeries": false,
       "id": 133,
       "legend": {
         "avg": false,
@@ -711,9 +639,6 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -724,17 +649,15 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "spark_driver_blockmanager_memory_maxonheapmem_mb_type_gauges{app_namespace=\"$namespace\",app_id=~\"$app_name\"}",
+          "expr": "spark_driver_blockmanager_memory_maxonheapmem_mb{app_namespace=\"$namespace\",app_id=~\"$app_name\"}",
           "format": "time_series",
-          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "Max On-Heap Memory  ({{app_id}})",
           "refId": "A"
         },
         {
-          "expr": "spark_driver_blockmanager_memory_onheapmemused_mb_type_gauges{app_namespace=\"$namespace\",app_id=~\"$app_name\"}",
+          "expr": "spark_driver_blockmanager_memory_onheapmemused_mb{app_namespace=\"$namespace\",app_id=~\"$app_name\"}",
           "format": "time_series",
-          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "On-Heap Memory Used  ({{app_id}})",
           "refId": "B"
@@ -787,21 +710,13 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "default",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
         "h": 7,
         "w": 8,
         "x": 8,
         "y": 15
       },
-      "hiddenSeries": false,
       "id": 134,
       "legend": {
         "avg": false,
@@ -816,9 +731,6 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -829,18 +741,16 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "spark_driver_blockmanager_memory_maxoffheapmem_mb_type_gauges{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
+          "expr": "spark_driver_blockmanager_memory_maxoffheapmem_mb{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
           "format": "time_series",
-          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "Max Off-Heap Memory ({{app_id}})",
           "refId": "A"
         },
         {
-          "expr": "spark_driver_blockmanager_memory_offheapmemused_mb_type_gauges{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
+          "expr": "spark_driver_blockmanager_memory_offheapmemused_mb{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
           "format": "time_series",
           "hide": false,
-          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "Off-Heap Memory Used ({{app_id}})",
           "refId": "B"
@@ -893,21 +803,13 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "default",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
         "h": 7,
         "w": 8,
         "x": 16,
         "y": 15
       },
-      "hiddenSeries": false,
       "id": 126,
       "legend": {
         "avg": false,
@@ -922,9 +824,6 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -935,9 +834,8 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "spark_driver_blockmanager_disk_diskspaceused_mb_type_gauges{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
+          "expr": "spark_driver_blockmanager_disk_diskspaceused_mb{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
           "format": "time_series",
-          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "Disk Space Used  ({{app_id}})",
           "refId": "A"
@@ -986,7 +884,6 @@
     },
     {
       "collapsed": false,
-      "datasource": null,
       "gridPos": {
         "h": 1,
         "w": 24,
@@ -1004,21 +901,13 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "default",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 0,
         "y": 23
       },
-      "hiddenSeries": false,
       "id": 123,
       "legend": {
         "avg": false,
@@ -1033,9 +922,6 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -1046,17 +932,15 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "spark_driver_dagscheduler_job_alljobs_type_gauges{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
+          "expr": "spark_driver_dagscheduler_job_alljobs{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
           "format": "time_series",
-          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "All Jobs ({{app_id}})",
           "refId": "A"
         },
         {
-          "expr": "spark_driver_dagscheduler_job_activejobs_type_gauges{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
+          "expr": "spark_driver_dagscheduler_job_activejobs{app_namespace=\"$namespace\", app_id=~\"$app_name\"}",
           "format": "time_series",
-          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "Active Jobs ({{app_id}})",
           "refId": "B"
@@ -1109,21 +993,13 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "default",
-      "fieldConfig": {
-        "defaults": {
-          "custom": {}
-        },
-        "overrides": []
-      },
       "fill": 1,
-      "fillGradient": 0,
       "gridPos": {
         "h": 9,
         "w": 12,
         "x": 12,
         "y": 23
       },
-      "hiddenSeries": false,
       "id": 124,
       "legend": {
         "avg": false,
@@ -1138,9 +1014,6 @@
       "linewidth": 1,
       "links": [],
       "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
       "percentage": false,
       "pointradius": 5,
       "points": false,
@@ -1151,19 +1024,17 @@
       "steppedLine": false,
       "targets": [
         {
-          "expr": "spark_driver_dagscheduler_stage_runningstages_type_gauges{namespace=\"$namespace\", app_id=~\"$app_name\"}",
+          "expr": "spark_driver_dagscheduler_stage_runningstages{namespace=\"$namespace\", app_id=~\"$app_name\"}",
           "format": "time_series",
           "instant": false,
-          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "Running Stages ({{app_id}})",
           "refId": "B"
         },
         {
-          "expr": "spark_driver_dagscheduler_stage_waitingstages_type_gauges{namespace=\"$namespace\", app_id=~\"$app_name\"}",
+          "expr": "spark_driver_dagscheduler_stage_waitingstages{namespace=\"$namespace\", app_id=~\"$app_name\"}",
           "format": "time_series",
           "instant": false,
-          "interval": "",
           "intervalFactor": 1,
           "legendFormat": "Waiting Stages  ({{app_id}})",
           "refId": "C"
@@ -1219,7 +1090,7 @@
     }
   ],
   "refresh": "5s",
-  "schemaVersion": 25,
+  "schemaVersion": 18,
   "style": "dark",
   "tags": [
     "spark"
@@ -1229,9 +1100,10 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
-          "text": "All",
-          "value": "$__all"
+          "text": "spark-op",
+          "value": [
+            "spark-op"
+          ]
         },
         "datasource": "default",
         "definition": "label_values(kube_pod_labels{label_kudo_dev_operator=\"spark\"}, namespace)",
@@ -1255,10 +1127,9 @@
       {
         "allValue": null,
         "current": {
-          "selected": true,
-          "text": "All",
+          "text": "mock-task-runner-10",
           "value": [
-            "$__all"
+            "mock-task-runner-10"
           ]
         },
         "datasource": "default",
@@ -1314,5 +1185,5 @@
   "timezone": "",
   "title": "Spark: Applications",
   "uid": "o-atlyGWk",
-  "version": 3
+  "version": 70
 }

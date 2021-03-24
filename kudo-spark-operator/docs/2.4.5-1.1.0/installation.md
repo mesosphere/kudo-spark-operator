@@ -12,29 +12,18 @@ Requirements:
 Check out existing [limitations](limitations.md) before installing a KUDO Spark instance. Currently, multi-instance 
 (multi-tenant) operator installation supports only a single instance per namespace. 
 
-Create a namespace for the operator:
 ```
-kubectl create ns spark
-```
-To install a new instance of Spark operator from the official repository, use the following command:
-```
-kubectl kudo install spark --namespace spark
-```
-This will install a Spark operator instance with the name `spark-instance` to the provided namespace.
-You can also specify a different instance name using `--instance` parameter:
-
-```
-kubectl kudo install spark --instance spark-operator --namespace spark
+kubectl kudo install spark --instance=spark
 ```
 
-Verify if the deploy plan for `--instance spark-instance` is complete:
+Verify if the deploy plan for `--instance=spark` is complete:
 ```
-kubectl kudo plan status --instance spark-instance --namespace spark
+kubectl kudo plan status --instance=spark
 
-Plan(s) for "spark-instance" in namespace "spark":
+Plan(s) for "spark" in namespace "default":
 .
-└── spark-instance (Operator-Version: "spark-1.1.0" Active-Plan: "deploy")
-    └── Plan deploy (serial strategy) [COMPLETE], last updated 2021-01-25 12:24:26
+└── spark (Operator-Version: "spark-1.1.0" Active-Plan: "deploy")
+    └── Plan deploy (serial strategy) [COMPLETE], last updated 2020-05-26 15:58:39
         ├── Phase preconditions (serial strategy) [COMPLETE]
         │   ├── Step crds [COMPLETE]
         │   ├── Step service-account [COMPLETE]

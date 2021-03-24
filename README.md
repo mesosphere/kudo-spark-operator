@@ -25,7 +25,7 @@ GNU Make is used as the main build tool and includes the following main targets:
 * `make cluster-create` creates a Konvoy or MKE cluster
 * `make cluster-destroy` creates a Konvoy or MKE cluster
 * `make clean-all` removes all artifacts produced by targets from local filesystem
-* `make docker-spark` builds Spark base image based on Apache Spark 3.0.0
+* `make docker-spark` builds Spark base image based on Apache Spark 2.4.5
 * `make docker-operator` builds Operator image and Spark base image if it's not built
 * `make docker-builder` builds image with required tools to run tests
 * `make docker-push` publishes Spark base image and Spark Operator image to DockerHub
@@ -45,8 +45,8 @@ To run tests on a pre-existing cluster with specified operator and spark images,
 
 ```
 make test KUBECONFIG=$HOME/.kube/config \
-SPARK_IMAGE_FULL_NAME=mesosphere/spark:spark-3.0.0-hadoop-2.9-k8s \
-OPERATOR_IMAGE_FULL_NAME=mesosphere/kudo-spark-operator:3.0.0-1.1.0
+SPARK_IMAGE_FULL_NAME=mesosphere/spark:spark-2.4.5-hadoop-2.9-k8s \
+OPERATOR_IMAGE_FULL_NAME=mesosphere/kudo-spark-operator:2.4.5-1.1.0
 ```
 
 # Package and Release
@@ -54,7 +54,7 @@ Release process is semi-automated and based on Github Actions. To make a new rel
 - Copy manifsets and docs for KUDO Spark Operator to the [Operators repo](https://github.com/kudobuilder/operators/tree/master/repository/spark), raise a PR and make sure the CI check is successful
 - After the PR is merged, create and push a new tag, e.g:
 ```
-git tag -a v3.0.0-1.1.0 -m "KUDO Spark Operator 3.0.0-1.1.0 release"
+git tag -a v2.4.5-1.1.0 -m "KUDO Spark Operator 2.4.5-1.1.0 release"
 ```   
 Pushing the new tag will trigger [release workflow](.github/workflows/release.yml), will build the operator package with KUDO,
 create a new GH release draft with the package attached to it.
