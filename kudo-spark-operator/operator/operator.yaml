@@ -10,7 +10,7 @@ maintainers:
 - name: Ken Sipe
   email: ken@d2iq.com
 name: spark
-operatorVersion: 1.1.0
+operatorVersion: 1.1.1-rc1
 plans:
   deploy:
     phases:
@@ -54,6 +54,40 @@ plans:
         - history-service
       strategy: serial
     strategy: serial
+
+  upgrade:
+    strategy: serial
+    phases:
+      - name: update-webhook
+        steps:
+        - name: webhook-cleanup
+          tasks:
+          - webhook-cleanup
+        - name: webhook
+          tasks:
+          - webhook
+        strategy: serial
+      - name: update-spark
+        steps:
+        - name: spark
+          tasks:
+          - spark
+        strategy: serial
+      - name: update-monitoring
+        steps:
+        - name: monitoring
+          tasks:
+          - monitoring
+        strategy: serial
+      - name: update-history
+        steps:
+        - name: history-deploy
+          tasks:
+          - history-deploy
+        - name: history-service
+          tasks:
+          - history-service
+        strategy: serial
 tasks:
 - kind: Apply
   name: crds
@@ -77,12 +111,18 @@ tasks:
   spec:
     resources:
     - spark-operator-deployment.yaml
+
 - kind: Apply
   name: webhook
   spec:
     resources:
     - webhook-init-job.yaml
     - webhook-service.yaml
+- kind: Delete
+  name: webhook-cleanup
+  spec:
+    resources:
+    - webhook-init-job.yaml
 - kind: Apply
   name: monitoring
   spec:

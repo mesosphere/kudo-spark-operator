@@ -1,8 +1,8 @@
 FROM python:3.8.2-slim-buster
 
-ARG KUDO_VERSION=0.15.0
+ARG KUDO_VERSION=0.18.2
 ARG KUBECTL_VERSION=1.17.8
-ARG KUTTL_VERSION=0.6.1
+ARG KUTTL_VERSION=0.9.0
 ARG KUDO_DOWNLOAD_URL=https://github.com/kudobuilder/kudo/releases/download/v${KUDO_VERSION}/kubectl-kudo_${KUDO_VERSION}_linux_x86_64
 ARG KUBECTL_DOWNLOAD_URL=https://storage.googleapis.com/kubernetes-release/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl
 ARG KUTTL_DOWNLOAD_URL=https://github.com/kudobuilder/kuttl/releases/download/v${KUTTL_VERSION}/kubectl-kuttl_${KUTTL_VERSION}_linux_x86_64
