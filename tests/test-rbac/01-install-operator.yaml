@@ -2,7 +2,7 @@ apiVersion: kuttl.dev/v1beta1
 kind: TestStep
 commands:
 - script: |
-    kubectl kudo install "${ROOT_DIR}"/operators/repository/spark/operator \
+    kubectl kudo install "${ROOT_DIR}"/kudo-spark-operator/operator \
       --namespace=spark-rbac-test \
       --instance=spark-default-rbac \
       --wait \
