@@ -7,4 +7,4 @@ commands:
           --instance=spark \
           --wait \
           -p enableHistoryServer=true \
-          -p historyServerFsLogDirectory=s3a://$AWS_BUCKET_NAME/$(cat .tmp/s3_bucket_path)
+          -p historyServerFsLogDirectory=file://tmp/spark-events
