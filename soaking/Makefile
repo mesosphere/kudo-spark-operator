@@ -8,12 +8,15 @@ NAMESPACE ?= spark-workloads
 
 .PHONY: install
 install:
-	kubectl kudo install "${ROOT_DIR}"/../kudo-spark-operator/operator \
+	kubectl kudo install spark \
 		--instance=spark \
-		--namespace=$(NAMESPACE) \
-		--wait \
-		-p enableMetrics=true \
-		-p sparkJobNamespace=$(NAMESPACE)
+        --namespace=$(NAMESPACE) \
+        --wait \
+        -p enableMetrics=true \
+        -p sparkJobNamespace=$(NAMESPACE)
+	kubectl kudo upgrade $(ROOT_DIR)/../kudo-spark-operator/operator \
+		--instance=spark \
+		--namespace=$(NAMESPACE)
 	kubectl apply -f $(ROOT_DIR)/app/mock-task-runner.yaml -n $(NAMESPACE)
 	kubectl apply -f $(ROOT_DIR)/app/shuffle-app.yaml -n $(NAMESPACE)
 
