@@ -1,0 +1,8 @@
+apiVersion: kuttl.dev/v1beta1
+kind: TestStep
+commands:
+   - script: |
+       kubectl kudo upgrade "${ROOT_DIR}"/kudo-spark-operator/operator \
+               --instance spark \
+               -p sparkJobNamespace=$NAMESPACE \
+               --namespace $NAMESPACE
