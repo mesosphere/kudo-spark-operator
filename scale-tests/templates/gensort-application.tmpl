@@ -5,7 +5,7 @@ metadata:
 spec:
   type: Scala
   mode: cluster
-  image: mesosphere/spark:spark-2.4.5-hadoop-2.9-k8s
+  image: mesosphere/spark:spark-3.0.0-hadoop-2.9-k8s
   imagePullPolicy: Always
   mainClass: sorting.DatasetGenerator
   mainApplicationFile: "https://kudo-spark.s3-us-west-2.amazonaws.com/spark-scala-tests-3.0.0-20200819.jar"
@@ -32,18 +32,18 @@ spec:
     "spark.hadoop.fs.s3a.access.key": "AWS_ACCESS_KEY_ID"
     "spark.hadoop.fs.s3a.secret.key": "AWS_SECRET_ACCESS_KEY"
     "spark.hadoop.fs.s3a.session.token": "AWS_SESSION_TOKEN"
-  sparkVersion: "2.4.5"
+  sparkVersion: "3.0.0"
   restartPolicy:
     type: Never
   driver:
     cores: 1
     memory: "1g"
     labels:
-      version: 2.4.5
+      version: 3.0.0
     serviceAccount: SERVICE_ACCOUNT_NAME
   executor:
     cores: 1
     instances: NUM_EXECUTORS
     memory: "3g"
     labels:
-      version: 2.4.5
+      version: 3.0.0

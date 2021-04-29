@@ -12,7 +12,7 @@ SERVICE_ACCOUNT_NAME=${SERVICE_ACCOUNT_NAME:-spark-service-account}
 
 NAMESPACE_PREFIX=${NAMESPACE_PREFIX:-spark}
 INSTANCE_NAME_PREFIX=${INSTANCE_NAME_PREFIX:-spark-operator}
-OPERATOR_VERSION=${OPERATOR_VERSION:-2.4.5-1.0.1}
+OPERATOR_VERSION=${OPERATOR_VERSION:-3.0.0-1.1.0}
 
 if [[ $# -lt 1 ]]; then
   echo "Usage:" >&2
@@ -26,7 +26,7 @@ for i in $(seq ${1}); do
     sed 's|SPARK_NAMESPACE|'"${NAMESPACE}"'|g' ${TEMPLATES_DIR}/namespace.tmpl | kubectl apply -f -
     sed 's|SERVICE_ACCOUNT_NAME|'"${SERVICE_ACCOUNT_NAME}"'|g' ${TEMPLATES_DIR}/service-account.tmpl | kubectl apply --namespace "${NAMESPACE}" -f -
 
-    kubectl kudo --namespace "${NAMESPACE}" install --instance "${INSTANCE_NAME_PREFIX}-${i}" "${OPERATOR_DIR}" \
+    kubectl kudo --namespace "${NAMESPACE}" install --instance "${INSTANCE_NAME_PREFIX}-${i}" spark \
             -p operatorVersion="${OPERATOR_VERSION}" \
             -p sparkServiceAccountName="${SERVICE_ACCOUNT_NAME}" \
             -p createSparkServiceAccount=false \
