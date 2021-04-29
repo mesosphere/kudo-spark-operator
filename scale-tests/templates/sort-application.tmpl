@@ -5,7 +5,7 @@ metadata:
 spec:
   type: Scala
   mode: cluster
-  image: mesosphere/spark:spark-2.4.5-hadoop-2.9-k8s
+  image: mesosphere/spark:spark-3.0.0-hadoop-2.9-k8s
   imagePullPolicy: Always
   mainClass: sorting.SortingApp
   mainApplicationFile: "https://kudo-spark.s3-us-west-2.amazonaws.com/spark-scala-tests-3.0.0-20200819.jar"
@@ -28,7 +28,7 @@ spec:
     "spark.memory.fraction": "0.1"
     "spark.kubernetes.executor.request.cores": "1"
     "spark.kubernetes.executor.limit.cores": "1"
-  sparkVersion: "2.4.5"
+  sparkVersion: "3.0.0"
   restartPolicy:
     type: Never
   driver:
@@ -40,7 +40,7 @@ spec:
     cores: 4
     memory: "96g"
     labels:
-      version: 2.4.5
+      version: 3.0.0
       metrics-exposed: "true"
     serviceAccount: SERVICE_ACCOUNT_NAME
   executor:
@@ -48,7 +48,7 @@ spec:
     instances: NUM_EXECUTORS
     memory: "16g"
     labels:
-      version: 2.4.5
+      version: 3.0.0
       metrics-exposed: "true"
   monitoring:
     exposeDriverMetrics: true
